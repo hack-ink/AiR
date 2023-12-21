@@ -1,13 +1,13 @@
 [package]
 authors     = ["Xavier Lau <xavier@inv.cafe>"]
-# build       = "build.rs"
-description = "<DESCRIPTION>"
+build       = "build.rs"
+description = "AI Rust."
 edition     = "2021"
-homepage    = "https://hack.ink/<NAME>"
+homepage    = "https://hack.ink/air"
 license     = "GPL-3.0"
-name        = "<NAME>"
+name        = "air"
 readme      = "README.md"
-repository  = "https://github.com/hack-ink/<NAME>"
+repository  = "https://github.com/hack-ink/air"
 version     = "0.1.0"
 
 [profile.ci-dev]
@@ -18,6 +18,32 @@ inherits    = "dev"
 inherits = "release"
 lto      = true
 
-# [build-dependencies]
-# # crates.io
-# vergen = { version = "8.2", features = ["build", "cargo", "git", "gitcl"] }
+[build-dependencies]
+# crates.io
+vergen = { version = "8.2", features = ["build", "cargo", "git", "gitcl"] }
+
+[features]
+default = ["macOS"]
+
+macOS = [
+	"accessibility",
+	"accessibility-sys",
+	"icrate",
+]
+
+[dependencies]
+# crates.io
+anyhow             = { version = "1.0" }
+app_dirs2          = { version = "2.5" }
+clipboard          = { version = "0.5" }
+color-eyre         = { version = "0.6" }
+core-foundation    = { version = "0.9" }
+eframe             = { version = "0.24" }
+egui_commonmark    = { version = "0.10" }
+global-hotkey      = { version = "0.4" }
+tracing            = { version = "0.1" }
+tracing-subscriber = { version = "0.3" }
+## macOS optional
+accessibility     = { version = "0.1", optional = true }
+accessibility-sys = { version = "0.1", optional = true }
+icrate            = { version = "0.0.4", optional = true, features = ["AppKit"] }
