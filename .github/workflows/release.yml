@@ -85,7 +85,7 @@ jobs:
     needs: [release]
     steps:
       - name: Clean artifacts
-        uses: geekyeggo/delete-artifact@v2
+        uses: geekyeggo/delete-artifact@v4
         with:
           name: artifacts
     runs-on: ubuntu-latest
