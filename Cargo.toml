@@ -38,7 +38,7 @@ anyhow = { version = "1.0" }
 clipboard       = { version = "0.5" }
 color-eyre      = { version = "0.6" }
 core-foundation = { version = "0.9" }
-eframe          = { version = "0.24" }
+eframe          = { version = "0.26" }
 egui_commonmark = { version = "0.10" }
 global-hotkey   = { version = "0.4" }
 serde           = { version = "1.0", features = ["derive"] }
