@@ -1,23 +1,20 @@
 // std
 use std::time::Duration;
 // crates.io
-use ureq::{Agent, AgentBuilder, Error, Response};
+use reqwest::{
+	blocking::{Client, ClientBuilder, Response},
+	Result,
+};
 
 #[derive(Clone, Debug)]
-pub(crate) struct HttpClient(Agent);
+pub struct HttpClient(Client);
 impl HttpClient {
-	// TODO?: Use `anyhow::Result`.
-	pub(crate) fn get(&self, url: &str) -> Result<Response, Box<Error>> {
-		Ok(self.0.get(url).call()?)
+	pub fn get(&self, url: &str) -> Result<Response> {
+		self.0.get(url).send()
 	}
 }
 impl Default for HttpClient {
 	fn default() -> Self {
-		Self(
-			AgentBuilder::new()
-				.timeout_read(Duration::from_secs(5))
-				.timeout_write(Duration::from_secs(5))
-				.build(),
-		)
+		Self(ClientBuilder::new().timeout(Duration::from_secs(5)).build().unwrap())
 	}
 }

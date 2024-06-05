@@ -5,21 +5,23 @@ use std::{
 	time::Duration,
 };
 // crates.io
-use eframe::{egui::*, Frame, *};
-// air
-use crate::{component::ActiveTimer, os::*, preference::*, ui::*};
+use eframe::{
+	egui::{CentralPanel, Context, ViewportBuilder},
+	icon_data, App, CreationContext, Frame, NativeOptions, Storage,
+};
+// self
+use crate::{component::util::Timer, data::*, os::*, prelude::*};
 
 #[derive(Debug)]
-struct Air {
-	on_initialize: Arc<Mutex<bool>>,
-	active_timer: ActiveTimer,
-
-	ui: Uii,
+struct AiR {
+	init: Arc<Mutex<bool>>,
+	active_timer: Timer,
+	data: Data,
 }
-impl Air {
-	fn set_hook(ctx: Context) -> Arc<Mutex<bool>> {
-		let on_initialize = Arc::new(Mutex::new(true));
-		let on_initialize_ = on_initialize.clone();
+impl AiR {
+	fn register_services(ctx: Context) -> Arc<Mutex<bool>> {
+		let init = Arc::new(Mutex::new(true));
+		let init_ = init.clone();
 
 		// Give some time to all components to initialize themselves.
 		thread::spawn(move || {
@@ -31,51 +33,57 @@ impl Air {
 				}
 			}
 
-			*on_initialize_.lock().unwrap() = false;
+			*init_.try_lock().unwrap() = false;
 		});
 
-		on_initialize
+		init
 	}
 
 	fn new(creation_ctx: &CreationContext) -> Self {
 		Self {
-			on_initialize: Self::set_hook(creation_ctx.egui_ctx.clone()),
-			active_timer: ActiveTimer::new(),
-			ui: Uii::new(&creation_ctx.egui_ctx),
+			init: Self::register_services(creation_ctx.egui_ctx.clone()),
+			active_timer: Timer::default(),
+			data: Data::new(&creation_ctx.egui_ctx),
 		}
 	}
 }
-impl App for Air {
+impl App for AiR {
 	fn update(&mut self, ctx: &Context, _: &mut Frame) {
-		CentralPanel::default().show(ctx, |ui| self.ui.draw(ui));
+		CentralPanel::default().show(ctx, |ui| self.data.draw(ui));
 
-		if !*self.on_initialize.lock().unwrap() && !ctx.input(|i| i.focused) {
-			// TODO: These will be called multiple times.
-
+		// TODO: these will be called multiple times.
+		if !self.init.try_lock().map(|o| *o).unwrap_or(true) && !ctx.input(|i| i.focused) {
 			self.active_timer.pause();
 
-			Os::hide_application();
+			Os::hide();
 		}
-		if self.active_timer.refresh() > Duration::from_secs(5) {
-			self.active_timer.reset_timer();
-			self.ui.try_update();
+		if self.active_timer.refresh() > Duration::from_secs(30) {
+			self.active_timer.reset();
+			// TODO: refactor `try_update`.
+			self.data.refresh();
 		}
+	}
+
+	fn save(&mut self, _: &mut dyn Storage) {
+		self.data.save();
 	}
 }
 
-pub(super) fn launch() {
-	PREFERENCE.set(Preference::default()).unwrap();
-
+pub fn launch() -> Result<()> {
 	eframe::run_native(
-		"AIR",
+		"AiR",
 		NativeOptions {
-			run_and_return: true,
 			viewport: ViewportBuilder::default()
-				.with_min_inner_size((480., 320.))
-				.with_inner_size((480., 320.)),
+				.with_icon(
+					icon_data::from_png_bytes(include_bytes!("../asset/icon.png").as_slice())
+						.expect("icon must be valid"),
+				)
+				.with_inner_size((720., 360.))
+				.with_min_inner_size((720., 360.)),
 			..Default::default()
 		},
-		Box::new(|cc| Box::new(Air::new(cc))),
-	)
-	.unwrap();
+		Box::new(|c| Box::new(AiR::new(c))),
+	)?;
+
+	Ok(())
 }

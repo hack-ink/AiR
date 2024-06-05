@@ -1,12 +1,12 @@
-mod macos;
+#[cfg(target_os = "macos")] mod macos;
 
-pub(super) trait Accessibility {
-	fn hide_application();
+pub trait Accessibility {
+	fn hide();
 
-	fn activate_application();
+	fn unhide();
 
-	fn get_selected_text() -> Option<String>;
+	fn selected_text() -> Option<String>;
 }
 
 #[derive(Debug)]
-pub(super) struct Os;
+pub struct Os;

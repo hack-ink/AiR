@@ -5,37 +5,38 @@ use std::{
 };
 // serde
 use serde::Deserialize;
-// air
+// self
 use super::fundamental::http::HttpClient;
 
-#[derive(Clone, Debug, Default)]
-pub(crate) struct Quoter {
-	pub(crate) quote: Arc<Mutex<String>>,
+#[derive(Clone, Debug)]
+pub struct Quoter {
+	pub quote: Arc<Mutex<Option<String>>>,
 	http: HttpClient,
 }
 impl Quoter {
-	pub fn new() -> Self {
-		let mut q = Self::default();
-
-		q.try_update();
-
-		q
-	}
-
-	pub(crate) fn try_update(&mut self) {
+	pub fn refresh(&mut self) {
 		let Quoter { quote, http } = self.to_owned();
 
 		thread::spawn(move || {
-			if let Ok(mut q) = quote.lock() {
+			if let Ok(mut q) = quote.try_lock() {
+				tracing::info!("fetching quote");
+
 				if let Ok(r) = http.get("https://api.quotable.io/random") {
-					if let Ok(Quote { author, content }) = r.into_json::<Quote>() {
-						*q = format!("{content}\n\n{author}");
+					if let Ok(Quote { author, content }) = r.json::<Quote>() {
+						*q = Some(format!("{content}\n\n{author}"));
 					}
 				}
 			}
 		});
+	}
+}
+impl Default for Quoter {
+	fn default() -> Self {
+		let mut q = Self { quote: Arc::new(Mutex::new(None)), http: HttpClient::default() };
 
-		tracing::info!("Quoter is updating");
+		q.refresh();
+
+		q
 	}
 }
 

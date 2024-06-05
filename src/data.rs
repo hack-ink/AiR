@@ -1,27 +1,25 @@
 mod main;
 use main::*;
 
-mod preference;
-use preference::*;
+mod setting;
+use setting::*;
 
 // crates.io
 use eframe::egui::*;
 
-#[derive(Debug, Default)]
-pub(super) struct Uii {
+#[derive(Debug)]
+pub struct Data {
 	panels: Panels,
 	main: Main,
-	preference: Preference,
+	setting: Setting,
 }
-impl Uii {
+impl Data {
 	fn set_font(ctx: &Context) {
 		let mut fonts = FontDefinitions::default();
 
 		fonts.font_data.insert(
 			"Monaspace Radon Var".into(),
-			FontData::from_static(include_bytes!(
-				"../asset/MonaspaceRadonVarVF[wght,wdth,slnt].ttf"
-			)),
+			FontData::from_static(include_bytes!("../asset/CascadiaCode.ttf")),
 		);
 		fonts
 			.families
@@ -37,40 +35,47 @@ impl Uii {
 		ctx.set_fonts(fonts);
 	}
 
-	pub(super) fn new(ctx: &Context) -> Self {
+	pub fn new(ctx: &Context) -> Self {
 		Self::set_font(ctx);
 
-		Default::default()
+		let setting = Setting::default();
+		let main = Main::from_setting(&setting);
+
+		Self { panels: Default::default(), main, setting }
 	}
 
-	pub(super) fn draw(&mut self, ui: &mut Ui) {
+	pub fn draw(&mut self, ui: &mut Ui) {
 		ui.horizontal(|ui| {
 			ui.selectable_value(&mut self.panels, Panels::Main, "Main");
 			ui.separator();
-			ui.selectable_value(&mut self.panels, Panels::Preference, "Preference");
+			ui.selectable_value(&mut self.panels, Panels::Setting, "Setting");
 			ui.separator();
 		});
 		ui.separator();
 
 		match self.panels {
 			Panels::Main => self.main.draw(ui),
-			Panels::Preference => self.preference.draw(ui),
+			Panels::Setting => self.setting.draw(ui),
 		}
 	}
 
-	pub(super) fn try_update(&mut self) {
-		self.main.try_update();
+	pub fn refresh(&mut self) {
+		self.main.refresh();
+	}
+
+	pub fn save(&mut self) {
+		self.setting.save();
 	}
 }
 
 #[derive(Debug, PartialEq, Eq)]
 enum Panels {
 	Main,
-	Preference,
+	Setting,
 }
 impl Default for Panels {
 	fn default() -> Self {
 		Self::Main
-		// Self::Preference
+		// Self::Setting
 	}
 }

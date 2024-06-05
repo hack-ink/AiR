@@ -5,16 +5,18 @@ use std::{
 	time::Duration,
 };
 // crates.io
-use anyhow::Result;
-use clipboard::*;
-use global_hotkey::{hotkey::*, *};
-// air
-use crate::os::*;
+use clipboard::{ClipboardContext, ClipboardProvider};
+use global_hotkey::{
+	hotkey::{Code, HotKey, Modifiers},
+	GlobalHotKeyEvent, GlobalHotKeyManager, HotKeyState,
+};
+// self
+use crate::{component::function::Function, os::*, prelude::*};
 
 #[derive(Debug)]
-pub(crate) struct Hotkey(Receiver<Function>);
+pub struct Hotkey(Receiver<Function>);
 impl Hotkey {
-	pub(crate) fn register() -> Result<Self> {
+	pub fn register() -> Result<Self> {
 		let (tx, rx) = mpsc::channel();
 		let manager = GlobalHotKeyManager::new()?;
 		let receiver = GlobalHotKeyEvent::receiver();
@@ -31,17 +33,17 @@ impl Hotkey {
 
 			loop {
 				if let Ok(e) = receiver.try_recv() {
-					tracing::info!("{e:?}");
+					// tracing::info!("{e:?}");
 
 					if let HotKeyState::Pressed = e.state {
 						if e.id == hk_polish_id {
-							if let Some(t) = Os::get_selected_text() {
+							if let Some(t) = Os::selected_text() {
 								let _ = clipboard.set_contents(t);
 							}
 
 							tx.send(Function::Polish).unwrap();
 
-							Os::activate_application();
+							Os::unhide();
 						}
 					}
 				}
@@ -54,13 +56,7 @@ impl Hotkey {
 		Ok(Self(rx))
 	}
 
-	pub(crate) fn try_recv(&self) -> Result<Function> {
+	pub fn try_recv(&self) -> Result<Function> {
 		Ok(self.0.try_recv()?)
 	}
-}
-
-#[derive(Debug)]
-pub(crate) enum Function {
-	Polish,
-	// Translate,
 }
