@@ -1,72 +1,117 @@
 // std
 use std::{
-	sync::{Arc, Mutex},
-	thread,
+	sync::{atomic::Ordering, Once},
 	time::Duration,
 };
 // crates.io
-use eframe::{
-	egui::{CentralPanel, Context, ViewportBuilder},
-	icon_data, App, CreationContext, Frame, NativeOptions, Storage,
-};
+use eframe::{egui::*, Frame, *};
+use tokio::runtime::Runtime;
 // self
-use crate::{component::util::Timer, data::*, os::*, prelude::*};
+use crate::{
+	component::Components,
+	os::{AppKit, Os},
+	prelude::Result,
+	service::Services,
+	ui::Uis,
+};
 
 #[derive(Debug)]
 struct AiR {
-	init: Arc<Mutex<bool>>,
-	active_timer: Timer,
-	data: Data,
+	once: Once,
+	runtime: Runtime,
+	components: Components,
+	services: Services,
+	uis: Uis,
 }
 impl AiR {
-	fn register_services(ctx: Context) -> Arc<Mutex<bool>> {
-		let init = Arc::new(Mutex::new(true));
-		let init_ = init.clone();
+	fn init(ctx: &Context) -> Self {
+		Self::set_fonts(ctx);
 
-		// Give some time to all components to initialize themselves.
-		thread::spawn(move || {
-			loop {
-				if !ctx.input(|i| i.focused) {
-					thread::sleep(Duration::from_millis(10));
-				} else {
-					break;
-				}
-			}
+		let once = Once::new();
+		let runtime = Runtime::new().expect("runtime must be created");
+		let components = Components::init();
+		let services = Services::init(ctx);
+		let uis = Uis::init();
 
-			*init_.try_lock().unwrap() = false;
-		});
-
-		init
+		Self { once, runtime, components, services, uis }
 	}
 
-	fn new(creation_ctx: &CreationContext) -> Self {
-		Self {
-			init: Self::register_services(creation_ctx.egui_ctx.clone()),
-			active_timer: Timer::default(),
-			data: Data::new(&creation_ctx.egui_ctx),
+	fn set_fonts(ctx: &Context) {
+		let mut fonts = FontDefinitions::default();
+
+		// Cascadia Code.
+		fonts.font_data.insert(
+			"Cascadia Code".into(),
+			FontData::from_static(include_bytes!("../asset/CascadiaCode.ttf")),
+		);
+		fonts
+			.families
+			.entry(FontFamily::Proportional)
+			.or_default()
+			.insert(0, "Cascadia Code".into());
+		fonts.families.entry(FontFamily::Monospace).or_default().insert(0, "Cascadia Code".into());
+		// NotoSerifSC.
+		fonts.font_data.insert(
+			"NotoSerifSC".into(),
+			FontData::from_static(include_bytes!("../asset/NotoSerifSC-VariableFont_wght.ttf")),
+		);
+		fonts.families.entry(FontFamily::Proportional).or_default().insert(1, "NotoSerifSC".into());
+		fonts.families.entry(FontFamily::Monospace).or_default().insert(1, "NotoSerifSC".into());
+
+		ctx.set_fonts(fonts);
+	}
+
+	fn try_unhide(&mut self, ctx: &Context) {
+		let to_hidden = self.services.to_hidden.load(Ordering::SeqCst);
+		let focused = ctx.input(|i| i.focused);
+
+		if to_hidden && !focused {
+			self.components.active_timer.refresh();
+			self.services.to_hidden.store(true, Ordering::SeqCst);
+
+			// TODO: https://github.com/emilk/egui/discussions/4635.
+			// ctx.send_viewport_cmd(ViewportCommand::Minimized(true));
+			Os::hide();
+		} else if !to_hidden && focused {
+			// TODO: find a better place to initialize this.
+			self.once.call_once(Os::set_move_to_active_space);
+			self.services.to_hidden.store(true, Ordering::SeqCst);
 		}
 	}
 }
 impl App for AiR {
 	fn update(&mut self, ctx: &Context, _: &mut Frame) {
-		CentralPanel::default().show(ctx, |ui| self.data.draw(ui));
+		let air_ctx = AiRContext {
+			egui_ctx: ctx,
+			runtime: &self.runtime,
+			components: &mut self.components,
+			services: &mut self.services,
+		};
 
-		// TODO: these will be called multiple times.
-		if !self.init.try_lock().map(|o| *o).unwrap_or(true) && !ctx.input(|i| i.focused) {
-			self.active_timer.pause();
+		self.uis.draw(air_ctx);
+		// TODO?: these will be called multiple times, move to focus service.
+		self.try_unhide(ctx);
 
-			Os::hide();
-		}
-		if self.active_timer.refresh() > Duration::from_secs(30) {
-			self.active_timer.reset();
-			// TODO: refactor `try_update`.
-			self.data.refresh();
+		if self.components.active_timer.duration() > Duration::from_secs(15) {
+			self.components.active_timer.refresh();
+
+			if self.uis.chat.input.is_empty() {
+				self.components.quote.refresh(&self.runtime);
+			}
 		}
 	}
 
 	fn save(&mut self, _: &mut dyn Storage) {
-		self.data.save();
+		self.components.setting.save().expect("setting must be saved");
 	}
+}
+
+#[derive(Debug)]
+pub struct AiRContext<'a> {
+	pub egui_ctx: &'a Context,
+	pub runtime: &'a Runtime,
+	pub components: &'a mut Components,
+	pub services: &'a mut Services,
 }
 
 pub fn launch() -> Result<()> {
@@ -79,10 +124,12 @@ pub fn launch() -> Result<()> {
 						.expect("icon must be valid"),
 				)
 				.with_inner_size((720., 360.))
-				.with_min_inner_size((720., 360.)),
+				.with_min_inner_size((720., 360.))
+				.with_transparent(true),
+			follow_system_theme: true,
 			..Default::default()
 		},
-		Box::new(|c| Box::new(AiR::new(c))),
+		Box::new(|c| Box::new(AiR::init(&c.egui_ctx))),
 	)?;
 
 	Ok(())

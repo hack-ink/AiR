@@ -1,8 +1,5 @@
 // std
-use std::{
-	sync::{Arc, Mutex},
-	thread,
-};
+use std::sync::{Arc, Mutex};
 // crates.io
 use async_openai::{
 	config::OpenAIConfig,
@@ -14,137 +11,109 @@ use async_openai::{
 	},
 	Client,
 };
+use eframe::egui::WidgetText;
 use futures::StreamExt;
-// self
-use crate::component::setting::Ai;
+use serde::{Deserialize, Serialize};
 use tokio::runtime::Runtime;
+// self
+use crate::{component::setting::Ai, prelude::*};
 
+#[derive(Debug)]
 pub struct OpenAi {
-	// TODO: custom API endpoints.
-	pub client: Client<OpenAIConfig>,
+	pub client: Arc<Client<OpenAIConfig>>,
+	// TODO: use Mutex.
 	pub setting: Ai,
+	pub output: Arc<Mutex<String>>,
 }
 impl OpenAi {
 	pub fn new(setting: Ai) -> Self {
 		Self {
-			client: Client::with_config(OpenAIConfig::new().with_api_key(&setting.api_key)),
+			client: Arc::new(Client::with_config(
+				OpenAIConfig::new()
+					.with_api_base("https://aihubmix.com/v1")
+					.with_api_key(&setting.api_key),
+			)),
 			setting,
+			output: Arc::new(Mutex::new(Default::default())),
 		}
 	}
 
-	pub fn chat<P, C>(
-		&self,
-		prompt: &str,
-		content: &str,
-		output: Arc<Mutex<String>>,
-		token_count: Arc<Mutex<(usize, usize)>>,
-	) {
-		let model = self.setting.model.clone();
+	pub fn chat(&self, runtime: &Runtime, prompt: &str, content: &str) -> Result<()> {
 		let msg = [
-			ChatCompletionRequestSystemMessageArgs::default()
-				.content(prompt)
-				.build()
-				.unwrap()
-				.into(),
-			ChatCompletionRequestUserMessageArgs::default()
-				.content(content)
-				.build()
-				.unwrap()
-				.into(),
+			ChatCompletionRequestSystemMessageArgs::default().content(prompt).build()?.into(),
+			ChatCompletionRequestUserMessageArgs::default().content(content).build()?.into(),
 		];
 		let req = CreateChatCompletionRequestArgs::default()
-			.model(&model)
+			.model(self.setting.model.as_str())
 			.temperature(self.setting.temperature_rounded())
 			.max_tokens(4_096_u16)
 			.messages(&msg)
-			.build()
-			.unwrap();
+			.build()?;
 		let c = self.client.clone();
+		let o = self.output.clone();
 
-		thread::spawn(move || {
-			// TODO: use ctx.
-			Runtime::new().unwrap().block_on(async {
-				let mut s = c.chat().create_stream(req).await.unwrap();
+		runtime.spawn(async move {
+			match c.chat().create_stream(req).await {
+				Ok(mut s) => {
+					o.lock().expect("output must be available").clear();
 
-				// token_count.lock().unwrap().0 = tiktoken_rs::num_tokens_from_messages(
-				// 	&model,
-				// 	&[(&msg[0]).into(), (&msg[1]).into()],
-				// )
-				// .unwrap();
-
-				while let Some(r) = s.next().await {
-					match r {
-						Ok(resp) => {
-							resp.choices.iter().for_each(|c| {
-								if let Some(c) = &c.delta.content {
-									let o = {
-										let mut o = output.lock().unwrap();
-
-										o.push_str(c);
-
-										o.to_owned()
-									};
-
-									// token_count.lock().unwrap().1 =
-									// 	tiktoken_rs::num_tokens_from_messages(
-									// 		&model,
-									// 		&[(&ChatCompletionRequestMessage::from(
-									// 			ChatCompletionRequestAssistantMessageArgs::default(
-									// 			)
-									// 			.content(o)
-									// 			.build()
-									// 			.unwrap(),
-									// 		))
-									// 			.into()],
-									// 	)
-									// 	.unwrap();
-								}
-							});
-						},
-						Err(e) => println!("error: {e}"),
+					while let Some(r) = s.next().await {
+						match r {
+							Ok(resp) => {
+								resp.choices.iter().for_each(|c| {
+									if let Some(c) = &c.delta.content {
+										o.lock().expect("output must be available").push_str(c);
+									}
+								});
+							},
+							Err(e) => println!("failed to receive chat response: {e}"),
+						}
 					}
-				}
-			});
+				},
+				Err(e) => {
+					tracing::error!("failed to create chat stream: {e}");
+				},
+			}
 		});
+
+		Ok(())
 	}
 }
 
-// TODO: use enum.
-#[derive(Debug)]
-pub struct Model;
+// https://platform.openai.com/docs/models
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub enum Model {
+	Gpt4o,
+	Gpt35Turbo,
+}
 impl Model {
-	const GPT_3_5_TURBO_0301: &'static str = "gpt-3.5-turbo-0301";
-	const GPT_3_5_TURBO_0613: &'static str = "gpt-3.5-turbo-0613";
-	const GPT_4: &'static str = "gpt-4";
-	const GPT_4_0613: &'static str = "gpt-4-0613";
-	const GPT_4_1106_PREVIEW: &'static str = "gpt-4-1106-preview";
-	const GPT_4_32K: &'static str = "gpt-4-32k";
-	const GPT_4_32K_0613: &'static str = "gpt-4-32k-0613";
-
-	pub fn default() -> &'static str {
-		Self::GPT_4_1106_PREVIEW
-	}
-
-	pub fn all() -> [&'static str; 7] {
-		[
-			Self::GPT_3_5_TURBO_0301,
-			Self::GPT_3_5_TURBO_0613,
-			Self::GPT_4,
-			Self::GPT_4_0613,
-			Self::GPT_4_1106_PREVIEW,
-			Self::GPT_4_32K,
-			Self::GPT_4_32K_0613,
-		]
+	pub fn as_str(&self) -> &'static str {
+		match self {
+			Self::Gpt4o => "gpt-4o",
+			Self::Gpt35Turbo => "gpt-3.5-turbo",
+		}
 	}
 
 	// https://openai.com/pricing
-	pub fn price_of(model: &str) -> (f32, f32) {
-		match model {
-			Self::GPT_3_5_TURBO_0301 | Self::GPT_3_5_TURBO_0613 => (0.000001, 0.000002),
-			Self::GPT_4 | Self::GPT_4_0613 | Self::GPT_4_32K_0613 => (0.00003, 0.00006),
-			Self::GPT_4_1106_PREVIEW => (0.00001, 0.00003),
-			Self::GPT_4_32K => (0.00006, 0.00012),
-			_ => unreachable!(),
+	pub fn prices(&self) -> (f32, f32) {
+		match self {
+			Self::Gpt4o => (0.000005, 0.000015),
+			Self::Gpt35Turbo => (0.0000005, 0.0000015),
 		}
+	}
+
+	pub fn all() -> [Self; 2] {
+		[Self::Gpt4o, Self::Gpt35Turbo]
+	}
+}
+impl Default for Model {
+	fn default() -> Self {
+		Self::Gpt4o
+	}
+}
+#[allow(clippy::from_over_into)]
+impl Into<WidgetText> for &Model {
+	fn into(self) -> WidgetText {
+		self.as_str().into()
 	}
 }

@@ -9,16 +9,16 @@ use crate::{component::openai::Model, prelude::*};
 const APP: AppInfo = AppInfo { name: "AiR", author: "xavier@inv.cafe" };
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub(crate) struct Setting {
-	pub(crate) general: General,
-	pub(crate) ai: Ai,
+pub struct Setting {
+	pub general: General,
+	pub ai: Ai,
 }
 impl Setting {
-	pub(crate) fn path() -> Result<PathBuf> {
+	pub fn path() -> Result<PathBuf> {
 		Ok(app_dirs2::get_app_root(AppDataType::UserConfig, &APP).map(|p| p.join(".airrc"))?)
 	}
 
-	pub(crate) fn load() -> Result<Self> {
+	pub fn load() -> Result<Self> {
 		let p = Self::path()?;
 
 		tracing::info!("loading from {}", p.display());
@@ -26,7 +26,7 @@ impl Setting {
 		Ok(toml::from_str(&fs::read_to_string(p)?)?)
 	}
 
-	pub(crate) fn save(&self) -> Result<()> {
+	pub fn save(&self) -> Result<()> {
 		let p = Self::path()?;
 
 		tracing::info!("saving to {}", p.display());
@@ -36,9 +36,9 @@ impl Setting {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct General {
-	pub(crate) font_size: f32,
-	pub(crate) hide_on_lost_focus: bool,
+pub struct General {
+	pub font_size: f32,
+	pub hide_on_lost_focus: bool,
 }
 impl Default for General {
 	fn default() -> Self {
@@ -48,18 +48,19 @@ impl Default for General {
 
 // TODO: Support Google Gemini.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct Ai {
-	pub(crate) api_key: String,
-	pub(crate) model: String,
-	pub(crate) temperature: f32,
+pub struct Ai {
+	// TODO: custom API endpoint.
+	pub api_key: String,
+	pub model: Model,
+	pub temperature: f32,
 }
 impl Ai {
-	pub(crate) fn temperature_rounded(&self) -> f32 {
+	pub fn temperature_rounded(&self) -> f32 {
 		(self.temperature * 10.).round() / 10.
 	}
 }
 impl Default for Ai {
 	fn default() -> Self {
-		Self { api_key: Default::default(), model: Model::default().to_owned(), temperature: 0.7 }
+		Self { api_key: Default::default(), model: Model::default(), temperature: 0.7 }
 	}
 }

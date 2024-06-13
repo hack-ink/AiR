@@ -11,3 +11,20 @@
 [![GitHub last commit](https://img.shields.io/github/last-commit/hack-ink/air?color=red&style=plastic)](https://github.com/hack-ink/air)
 
 </div>
+
+## Architecture
+Built upon [egui](https://github.com/emilk/egui), a fast and cross-platform GUI toolkit written in pure Rust.
+
+### Components
+These items either have their own `refresh` logic or do not require frequent refreshing.
+They are not time-sensitive, and their `refresh` method will be called at specific intervals (e.g., every 15 seconds).
+
+### OS
+Provides wrapped APIs to interact with the operating system.
+
+### Services
+These items are time-sensitive and require frequent checking or updating.
+They will be spawned as separate threads and run in the background.
+
+### UI
+The user interface components.

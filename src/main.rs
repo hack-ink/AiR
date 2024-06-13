@@ -1,4 +1,4 @@
-//! AI Rust.
+//! AI with Rust.
 
 // TODO: check this.
 // hide console window on Windows in release
@@ -11,11 +11,10 @@
 
 mod air;
 mod component;
-mod data;
 mod error;
 mod os;
 mod service;
-mod widget;
+mod ui;
 
 mod prelude {
 	pub type Result<T> = std::result::Result<T, Error>;

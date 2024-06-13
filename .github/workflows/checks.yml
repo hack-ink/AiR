@@ -43,7 +43,10 @@ jobs:
           args: --workspace --all-features --all-targets --locked
       - name: Cargo fmt
         if: matrix.action == 'fmt'
-        run: cargo fmt --all -- --check
+        run: |
+          rustup toolchain install nightly
+          rustup component add rustfmt --toolchain nightly
+          cargo +nightly fmt --all -- --check
       - name: Install cargo-nextest
         if: matrix.action == 'nextest'
         uses: taiki-e/install-action@nextest
