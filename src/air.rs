@@ -1,3 +1,5 @@
+// TODO: use unwrap here and return result in other places.
+
 // std
 use std::{
 	sync::{atomic::Ordering, Once},
@@ -12,6 +14,7 @@ use crate::{
 	os::{AppKit, Os},
 	prelude::Result,
 	service::Services,
+	state::State,
 	ui::Uis,
 };
 
@@ -20,20 +23,22 @@ struct AiR {
 	once: Once,
 	runtime: Runtime,
 	components: Components,
+	state: State,
 	services: Services,
 	uis: Uis,
 }
 impl AiR {
-	fn init(ctx: &Context) -> Self {
-		Self::set_fonts(ctx);
+	fn init(ctx: Context) -> Self {
+		Self::set_fonts(&ctx);
 
 		let once = Once::new();
-		let runtime = Runtime::new().expect("runtime must be created");
-		let components = Components::init();
-		let services = Services::init(ctx);
+		let runtime = Runtime::new().unwrap();
+		let mut components = Components::init().unwrap();
+		let state = Default::default();
+		let services = Services::init(&ctx, &runtime, &mut components, &state).unwrap();
 		let uis = Uis::init();
 
-		Self { once, runtime, components, services, uis }
+		Self { once, runtime, components, state, services, uis }
 	}
 
 	fn set_fonts(ctx: &Context) {
@@ -62,20 +67,20 @@ impl AiR {
 	}
 
 	fn try_unhide(&mut self, ctx: &Context) {
-		let to_hidden = self.services.to_hidden.load(Ordering::SeqCst);
+		let to_hide = self.state.to_hide.load(Ordering::SeqCst);
 		let focused = ctx.input(|i| i.focused);
 
-		if to_hidden && !focused {
+		if to_hide && !focused {
 			self.components.active_timer.refresh();
-			self.services.to_hidden.store(true, Ordering::SeqCst);
+			self.state.to_hide.store(true, Ordering::SeqCst);
 
 			// TODO: https://github.com/emilk/egui/discussions/4635.
 			// ctx.send_viewport_cmd(ViewportCommand::Minimized(true));
 			Os::hide();
-		} else if !to_hidden && focused {
+		} else if !to_hide && focused {
 			// TODO: find a better place to initialize this.
 			self.once.call_once(Os::set_move_to_active_space);
-			self.services.to_hidden.store(true, Ordering::SeqCst);
+			self.state.to_hide.store(true, Ordering::SeqCst);
 		}
 	}
 }
@@ -83,15 +88,16 @@ impl App for AiR {
 	fn update(&mut self, ctx: &Context, _: &mut Frame) {
 		let air_ctx = AiRContext {
 			egui_ctx: ctx,
-			runtime: &self.runtime,
 			components: &mut self.components,
-			services: &mut self.services,
+			state: &self.state,
+			services: &self.services,
 		};
 
 		self.uis.draw(air_ctx);
-		// TODO?: these will be called multiple times, move to focus service.
+		// TODO: these will be called multiple times, move to focus service.
 		self.try_unhide(ctx);
 
+		// TODO: move to timer service.
 		if self.components.active_timer.duration() > Duration::from_secs(15) {
 			self.components.active_timer.refresh();
 
@@ -102,16 +108,16 @@ impl App for AiR {
 	}
 
 	fn save(&mut self, _: &mut dyn Storage) {
-		self.components.setting.save().expect("setting must be saved");
+		self.components.setting.save().unwrap();
 	}
 }
 
 #[derive(Debug)]
 pub struct AiRContext<'a> {
 	pub egui_ctx: &'a Context,
-	pub runtime: &'a Runtime,
 	pub components: &'a mut Components,
-	pub services: &'a mut Services,
+	pub state: &'a State,
+	pub services: &'a Services,
 }
 
 pub fn launch() -> Result<()> {
@@ -121,15 +127,14 @@ pub fn launch() -> Result<()> {
 			viewport: ViewportBuilder::default()
 				.with_icon(
 					icon_data::from_png_bytes(include_bytes!("../asset/icon.png").as_slice())
-						.expect("icon must be valid"),
+						.unwrap(),
 				)
 				.with_inner_size((720., 360.))
 				.with_min_inner_size((720., 360.))
 				.with_transparent(true),
-			follow_system_theme: true,
 			..Default::default()
 		},
-		Box::new(|c| Box::new(AiR::init(&c.egui_ctx))),
+		Box::new(|c| Box::new(AiR::init(c.egui_ctx.clone()))),
 	)?;
 
 	Ok(())

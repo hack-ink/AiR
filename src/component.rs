@@ -1,5 +1,8 @@
 // TODO?: refresh trait.
 
+pub mod tokenizer;
+use tokenizer::Tokenizer;
+
 pub mod function;
 
 pub mod keyboard;
@@ -20,20 +23,28 @@ use timer::Timer;
 
 pub mod util;
 
+// std
+use std::sync::Arc;
+// self
+use crate::prelude::*;
+
 #[derive(Debug)]
 pub struct Components {
 	pub active_timer: Timer,
 	pub setting: Setting,
 	pub quote: Quoter,
-	pub openai: OpenAi,
+	pub tokenizer: Tokenizer,
+	pub openai: Arc<OpenAi>,
 }
 impl Components {
-	pub fn init() -> Self {
+	pub fn init() -> Result<Self> {
 		let active_timer = Timer::default();
-		let setting = Setting::load().expect("setting must be loaded");
+		let setting = Setting::load()?;
 		let quote = Quoter::default();
-		let openai = OpenAi::new(setting.ai.clone());
+		let tokenizer = Tokenizer::new(setting.ai.model.as_str());
+		// TODO: no clone.
+		let openai = Arc::new(OpenAi::new(setting.ai.clone()));
 
-		Self { active_timer, setting, quote, openai }
+		Ok(Self { active_timer, setting, quote, tokenizer, openai })
 	}
 }

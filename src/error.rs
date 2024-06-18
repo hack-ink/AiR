@@ -1,3 +1,5 @@
+// TODO: Some errors are not used since we use `.unwrap()`.
+
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
 	#[error(transparent)]
@@ -8,15 +10,18 @@ pub enum Error {
 	#[error(transparent)]
 	AppDirs2(#[from] app_dirs2::AppDirsError),
 	#[error(transparent)]
-	Eframe(#[from] eframe::Error),
+	Arboard(#[from] arboard::Error),
 	#[error(transparent)]
-	Enigo(#[from] EnigoError),
+	Eframe(#[from] eframe::Error),
 	#[error(transparent)]
 	GlobalHotKey(#[from] global_hotkey::Error),
 	#[error(transparent)]
 	OpenAi(#[from] async_openai::error::OpenAIError),
 	#[error(transparent)]
 	Toml(#[from] toml::de::Error),
+
+	#[error(transparent)]
+	Enigo(#[from] EnigoError),
 }
 
 #[derive(Debug, thiserror::Error)]

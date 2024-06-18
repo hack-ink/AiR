@@ -1,44 +1,43 @@
 // std
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 // crates.io
 use async_openai::{
 	config::OpenAIConfig,
 	types::{
-		// ChatCompletionRequestAssistantMessageArgs, ChatCompletionRequestMessage,
-		ChatCompletionRequestSystemMessageArgs,
-		ChatCompletionRequestUserMessageArgs,
-		CreateChatCompletionRequestArgs,
+		ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
+		ChatCompletionResponseStream, CreateChatCompletionRequestArgs,
 	},
 	Client,
 };
 use eframe::egui::WidgetText;
-use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-use tokio::runtime::Runtime;
+use tokio::sync::RwLock as TokioRwLock;
 // self
-use crate::{component::setting::Ai, prelude::*};
+use super::setting::Ai;
+use crate::prelude::*;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct OpenAi {
-	pub client: Arc<Client<OpenAIConfig>>,
-	// TODO: use Mutex.
+	pub client: Arc<TokioRwLock<Client<OpenAIConfig>>>,
 	pub setting: Ai,
-	pub output: Arc<Mutex<String>>,
 }
 impl OpenAi {
 	pub fn new(setting: Ai) -> Self {
-		Self {
-			client: Arc::new(Client::with_config(
-				OpenAIConfig::new()
-					.with_api_base("https://aihubmix.com/v1")
-					.with_api_key(&setting.api_key),
-			)),
-			setting,
-			output: Arc::new(Mutex::new(Default::default())),
-		}
+		let client = Arc::new(TokioRwLock::new(Client::with_config(
+			OpenAIConfig::new().with_api_base(&setting.api_base).with_api_key(&setting.api_key),
+		)));
+
+		Self { client, setting }
 	}
 
-	pub fn chat(&self, runtime: &Runtime, prompt: &str, content: &str) -> Result<()> {
+	pub fn reload(&mut self, setting: Ai) {
+		*self.client.blocking_write() = Client::with_config(
+			OpenAIConfig::new().with_api_base(&setting.api_base).with_api_key(&setting.api_key),
+		);
+		self.setting = setting;
+	}
+
+	pub async fn chat(&self, prompt: &str, content: &str) -> Result<ChatCompletionResponseStream> {
 		let msg = [
 			ChatCompletionRequestSystemMessageArgs::default().content(prompt).build()?.into(),
 			ChatCompletionRequestUserMessageArgs::default().content(content).build()?.into(),
@@ -49,34 +48,9 @@ impl OpenAi {
 			.max_tokens(4_096_u16)
 			.messages(&msg)
 			.build()?;
-		let c = self.client.clone();
-		let o = self.output.clone();
+		let stream = self.client.read().await.chat().create_stream(req).await?;
 
-		runtime.spawn(async move {
-			match c.chat().create_stream(req).await {
-				Ok(mut s) => {
-					o.lock().expect("output must be available").clear();
-
-					while let Some(r) = s.next().await {
-						match r {
-							Ok(resp) => {
-								resp.choices.iter().for_each(|c| {
-									if let Some(c) = &c.delta.content {
-										o.lock().expect("output must be available").push_str(c);
-									}
-								});
-							},
-							Err(e) => println!("failed to receive chat response: {e}"),
-						}
-					}
-				},
-				Err(e) => {
-					tracing::error!("failed to create chat stream: {e}");
-				},
-			}
-		});
-
-		Ok(())
+		Ok(stream)
 	}
 }
 

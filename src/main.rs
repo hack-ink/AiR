@@ -15,6 +15,7 @@ mod error;
 mod os;
 mod service;
 mod ui;
+mod state;
 
 mod prelude {
 	pub type Result<T> = std::result::Result<T, Error>;
@@ -22,6 +23,9 @@ mod prelude {
 	pub use crate::error::*;
 }
 use prelude::*;
+
+// Only used for enable the svg support.
+use egui_extras as _;
 
 fn main() -> Result<()> {
 	color_eyre::install().unwrap();

@@ -2,11 +2,15 @@
 use eframe::egui::*;
 // self
 use super::super::UiT;
-use crate::{air::AiRContext, component::openai::Model};
+use crate::{
+	air::AiRContext,
+	component::{openai::Model, setting::Language},
+};
 
+// TODO: when to reload the API client.
 #[derive(Debug, Default)]
 pub struct Setting {
-	pub api_key_widget: ApiKeyWidget,
+	pub api_key: ApiKeyWidget,
 }
 impl Setting {
 	fn set_font_sizes(&self, ctx: &AiRContext) {
@@ -20,49 +24,59 @@ impl Setting {
 impl UiT for Setting {
 	fn draw(&mut self, ui: &mut Ui, ctx: &mut AiRContext) {
 		ui.collapsing("General", |ui| {
-			Grid::new("General").show(ui, |ui| {
-				// Font size.
-				// TODO: adjust api_key_widget's length.
+			Grid::new("General").num_columns(2).striped(true).show(ui, |ui| {
 				ui.label("Font Size");
-				if ui
-					.add(
-						Slider::new(&mut ctx.components.setting.general.font_size, 9_f32..=16.)
-							.step_by(1.)
-							.fixed_decimals(0),
-					)
-					.changed()
-				{
-					self.set_font_sizes(ctx);
-				}
+				ui.horizontal(|ui| {
+					ui.spacing_mut().slider_width = ui.available_width() - 56.;
+
+					if ui
+						.add(
+							Slider::new(&mut ctx.components.setting.general.font_size, 9_f32..=16.)
+								.step_by(1.)
+								.fixed_decimals(0),
+						)
+						.changed()
+					{
+						self.set_font_sizes(ctx);
+					}
+				});
 				ui.end_row();
 			});
 		});
+
 		ui.collapsing("AI", |ui| {
 			Grid::new("AI").num_columns(2).striped(true).show(ui, |ui| {
-				// API key.
-				ui.label("API Key");
-				let width = ui
+				ui.label("API Base");
+				let size = ui
 					.horizontal(|ui| {
-						let size = ui.available_size();
-						let w_text = ui.add_sized(
-							(size.x - 56., size.y),
-							TextEdit::singleline(&mut ctx.components.setting.ai.api_key)
-								.password(self.api_key_widget.visibility),
+						let mut size = ui.available_size();
+
+						size.x -= 56.;
+
+						ui.add_sized(
+							size,
+							TextEdit::singleline(&mut ctx.components.setting.ai.api_base),
 						);
 
-						// TODO?: persistent OpenAI client.
-						// if w_text.changed() {}
-						if ui.button(&self.api_key_widget.label).clicked() {
-							self.api_key_widget.clicked();
-						}
-
-						w_text.rect.width()
+						size
 					})
 					.inner;
-				ui.spacing_mut().slider_width = width;
 				ui.end_row();
 
-				// Model.
+				ui.label("API Key");
+				ui.horizontal(|ui| {
+					ui.add_sized(
+						size,
+						TextEdit::singleline(&mut ctx.components.setting.ai.api_key)
+							.password(self.api_key.visibility),
+					);
+
+					if ui.button(&self.api_key.label).clicked() {
+						self.api_key.clicked();
+					}
+				});
+				ui.end_row();
+
 				ui.label("Model");
 				ComboBox::from_id_source("Model")
 					.selected_text(&ctx.components.setting.ai.model)
@@ -77,8 +91,8 @@ impl UiT for Setting {
 					});
 				ui.end_row();
 
-				// Temperature.
 				ui.label("Temperature");
+				ui.spacing_mut().slider_width = size.x;
 				ui.add(
 					Slider::new(&mut ctx.components.setting.ai.temperature, 0_f32..=2.)
 						.fixed_decimals(1)
@@ -87,7 +101,38 @@ impl UiT for Setting {
 				ui.end_row();
 			});
 		});
-		// ui.collapsing("Hotkey", |_ui| {});
+
+		ui.collapsing("Translation", |ui| {
+			Grid::new("Translation").num_columns(2).striped(true).show(ui, |ui| {
+				ui.label("Source");
+				ComboBox::from_id_source("Source")
+					.selected_text(&ctx.components.setting.translation.source)
+					.show_ui(ui, |ui| {
+						Language::all().iter().for_each(|l| {
+							ui.selectable_value(
+								&mut ctx.components.setting.translation.source,
+								l.to_owned(),
+								l.as_str(),
+							);
+						});
+					});
+				ui.end_row();
+
+				ui.label("Target");
+				ComboBox::from_id_source("Target")
+					.selected_text(&ctx.components.setting.translation.target)
+					.show_ui(ui, |ui| {
+						Language::all().iter().for_each(|l| {
+							ui.selectable_value(
+								&mut ctx.components.setting.translation.target,
+								l.to_owned(),
+								l.as_str(),
+							);
+						});
+					});
+				ui.end_row();
+			});
+		});
 	}
 }
 

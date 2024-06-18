@@ -77,7 +77,7 @@ impl AppKit for Os {
 
 			NSApplication::sharedApplication(MainThreadMarker::new_unchecked())
 				.mainWindow()
-				.expect("main window must be available")
+				.unwrap()
 				.setCollectionBehavior(NSWindowCollectionBehavior::MoveToActiveSpace);
 		}
 	}
