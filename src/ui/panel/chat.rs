@@ -27,7 +27,7 @@ impl UiT for Chat {
 
 					&mut self.input
 				})
-				.hint_text(ctx.components.quote.get()),
+				.hint_text(&*ctx.state.chat.quote.read().unwrap()),
 			);
 		});
 
@@ -68,6 +68,7 @@ impl UiT for Chat {
 			});
 		});
 
+		// TODO: the cache gets some problems if the content is large.
 		// TODO?: use markdown.
 		CommonMarkViewer::new("Output").show_scrollable(ui, &mut CommonMarkCache::default(), {
 			if ctx.services.hotkey.is_running() {

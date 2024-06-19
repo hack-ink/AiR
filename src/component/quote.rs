@@ -1,20 +1,13 @@
-// std
-use std::{
-	borrow::Cow,
-	sync::{Arc, RwLock},
-};
 // serde
 use serde::Deserialize;
-use tokio::runtime::Runtime;
 // self
 use super::net::{Http, Response, HTTP_CLIENT};
+use crate::prelude::*;
 
 #[derive(Debug)]
-pub struct Quoter {
-	pub quote: Arc<RwLock<String>>,
-}
+pub struct Quoter;
 impl Quoter {
-	const DEFAULT: &'static str = r#"  -----------
+	pub const DEFAULT: &'static str = r#"  -----------
 < Thinking... >
   -----------
          \   ^__^
@@ -23,31 +16,13 @@ impl Quoter {
                  ||----w |
                  ||     ||"#;
 
-	pub fn refresh(&mut self, runtime: &Runtime) {
-		let quote = self.quote.clone();
+	pub async fn fetch(&self) -> Result<String> {
+		tracing::info!("fetching quote");
 
-		runtime.spawn(async move {
-			tracing::info!("fetching quote");
+		let b = HTTP_CLIENT.get_with_reties("https://api.quotable.io/random", 3, 500).await?;
+		let q = b.json::<Quote>()?;
 
-			if let Ok(r) =
-				HTTP_CLIENT.get_with_reties("https://api.quotable.io/random", 3, 500).await
-			{
-				if let Ok(Quote { author, content }) = r.json::<Quote>() {
-					if let Ok(mut q) = quote.write() {
-						*q = format!("{content}\n\n{author}");
-					}
-				}
-			}
-		});
-	}
-
-	pub fn get(&self) -> Cow<str> {
-		self.quote.read().map(|q| Cow::Owned(q.to_owned())).unwrap_or(Cow::Borrowed(Self::DEFAULT))
-	}
-}
-impl Default for Quoter {
-	fn default() -> Self {
-		Self { quote: Arc::new(RwLock::new(Self::DEFAULT.into())) }
+		Ok(format!("{}\n\n{}", q.content, q.author))
 	}
 }
 

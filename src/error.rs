@@ -18,6 +18,8 @@ pub enum Error {
 	#[error(transparent)]
 	OpenAi(#[from] async_openai::error::OpenAIError),
 	#[error(transparent)]
+	Reqwew(#[from] reqwew::error::Error),
+	#[error(transparent)]
 	Toml(#[from] toml::de::Error),
 
 	#[error(transparent)]

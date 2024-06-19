@@ -75,6 +75,7 @@ impl AppKit for Os {
 			// let window: *mut AnyObject = objc2::msg_send![app, mainWindow];
 			// let _: () = objc2::msg_send![window, setCollectionBehavior: 1_u64<<1];
 
+			// TODO: handle the error.
 			NSApplication::sharedApplication(MainThreadMarker::new_unchecked())
 				.mainWindow()
 				.unwrap()

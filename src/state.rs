@@ -1,18 +1,17 @@
 // std
-use std::sync::{atomic::AtomicBool, Arc, RwLock};
+use std::sync::{Arc, RwLock};
 // self
 use crate::component::setting::Translation;
 
 #[derive(Debug, Default)]
 pub struct State {
-	// TODO: https://github.com/emilk/egui/issues/4468.
-	pub to_hide: Arc<AtomicBool>,
 	pub chat: Chat,
 	pub setting: Setting,
 }
 
 #[derive(Debug, Default)]
 pub struct Chat {
+	pub quote: Arc<RwLock<String>>,
 	pub input: Arc<RwLock<String>>,
 	pub output: Arc<RwLock<String>>,
 }

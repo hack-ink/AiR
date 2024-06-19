@@ -1,13 +1,9 @@
 // TODO: use unwrap here and return result in other places.
 
 // std
-use std::{
-	sync::{atomic::Ordering, Once},
-	time::Duration,
-};
+use std::sync::Once;
 // crates.io
-use eframe::{egui::*, Frame, *};
-use tokio::runtime::Runtime;
+use eframe::{egui::*, glow::Context as GlowContext, Frame, *};
 // self
 use crate::{
 	component::Components,
@@ -21,7 +17,6 @@ use crate::{
 #[derive(Debug)]
 struct AiR {
 	once: Once,
-	runtime: Runtime,
 	components: Components,
 	state: State,
 	services: Services,
@@ -32,13 +27,12 @@ impl AiR {
 		Self::set_fonts(&ctx);
 
 		let once = Once::new();
-		let runtime = Runtime::new().unwrap();
-		let mut components = Components::init().unwrap();
+		let components = Components::init().unwrap();
 		let state = Default::default();
-		let services = Services::init(&ctx, &runtime, &mut components, &state).unwrap();
+		let services = Services::init(&ctx, &components, &state).unwrap();
 		let uis = Uis::init();
 
-		Self { once, runtime, components, state, services, uis }
+		Self { once, components, state, services, uis }
 	}
 
 	fn set_fonts(ctx: &Context) {
@@ -65,24 +59,6 @@ impl AiR {
 
 		ctx.set_fonts(fonts);
 	}
-
-	fn try_unhide(&mut self, ctx: &Context) {
-		let to_hide = self.state.to_hide.load(Ordering::SeqCst);
-		let focused = ctx.input(|i| i.focused);
-
-		if to_hide && !focused {
-			self.components.active_timer.refresh();
-			self.state.to_hide.store(true, Ordering::SeqCst);
-
-			// TODO: https://github.com/emilk/egui/discussions/4635.
-			// ctx.send_viewport_cmd(ViewportCommand::Minimized(true));
-			Os::hide();
-		} else if !to_hide && focused {
-			// TODO: find a better place to initialize this.
-			self.once.call_once(Os::set_move_to_active_space);
-			self.state.to_hide.store(true, Ordering::SeqCst);
-		}
-	}
 }
 impl App for AiR {
 	fn update(&mut self, ctx: &Context, _: &mut Frame) {
@@ -94,21 +70,44 @@ impl App for AiR {
 		};
 
 		self.uis.draw(air_ctx);
-		// TODO: these will be called multiple times, move to focus service.
-		self.try_unhide(ctx);
-
-		// TODO: move to timer service.
-		if self.components.active_timer.duration() > Duration::from_secs(15) {
-			self.components.active_timer.refresh();
-
-			if self.uis.chat.input.is_empty() {
-				self.components.quote.refresh(&self.runtime);
-			}
-		}
 	}
 
 	fn save(&mut self, _: &mut dyn Storage) {
 		self.components.setting.save().unwrap();
+	}
+
+	fn raw_input_hook(&mut self, _: &Context, raw_input: &mut RawInput) {
+		if let Some(focused) = raw_input.events.iter().find_map(|e| {
+			if let Event::WindowFocused(focused) = e {
+				Some(*focused)
+			} else {
+				None
+			}
+		}) {
+			if focused {
+				// This must be called on the main thread and after the window fully get
+				// initialized.
+				// If possible find a place to call this only once.
+				self.once.call_once(Os::set_move_to_active_space);
+			}
+			// TODO: https://github.com/emilk/egui/issues/4468.
+			// Allow 1 second for initialization during the first boot.
+			else if raw_input.time.unwrap_or_default() >= 1. {
+				// TODO: https://github.com/emilk/egui/discussions/4635.
+				// We can get rid of the OS API if this works.
+				// ctx.send_viewport_cmd(ViewportCommand::Minimized(false));
+				Os::hide();
+			}
+		}
+	}
+
+	fn on_exit(&mut self, _: Option<&GlowContext>) {
+		self.services.quoter.abort();
+		self.services.hotkey.abort();
+
+		if let Some(rt) = self.services.rt.take() {
+			rt.shutdown_background();
+		}
 	}
 }
 
