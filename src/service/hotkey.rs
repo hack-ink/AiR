@@ -102,7 +102,7 @@ impl Hotkey {
 								input.write().unwrap().clone_from(&content);
 								output.write().unwrap().clear();
 
-								let openai = openai.clone();
+								// TODO: avoid clone.
 								let output = output.clone();
 								// TODO: sometimes, we don't need this.
 								let translation = translation.read().unwrap().to_owned();
@@ -110,6 +110,8 @@ impl Hotkey {
 								// TODO?: task spawn.
 								// TODO: handle the error.
 								let mut stream = openai
+									.lock()
+									.await
 									.chat(&func.prompt(&translation), &content)
 									.await
 									.unwrap();

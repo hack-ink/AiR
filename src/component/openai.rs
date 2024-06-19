@@ -1,5 +1,3 @@
-// std
-use std::sync::Arc;
 // crates.io
 use async_openai::{
 	config::OpenAIConfig,
@@ -11,27 +9,26 @@ use async_openai::{
 };
 use eframe::egui::WidgetText;
 use serde::{Deserialize, Serialize};
-use tokio::sync::RwLock as TokioRwLock;
 // self
 use super::setting::Ai;
 use crate::prelude::*;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct OpenAi {
-	pub client: Arc<TokioRwLock<Client<OpenAIConfig>>>,
+	pub client: Client<OpenAIConfig>,
 	pub setting: Ai,
 }
 impl OpenAi {
 	pub fn new(setting: Ai) -> Self {
-		let client = Arc::new(TokioRwLock::new(Client::with_config(
+		let client = Client::with_config(
 			OpenAIConfig::new().with_api_base(&setting.api_base).with_api_key(&setting.api_key),
-		)));
+		);
 
 		Self { client, setting }
 	}
 
 	pub fn reload(&mut self, setting: Ai) {
-		*self.client.blocking_write() = Client::with_config(
+		self.client = Client::with_config(
 			OpenAIConfig::new().with_api_base(&setting.api_base).with_api_key(&setting.api_key),
 		);
 		self.setting = setting;
@@ -48,7 +45,7 @@ impl OpenAi {
 			.max_tokens(4_096_u16)
 			.messages(&msg)
 			.build()?;
-		let stream = self.client.read().await.chat().create_stream(req).await?;
+		let stream = self.client.chat().create_stream(req).await?;
 
 		Ok(stream)
 	}

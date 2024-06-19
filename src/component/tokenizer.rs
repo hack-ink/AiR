@@ -3,6 +3,7 @@ use std::sync::{Arc, RwLock};
 // crates.io
 use llm_utils::tokenizer::LlmTokenizer;
 
+// TODO: get rid of the `Arc<RwLock<_>>` wrapper.
 #[derive(Debug)]
 pub struct Tokenizer(Arc<RwLock<LlmTokenizer>>);
 impl Tokenizer {

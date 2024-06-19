@@ -7,7 +7,6 @@ use crate::{
 	component::{openai::Model, setting::Language},
 };
 
-// TODO: when to reload the API client.
 #[derive(Debug, Default)]
 pub struct Setting {
 	pub api_key: ApiKeyWidget,
@@ -45,6 +44,8 @@ impl UiT for Setting {
 		});
 
 		ui.collapsing("AI", |ui| {
+			let mut changed = false;
+
 			Grid::new("AI").num_columns(2).striped(true).show(ui, |ui| {
 				ui.label("API Base");
 				let size = ui
@@ -53,10 +54,12 @@ impl UiT for Setting {
 
 						size.x -= 56.;
 
-						ui.add_sized(
-							size,
-							TextEdit::singleline(&mut ctx.components.setting.ai.api_base),
-						);
+						changed |= ui
+							.add_sized(
+								size,
+								TextEdit::singleline(&mut ctx.components.setting.ai.api_base),
+							)
+							.changed();
 
 						size
 					})
@@ -65,11 +68,13 @@ impl UiT for Setting {
 
 				ui.label("API Key");
 				ui.horizontal(|ui| {
-					ui.add_sized(
-						size,
-						TextEdit::singleline(&mut ctx.components.setting.ai.api_key)
-							.password(self.api_key.visibility),
-					);
+					changed |= ui
+						.add_sized(
+							size,
+							TextEdit::singleline(&mut ctx.components.setting.ai.api_key)
+								.password(self.api_key.visibility),
+						)
+						.changed();
 
 					if ui.button(&self.api_key.label).clicked() {
 						self.api_key.clicked();
@@ -77,29 +82,39 @@ impl UiT for Setting {
 				});
 				ui.end_row();
 
+				// TODO: we might not need to reload the client if only the model changed.
 				ui.label("Model");
 				ComboBox::from_id_source("Model")
 					.selected_text(&ctx.components.setting.ai.model)
 					.show_ui(ui, |ui| {
 						Model::all().iter().for_each(|m| {
-							ui.selectable_value(
-								&mut ctx.components.setting.ai.model,
-								m.to_owned(),
-								m.as_str(),
-							);
+							changed |= ui
+								.selectable_value(
+									&mut ctx.components.setting.ai.model,
+									m.to_owned(),
+									m.as_str(),
+								)
+								.changed();
 						});
 					});
 				ui.end_row();
 
+				// TODO: we might not need to reload the client if only the temperature changed.
 				ui.label("Temperature");
 				ui.spacing_mut().slider_width = size.x;
-				ui.add(
-					Slider::new(&mut ctx.components.setting.ai.temperature, 0_f32..=2.)
-						.fixed_decimals(1)
-						.step_by(0.1),
-				);
+				changed |= ui
+					.add(
+						Slider::new(&mut ctx.components.setting.ai.temperature, 0_f32..=2.)
+							.fixed_decimals(1)
+							.step_by(0.1),
+					)
+					.changed();
 				ui.end_row();
 			});
+
+			if changed {
+				ctx.components.reload_openai();
+			}
 		});
 
 		ui.collapsing("Translation", |ui| {

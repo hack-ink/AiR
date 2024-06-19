@@ -1,15 +1,13 @@
 // std
 use std::{fs, path::PathBuf};
 // crates.io
-use app_dirs2::{AppDataType, AppInfo};
+use app_dirs2::AppDataType;
 use async_openai::config::OPENAI_API_BASE;
 use eframe::egui::WidgetText;
 use serde::{Deserialize, Serialize};
 // self
 use super::openai::Model;
-use crate::prelude::*;
-
-const APP: AppInfo = AppInfo { name: "AiR", author: "xavier@inv.cafe" };
+use crate::{prelude::*, APP_INFO};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -20,7 +18,7 @@ pub struct Setting {
 }
 impl Setting {
 	pub fn path() -> Result<PathBuf> {
-		Ok(app_dirs2::get_app_root(AppDataType::UserConfig, &APP).map(|p| p.join(".airrc"))?)
+		Ok(app_dirs2::get_app_root(AppDataType::UserConfig, &APP_INFO).map(|p| p.join(".airrc"))?)
 	}
 
 	pub fn load() -> Result<Self> {
@@ -57,7 +55,6 @@ impl Default for General {
 	}
 }
 
-// TODO: support Google Gemini.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Ai {

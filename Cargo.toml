@@ -1,6 +1,5 @@
 [package]
 authors     = ["Xavier Lau <xavier@inv.cafe>"]
-build       = "build.rs"
 description = "AI with Rust."
 edition     = "2021"
 homepage    = "https://hack.ink/air"
@@ -23,9 +22,10 @@ inherits    = "dev"
 inherits = "release"
 lto      = true
 
-[build-dependencies]
-# crates.io
-vergen = { version = "8.2", features = ["build", "cargo", "git", "gitcl"] }
+[features]
+default   = []
+dev       = []
+tokenizer = ["llm_utils"]
 
 [dependencies]
 # crates.io
@@ -40,15 +40,15 @@ enigo              = { version = "0.2" }
 futures            = { version = "0.3" }
 get-selected-text  = { version = "0.1" }
 global-hotkey      = { version = "0.5" }
-# TODO?: remove it since it requires libxml2.
-llm_utils          = { version = "0.0.6" }
+llm_utils          = { version = "0.0.6", optional = true }
 reqwew             = { version = "0.2" }
 serde              = { version = "1.0", features = ["derive"] }
 thiserror          = { version = "1.0" }
 tokio              = { version = "1.38", features = ["rt-multi-thread"] }
 toml               = { version = "0.8" }
 tracing            = { version = "0.1" }
-tracing-subscriber = { version = "0.3" }
+tracing-appender   = { version = "0.2" }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 # accessibility     = { version = "0.1" }
