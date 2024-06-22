@@ -1,5 +1,5 @@
 // crates.io
-use enigo::{Enigo, Keyboard as _, Settings};
+use enigo::{Direction, Enigo, Key, Keyboard as _, Settings};
 // self
 use crate::prelude::*;
 
@@ -14,13 +14,13 @@ impl Keyboard {
 		Ok(Self { enigo })
 	}
 
-	// pub fn copy(&mut self) -> Result<()> {
-	// 	self.enigo.key(Key::Other(0x37), Direction::Press).map_err(EnigoError::Input)?;
-	// 	self.enigo.key(Key::Other(0x08), Direction::Click).map_err(EnigoError::Input)?;
-	// 	self.enigo.key(Key::Other(0x37), Direction::Release).map_err(EnigoError::Input)?;
-	//
-	// 	Ok(())
-	// }
+	pub fn copy(&mut self) -> Result<()> {
+		self.enigo.key(Key::Other(0x37), Direction::Press).map_err(EnigoError::Input)?;
+		self.enigo.key(Key::Other(0x08), Direction::Click).map_err(EnigoError::Input)?;
+		self.enigo.key(Key::Other(0x37), Direction::Release).map_err(EnigoError::Input)?;
+
+		Ok(())
+	}
 
 	pub fn text(&mut self, text: &str) -> Result<()> {
 		Ok(self.enigo.text(text).map_err(EnigoError::Input)?)

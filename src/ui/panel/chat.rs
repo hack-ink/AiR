@@ -97,7 +97,7 @@ impl UiT for Chat {
 			});
 		});
 
-		CommonMarkViewer::new("Output").show_scrollable(ui, &mut self.output.cache, {
+		CommonMarkViewer::new("Output").show_scrollable(ui, &mut Default::default(), {
 			if is_running {
 				if let Ok(o) = ctx.state.chat.output.try_read() {
 					o.clone_into(&mut self.output.value);

@@ -18,7 +18,8 @@ pub struct Setting {
 }
 impl Setting {
 	pub fn path() -> Result<PathBuf> {
-		Ok(app_dirs2::get_app_root(AppDataType::UserConfig, &APP_INFO).map(|p| p.join(".airrc"))?)
+		Ok(app_dirs2::get_app_root(AppDataType::UserConfig, &APP_INFO)
+			.map(|p| p.join("setting.toml"))?)
 	}
 
 	pub fn load() -> Result<Self> {
@@ -26,9 +27,13 @@ impl Setting {
 
 		tracing::info!("loading from {}", p.display());
 
-		// TODO: log the error.
-		let Ok(s) = fs::read_to_string(p) else {
-			return Ok(Default::default());
+		let s = match fs::read_to_string(p) {
+			Ok(s) => s,
+			Err(e) => {
+				tracing::error!("failed to load the setting due to: {e}");
+
+				return Ok(Default::default());
+			},
 		};
 
 		Ok(toml::from_str(&s)?)

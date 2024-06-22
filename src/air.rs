@@ -6,12 +6,7 @@ use std::sync::Once;
 use eframe::{egui::*, glow::Context as GlowContext, Frame, *};
 // self
 use crate::{
-	component::Components,
-	os::{AppKit, Os},
-	prelude::Result,
-	service::Services,
-	state::State,
-	ui::Uis,
+	component::Components, os::Os, prelude::Result, service::Services, state::State, ui::Uis,
 };
 
 #[derive(Debug)]

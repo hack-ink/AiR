@@ -48,15 +48,18 @@ fn main() {
 			.unwrap(),
 	);
 	let file_layer = fmt::layer().with_ansi(false).with_writer(non_blocking);
+	#[cfg(feature = "dev")]
 	let console_layer = fmt::layer();
-
-	tracing_subscriber::registry()
+	let subscriber = tracing_subscriber::registry()
 		.with(
 			EnvFilter::builder().with_default_directive(LevelFilter::INFO.into()).from_env_lossy(),
 		)
-		.with(file_layer)
-		.with(console_layer)
-		.init();
+		.with(file_layer);
+	#[cfg(feature = "dev")]
+	let subscriber = subscriber.with(console_layer);
+
+	subscriber.init();
+
 	panic::set_hook(Box::new(|p| {
 		if let Some(p) = p.payload().downcast_ref::<&str>() {
 			tracing::error!("{p}");

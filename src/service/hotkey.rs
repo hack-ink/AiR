@@ -1,7 +1,10 @@
 // std
-use std::sync::{
-	atomic::{AtomicBool, Ordering},
-	Arc,
+use std::{
+	sync::{
+		atomic::{AtomicBool, Ordering},
+		Arc,
+	},
+	time::Duration,
 };
 // crates.io
 use arboard::Clipboard;
@@ -14,6 +17,7 @@ use global_hotkey::{
 use tokio::{
 	runtime::{Handle, Runtime},
 	task::{self, AbortHandle},
+	time,
 };
 // self
 use crate::{
@@ -36,8 +40,7 @@ impl Hotkey {
 		components: &Components,
 		state: &State,
 	) -> Result<Self> {
-		// The manager need to be kept alive during the whole program life.
-		let (manager, hotkeys) = init_inner()?;
+		let manager = Manager::init()?;
 		let mut clipboard = Clipboard::new()?;
 		let is_running = Arc::new(AtomicBool::new(false));
 		let is_running_ = is_running.clone();
@@ -50,7 +53,7 @@ impl Hotkey {
 		let abort_handle = rt
 			.spawn(async move {
 				// The manager need to be kept alive during the whole program life.
-				let _manager = manager;
+				let manager = manager;
 
 				loop {
 					is_running_.store(false, Ordering::SeqCst);
@@ -60,15 +63,15 @@ impl Hotkey {
 						Ok(e) => {
 							// We don't care about the release event.
 							if let HotKeyState::Pressed = e.state {
-								tracing::info!("receive hotkey event {e:?}");
+								tracing::info!("receive hotkey event: {e:?}");
 
 								is_running_.store(true, Ordering::SeqCst);
 
 								let (func, to_get_selected_text) = match e.id {
-									i if i == hotkeys[0] => (Function::Rewrite, true),
-									i if i == hotkeys[1] => (Function::RewriteDirectly, true),
-									i if i == hotkeys[2] => (Function::Translate, true),
-									i if i == hotkeys[3] => (Function::TranslateDirectly, true),
+									i if i == manager.ids[0] => (Function::Rewrite, true),
+									i if i == manager.ids[1] => (Function::RewriteDirectly, true),
+									i if i == manager.ids[2] => (Function::Translate, true),
+									i if i == manager.ids[3] => (Function::TranslateDirectly, true),
 									_ => unreachable!(),
 								};
 								let to_unhide = !matches!(
@@ -80,16 +83,17 @@ impl Hotkey {
 									Os::unhide();
 								}
 								if to_get_selected_text {
-									// TODO?: this might fail, not sure.
-									if let Some(t) = Os::get_selected_text() {
-										clipboard.set_text(t).unwrap();
-									}
+									// Sleep for a while to reset the keyboard state after user
+									// triggers the hotkey.
+									time::sleep(Duration::from_millis(200)).await;
+									task::spawn_blocking(move || {
+										// TODO: handle the error.
+										Keyboard::init().unwrap().copy().unwrap();
+									})
+									.await
+									.unwrap();
 								}
 								if to_unhide {
-									// Give some time for the system to unhide and then focus.
-									// Since `get_selected_text` is slow, we don't need this for
-									// now.
-
 									ctx.send_viewport_cmd(ViewportCommand::Focus);
 								}
 
@@ -154,7 +158,7 @@ impl Hotkey {
 								.unwrap();
 							}
 						},
-						Err(e) => panic!("failed to receive hotkey event {e:?}"),
+						Err(e) => panic!("failed to receive hotkey event: {e:?}"),
 					}
 				}
 			})
@@ -172,27 +176,29 @@ impl Hotkey {
 	}
 }
 
-// TODO: make into a struct.
-fn init_inner() -> Result<(GlobalHotKeyManager, [u32; 4])> {
-	let manager = GlobalHotKeyManager::new()?;
-	let hk_rewrite = HotKey::new(Some(Modifiers::CONTROL), Code::KeyT);
-	let hk_rewrite_id = hk_rewrite.id();
-	let hk_rewrite_directly = HotKey::new(Some(Modifiers::CONTROL), Code::KeyY);
-	let hk_rewrite_directly_id = hk_rewrite_directly.id();
-	let hk_translate = HotKey::new(Some(Modifiers::CONTROL), Code::KeyU);
-	let hk_translate_id = hk_translate.id();
-	let hk_translate_directly = HotKey::new(Some(Modifiers::CONTROL), Code::KeyI);
-	let hk_translate_directly_id = hk_translate_directly.id();
+struct Manager {
+	// The manager need to be kept alive during the whole program life.
+	_inner: GlobalHotKeyManager,
+	ids: [u32; 4],
+}
+impl Manager {
+	fn init() -> Result<Self> {
+		let _inner = GlobalHotKeyManager::new()?;
+		let hotkeys = [
+			// Rewrite.
+			HotKey::new(Some(Modifiers::CONTROL), Code::KeyT),
+			// Rewrite directly.
+			HotKey::new(Some(Modifiers::CONTROL), Code::KeyY),
+			// Translate.
+			HotKey::new(Some(Modifiers::CONTROL), Code::KeyU),
+			// Translate directly.
+			HotKey::new(Some(Modifiers::CONTROL), Code::KeyI),
+		];
 
-	manager.register_all(&[
-		hk_rewrite,
-		hk_rewrite_directly,
-		hk_translate,
-		hk_translate_directly,
-	])?;
+		_inner.register_all(&hotkeys)?;
 
-	Ok((
-		manager,
-		[hk_rewrite_id, hk_rewrite_directly_id, hk_translate_id, hk_translate_directly_id],
-	))
+		let ids = hotkeys.iter().map(|h| h.id).collect::<Vec<_>>().try_into().unwrap();
+
+		Ok(Self { _inner, ids })
+	}
 }
