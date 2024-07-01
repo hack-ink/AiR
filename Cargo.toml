@@ -40,7 +40,7 @@ enigo              = { version = "0.2" }
 futures            = { version = "0.3" }
 get-selected-text  = { version = "0.1" }
 global-hotkey      = { version = "0.5" }
-llm_utils          = { version = "0.0.6", optional = true }
+llm_utils          = { version = "0.0.7", optional = true }
 reqwew             = { version = "0.2" }
 serde              = { version = "1.0", features = ["derive"] }
 thiserror          = { version = "1.0" }
