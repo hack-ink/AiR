@@ -35,7 +35,7 @@ async-openai       = { version = "0.23" }
 color-eyre         = { version = "0.6" }
 eframe             = { version = "0.27", features = ["persistence"] }
 egui_commonmark    = { version = "0.16" }
-egui_extras        = { version = "0.27", features = ["svg"] }
+egui_extras        = { version = "0.28", features = ["svg"] }
 enigo              = { version = "0.2" }
 futures            = { version = "0.3" }
 get-selected-text  = { version = "0.1" }
