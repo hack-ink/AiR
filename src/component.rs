@@ -27,22 +27,26 @@ use crate::prelude::*;
 #[derive(Debug)]
 pub struct Components {
 	pub setting: Setting,
+	pub openai: Arc<Mutex<OpenAi>>,
 	#[cfg(feature = "tokenizer")]
 	pub tokenizer: Tokenizer,
-	pub openai: Arc<Mutex<OpenAi>>,
 }
 impl Components {
 	pub fn init() -> Result<Self> {
 		let setting = Setting::load()?;
+
+		// TODO: https://github.com/emilk/egui/discussions/4670.
+		debug_assert_eq!(setting.ai.temperature, setting.ai.temperature * 10. / 10.);
+
+		let openai = Arc::new(Mutex::new(OpenAi::new(setting.ai.clone())));
 		#[cfg(feature = "tokenizer")]
 		let tokenizer = Tokenizer::new(setting.ai.model.as_str());
-		let openai = Arc::new(Mutex::new(OpenAi::new(setting.ai.clone())));
 
 		Ok(Self {
 			setting,
+			openai,
 			#[cfg(feature = "tokenizer")]
 			tokenizer,
-			openai,
 		})
 	}
 

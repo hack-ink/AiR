@@ -41,7 +41,7 @@ impl OpenAi {
 		];
 		let req = CreateChatCompletionRequestArgs::default()
 			.model(self.setting.model.as_str())
-			.temperature(self.setting.temperature_rounded())
+			.temperature(self.setting.temperature)
 			.max_tokens(4_096_u16)
 			.messages(&msg)
 			.build()?;
@@ -51,7 +51,7 @@ impl OpenAi {
 	}
 }
 
-// https://platform.openai.com/docs/models
+// https://platform.openai.com/docs/models.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Model {
 	Gpt4o,

@@ -1,5 +1,3 @@
-// TODO: use unwrap here and return result in other places.
-
 // std
 use std::sync::Once;
 // crates.io
@@ -18,16 +16,19 @@ struct AiR {
 	uis: Uis,
 }
 impl AiR {
-	fn init(ctx: Context) -> Self {
-		Self::set_fonts(&ctx);
+	fn init(ctx: &Context) -> Result<Self> {
+		Self::set_fonts(ctx);
+
+		// To enable SVG.
+		egui_extras::install_image_loaders(ctx);
 
 		let once = Once::new();
-		let components = Components::init().unwrap();
+		let components = Components::init()?;
 		let state = Default::default();
-		let services = Services::init(&ctx, &components, &state).unwrap();
+		let services = Services::init(ctx, &components, &state)?;
 		let uis = Uis::init();
 
-		Self { once, components, state, services, uis }
+		Ok(Self { once, components, state, services, uis })
 	}
 
 	fn set_fonts(ctx: &Context) {
@@ -82,6 +83,7 @@ impl App for AiR {
 			if focused {
 				// This must be called on the main thread and after the window fully get
 				// initialized.
+				//
 				// If possible find a place to call this only once.
 				self.once.call_once(Os::set_move_to_active_space);
 			}
@@ -128,7 +130,7 @@ pub fn launch() -> Result<()> {
 				.with_transparent(true),
 			..Default::default()
 		},
-		Box::new(|c| Box::new(AiR::init(c.egui_ctx.clone()))),
+		Box::new(|c| Ok(Box::new(AiR::init(&c.egui_ctx).unwrap()))),
 	)?;
 
 	Ok(())

@@ -24,9 +24,10 @@ impl Uis {
 	}
 
 	pub fn draw(&mut self, mut ctx: AiRContext) {
-		CentralPanel::default().frame(util::transparent_frame(ctx.egui_ctx)).show(
-			ctx.egui_ctx,
-			|ui| {
+		CentralPanel::default()
+			// FIXME: it looks like there some invalid cache.
+			.frame(util::transparent_frame(ctx.egui_ctx))
+			.show(ctx.egui_ctx, |ui| {
 				ui.horizontal(|ui| {
 					ui.selectable_value(&mut self.focused_panel, Panel::Chat, Panel::Chat.name());
 					ui.separator();
@@ -43,7 +44,6 @@ impl Uis {
 					Panel::Chat => self.chat.draw(ui, &mut ctx),
 					Panel::Setting => self.setting.draw(ui, &mut ctx),
 				}
-			},
-		);
+			});
 	}
 }

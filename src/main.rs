@@ -23,9 +23,6 @@ mod prelude {
 	pub use crate::error::*;
 }
 
-// Only used for enable the svg support.
-use egui_extras as _;
-
 // std
 use std::panic;
 // crates.io

@@ -46,10 +46,10 @@ impl Hotkey {
 		let is_running_ = is_running.clone();
 		let receiver = GlobalHotKeyEvent::receiver();
 		let ctx = ctx.to_owned();
-		let openai = components.openai.to_owned();
-		let input = state.chat.input.to_owned();
-		let output = state.chat.output.to_owned();
-		let translation = state.setting.translation.to_owned();
+		let openai = components.openai.clone();
+		let input = state.chat.input.clone();
+		let output = state.chat.output.clone();
+		let translation = state.setting.translation.clone();
 		let abort_handle = rt
 			.spawn(async move {
 				// The manager need to be kept alive during the whole program life.
@@ -85,7 +85,7 @@ impl Hotkey {
 								if to_get_selected_text {
 									// Sleep for a while to reset the keyboard state after user
 									// triggers the hotkey.
-									time::sleep(Duration::from_millis(200)).await;
+									time::sleep(Duration::from_millis(1000)).await;
 									task::spawn_blocking(move || {
 										// TODO: handle the error.
 										Keyboard::init().unwrap().copy().unwrap();
@@ -94,6 +94,9 @@ impl Hotkey {
 									.unwrap();
 								}
 								if to_unhide {
+									// Generally, this needs some time to wait the window available
+									// first, but the previous sleep in `to_get_selected_text`is
+									// enough.
 									ctx.send_viewport_cmd(ViewportCommand::Focus);
 								}
 

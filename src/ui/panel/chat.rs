@@ -1,6 +1,5 @@
 // crates.io
 use eframe::egui::*;
-use egui_commonmark::*;
 // self
 use super::super::UiT;
 use crate::air::AiRContext;
@@ -8,10 +7,9 @@ use crate::air::AiRContext;
 
 #[derive(Debug, Default)]
 pub struct Chat {
-	// TODO: use widgets instead.
 	pub input: String,
+	pub output: String,
 	pub shortcut: ShortcutWidget,
-	pub output: OutputWidget,
 }
 impl UiT for Chat {
 	fn draw(&mut self, ui: &mut Ui, ctx: &mut AiRContext) {
@@ -63,7 +61,7 @@ impl UiT for Chat {
 					// ui.add_space(4.5);
 					ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
 						let (ic, oc) =
-							ctx.components.tokenizer.count_token(&self.input, &self.output.value);
+							ctx.components.tokenizer.count_token(&self.input, &self.output);
 						let (ip, op) = ctx.components.setting.ai.model.prices();
 
 						ui.label(format!(
@@ -97,14 +95,17 @@ impl UiT for Chat {
 			});
 		});
 
-		CommonMarkViewer::new("Output").show_scrollable(ui, &mut Default::default(), {
-			if is_running {
-				if let Ok(o) = ctx.state.chat.output.try_read() {
-					o.clone_into(&mut self.output.value);
+		ScrollArea::vertical().id_source("Output").show(ui, |ui| {
+			ui.label({
+				// FIXME: `is_running` is conflict with `try_read`.
+				if is_running {
+					if let Ok(o) = ctx.state.chat.output.try_read() {
+						o.clone_into(&mut self.output);
+					}
 				}
-			}
 
-			&self.output.value
+				&self.output
+			});
 		});
 	}
 }
@@ -142,10 +143,4 @@ impl Default for CopyWidget {
 			triggered: false,
 		}
 	}
-}
-
-#[derive(Debug, Default)]
-pub struct OutputWidget {
-	cache: CommonMarkCache,
-	value: String,
 }

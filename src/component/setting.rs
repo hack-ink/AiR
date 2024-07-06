@@ -68,11 +68,6 @@ pub struct Ai {
 	pub model: Model,
 	pub temperature: f32,
 }
-impl Ai {
-	pub fn temperature_rounded(&self) -> f32 {
-		(self.temperature * 10.).round() / 10.
-	}
-}
 impl Default for Ai {
 	fn default() -> Self {
 		Self {
