@@ -27,6 +27,9 @@ use crate::prelude::*;
 #[derive(Debug)]
 pub struct Components {
 	pub setting: Setting,
+	// Keyboard didn't implement `Send`, can't use it between threads.
+	// pub keyboard: Arc<Mutex<Keyboard>>,
+	// TODO?: move the lock to somewhere else.
 	pub openai: Arc<Mutex<OpenAi>>,
 	#[cfg(feature = "tokenizer")]
 	pub tokenizer: Tokenizer,

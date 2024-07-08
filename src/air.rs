@@ -99,12 +99,7 @@ impl App for AiR {
 	}
 
 	fn on_exit(&mut self, _: Option<&GlowContext>) {
-		self.services.quoter.abort();
-		self.services.hotkey.abort();
-
-		if let Some(rt) = self.services.rt.take() {
-			rt.shutdown_background();
-		}
+		self.services.abort();
 	}
 }
 

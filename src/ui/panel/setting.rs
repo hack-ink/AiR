@@ -117,15 +117,16 @@ impl UiT for Setting {
 			}
 		});
 
+		// TODO: [`crate::component::setting::Chat`].
 		ui.collapsing("Translation", |ui| {
 			Grid::new("Translation").num_columns(2).striped(true).show(ui, |ui| {
-				ui.label("Source");
-				ComboBox::from_id_source("Source")
-					.selected_text(&ctx.components.setting.translation.source)
+				ui.label("A");
+				ComboBox::from_id_source("A")
+					.selected_text(&ctx.components.setting.chat.translation.a)
 					.show_ui(ui, |ui| {
 						Language::all().iter().for_each(|l| {
 							ui.selectable_value(
-								&mut ctx.components.setting.translation.source,
+								&mut ctx.components.setting.chat.translation.a,
 								l.to_owned(),
 								l.as_str(),
 							);
@@ -133,13 +134,13 @@ impl UiT for Setting {
 					});
 				ui.end_row();
 
-				ui.label("Target");
-				ComboBox::from_id_source("Target")
-					.selected_text(&ctx.components.setting.translation.target)
+				ui.label("B");
+				ComboBox::from_id_source("B")
+					.selected_text(&ctx.components.setting.chat.translation.b)
 					.show_ui(ui, |ui| {
 						Language::all().iter().for_each(|l| {
 							ui.selectable_value(
-								&mut ctx.components.setting.translation.target,
+								&mut ctx.components.setting.chat.translation.b,
 								l.to_owned(),
 								l.as_str(),
 							);
@@ -169,5 +170,24 @@ impl ApiKeyWidget {
 impl Default for ApiKeyWidget {
 	fn default() -> Self {
 		Self { label: "show".into(), visibility: true }
+	}
+}
+
+impl Language {
+	pub fn as_str(&self) -> &'static str {
+		match self {
+			Self::ZhCn => "zh-CN",
+			Self::EnGb => "en-GB",
+		}
+	}
+
+	fn all() -> [Self; 2] {
+		[Self::ZhCn, Self::EnGb]
+	}
+}
+#[allow(clippy::from_over_into)]
+impl Into<WidgetText> for &Language {
+	fn into(self) -> WidgetText {
+		self.as_str().into()
 	}
 }

@@ -1,7 +1,9 @@
 // std
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+// crates.io
+use parking_lot::RwLock;
 // self
-use crate::component::setting::Translation;
+use crate::component::setting::Chat as ChatSetting;
 
 #[derive(Debug, Default)]
 pub struct State {
@@ -18,5 +20,5 @@ pub struct Chat {
 
 #[derive(Debug, Default)]
 pub struct Setting {
-	pub translation: Arc<RwLock<Translation>>,
+	pub chat: Arc<RwLock<ChatSetting>>,
 }

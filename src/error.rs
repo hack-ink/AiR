@@ -4,8 +4,6 @@
 pub enum Error {
 	#[error(transparent)]
 	Io(#[from] std::io::Error),
-	#[error(transparent)]
-	TryRecv(#[from] std::sync::mpsc::TryRecvError),
 
 	#[error(transparent)]
 	AppDirs2(#[from] app_dirs2::AppDirsError),

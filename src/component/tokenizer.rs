@@ -1,7 +1,8 @@
 // std
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 // crates.io
 use llm_utils::tokenizer::LlmTokenizer;
+use parking_lot::RwLock;
 
 // TODO: get rid of the `Arc<RwLock<_>>` wrapper.
 #[derive(Debug)]

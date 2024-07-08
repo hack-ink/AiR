@@ -24,7 +24,7 @@ mod prelude {
 }
 
 // std
-use std::panic;
+#[cfg(not(feature = "dev"))] use std::panic;
 // crates.io
 use app_dirs2::{AppDataType, AppInfo};
 use tracing_appender::rolling::{RollingFileAppender, Rotation};
@@ -57,12 +57,7 @@ fn main() {
 
 	subscriber.init();
 
-	panic::set_hook(Box::new(|p| {
-		if let Some(p) = p.payload().downcast_ref::<&str>() {
-			tracing::error!("{p}");
-		} else {
-			tracing::error!("panic occurred");
-		}
-	}));
+	#[cfg(not(feature = "dev"))]
+	panic::set_hook(Box::new(|p| tracing::error!("{p}")));
 	air::launch().unwrap();
 }

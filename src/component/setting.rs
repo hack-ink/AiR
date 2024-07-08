@@ -1,9 +1,9 @@
 // std
-use std::{fs, path::PathBuf};
+use std::{borrow::Cow, fs, path::PathBuf};
 // crates.io
 use app_dirs2::AppDataType;
 use async_openai::config::OPENAI_API_BASE;
-use eframe::egui::WidgetText;
+use global_hotkey::hotkey::{Code, HotKey, Modifiers};
 use serde::{Deserialize, Serialize};
 // self
 use super::openai::Model;
@@ -14,7 +14,8 @@ use crate::{prelude::*, APP_INFO};
 pub struct Setting {
 	pub general: General,
 	pub ai: Ai,
-	pub translation: Translation,
+	pub chat: Chat,
+	pub hotkeys: Hotkeys,
 }
 impl Setting {
 	pub fn path() -> Result<PathBuf> {
@@ -79,16 +80,58 @@ impl Default for Ai {
 	}
 }
 
-// TODO: add a super type for all the settings.
+// TODO?: implement a `Prompt` trait.
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct Chat {
+	pub rewrite: Rewrite,
+	pub translation: Translation,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct Rewrite {
+	pub prompt: String,
+}
+impl Rewrite {
+	pub fn prompt(&self) -> Cow<str> {
+		Cow::Borrowed(&self.prompt)
+	}
+}
+impl Default for Rewrite {
+	fn default() -> Self {
+		Self {
+			prompt: "As language professor, assist me in refining this text. \
+				Amend any grammatical errors and enhance the language to sound more like a native speaker.\
+				Just provide the refined text only, without any other things."
+				.into(),
+		}
+	}
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Translation {
-	pub source: Language,
-	pub target: Language,
+	pub prompt: String,
+	pub a: Language,
+	pub b: Language,
+}
+impl Translation {
+	pub fn prompt(&self) -> Cow<str> {
+		Cow::Owned(format!(
+			"Assist me in translate this text between {} and {}. {}",
+			self.a.as_str(),
+			self.b.as_str(),
+			self.prompt
+		))
+	}
 }
 impl Default for Translation {
 	fn default() -> Self {
-		Self { source: Language::ZhCn, target: Language::EnGb }
+		Self {
+			prompt: "As a language professor, amend any grammatical errors and enhance the language to sound more like a native speaker. \
+				Provide the translated text only, without any other things.".into(),
+			a: Language::ZhCn,
+			b: Language::EnGb,
+		}
 	}
 }
 // https://www.alchemysoftware.com/livedocs/ezscript/Topics/Catalyst/Language.htm
@@ -100,21 +143,22 @@ pub enum Language {
 	// English (United Kingdom).
 	EnGb,
 }
-impl Language {
-	pub fn all() -> [Self; 2] {
-		[Self::ZhCn, Self::EnGb]
-	}
 
-	pub fn as_str(&self) -> &'static str {
-		match self {
-			Self::ZhCn => "zh-CN",
-			Self::EnGb => "en-GB",
-		}
-	}
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct Hotkeys {
+	pub rewrite: HotKey,
+	pub rewrite_directly: HotKey,
+	pub translate: HotKey,
+	pub translate_directly: HotKey,
 }
-#[allow(clippy::from_over_into)]
-impl Into<WidgetText> for &Language {
-	fn into(self) -> WidgetText {
-		self.as_str().into()
+impl Default for Hotkeys {
+	fn default() -> Self {
+		Self {
+			rewrite: HotKey::new(Some(Modifiers::CONTROL), Code::KeyT),
+			rewrite_directly: HotKey::new(Some(Modifiers::CONTROL), Code::KeyY),
+			translate: HotKey::new(Some(Modifiers::CONTROL), Code::KeyU),
+			translate_directly: HotKey::new(Some(Modifiers::CONTROL), Code::KeyI),
+		}
 	}
 }

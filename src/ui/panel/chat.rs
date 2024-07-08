@@ -22,14 +22,14 @@ impl UiT for Chat {
 				(size.x, ui.available_height()),
 				TextEdit::multiline({
 					if is_running {
-						if let Ok(i) = ctx.state.chat.input.try_read() {
+						if let Some(i) = ctx.state.chat.input.try_read() {
 							i.clone_into(&mut self.input);
 						}
 					}
 
 					&mut self.input
 				})
-				.hint_text(&*ctx.state.chat.quote.read().unwrap()),
+				.hint_text(&*ctx.state.chat.quote.read()),
 			);
 
 			if input.has_focus() {
@@ -99,7 +99,7 @@ impl UiT for Chat {
 			ui.label({
 				// FIXME: `is_running` is conflict with `try_read`.
 				if is_running {
-					if let Ok(o) = ctx.state.chat.output.try_read() {
+					if let Some(o) = ctx.state.chat.output.try_read() {
 						o.clone_into(&mut self.output);
 					}
 				}

@@ -1,17 +1,13 @@
 // std
-use std::{
-	sync::{Arc, RwLock},
-	time::Duration,
-};
+use std::{sync::Arc, time::Duration};
 // crates.io
+use parking_lot::RwLock;
 use tokio::{runtime::Runtime, task::AbortHandle, time};
 // self
 use crate::component::quote::Quoter as QuoterC;
 
 #[derive(Debug)]
-pub struct Quoter {
-	pub abort_handle: AbortHandle,
-}
+pub struct Quoter(AbortHandle);
 impl Quoter {
 	pub fn init(rt: &Runtime, quote: Arc<RwLock<String>>) -> Self {
 		let quoter = QuoterC;
@@ -20,25 +16,17 @@ impl Quoter {
 				loop {
 					// TODO: skip if the chat input is not empty.
 
-					let quote_ = quoter.fetch().await.unwrap_or(QuoterC::DEFAULT.into());
+					*quote.write() = quoter.fetch().await.unwrap_or(QuoterC::DEFAULT.into());
 
-					if let Ok(mut quote) = quote.write() {
-						*quote = quote_;
-					} else {
-						tracing::error!("quote got poisoned");
-
-						return;
-					}
-
-					time::sleep(Duration::from_secs(30)).await;
+					time::sleep(Duration::from_secs(50)).await;
 				}
 			})
 			.abort_handle();
 
-		Self { abort_handle }
+		Self(abort_handle)
 	}
 
 	pub fn abort(&self) {
-		self.abort_handle.abort();
+		self.0.abort();
 	}
 }

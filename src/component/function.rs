@@ -1,5 +1,7 @@
+// std
+use std::borrow::Cow;
 // self
-use super::setting::Translation;
+use super::setting::Chat;
 
 #[derive(Debug)]
 pub enum Function {
@@ -9,20 +11,14 @@ pub enum Function {
 	TranslateDirectly,
 }
 impl Function {
-	pub fn prompt(&self, setting: &Translation) -> String {
+	pub fn is_directly(&self) -> bool {
+		matches!(self, Self::RewriteDirectly | Self::TranslateDirectly)
+	}
+
+	pub fn prompt<'a>(&'a self, setting: &'a Chat) -> Cow<str> {
 		match self {
-			Self::Rewrite | Self::RewriteDirectly =>
-				"As an English professor, assist me in refining this text. \
-				Amend any grammatical errors and enhance the language to sound more like a native speaker.\
-				Provide the refined text only, without any other things."
-					.into(),
-			Self::Translate | Self::TranslateDirectly => format!(
-				"As a language professor, assist me in translate this text from {} to {}. \
-				Amend any grammatical errors and enhance the language to sound more like a native speaker.\
-				Provide the translated text only, without any other things.",
-				setting.source.as_str(),
-				setting.target.as_str()
-			),
+			Self::Rewrite | Self::RewriteDirectly => setting.rewrite.prompt(),
+			Self::Translate | Self::TranslateDirectly => setting.translation.prompt(),
 		}
 	}
 }
