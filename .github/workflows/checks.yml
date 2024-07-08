@@ -1,11 +1,4 @@
 name: Checks
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
 
 env:
   CACHE_VERSION: 0
@@ -16,6 +9,14 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   RUST_BACKTRACE: full
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   cargo-checks:
