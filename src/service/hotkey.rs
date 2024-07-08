@@ -68,7 +68,7 @@ impl Hotkey {
 						_ => continue,
 					};
 
-					tx.send((func, content, !to_unhide)).unwrap();
+					tx.send((func, content, !to_unhide)).expect("send must succeed");
 
 					if to_unhide {
 						ctx.send_viewport_cmd(ViewportCommand::Focus);
@@ -80,11 +80,11 @@ impl Hotkey {
 		Ok(Self(abort))
 	}
 
+	// TODO: fn renew.
+
 	pub fn abort(&self) {
 		self.0.store(true, Ordering::Release);
 	}
-
-	// TODO: fn renew.
 }
 
 struct Manager {

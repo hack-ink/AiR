@@ -4,7 +4,7 @@ use eframe::egui::*;
 use super::super::UiT;
 use crate::{
 	air::AiRContext,
-	component::{openai::Model, setting::Language},
+	component::{function::Function, openai::Model, setting::Language},
 };
 
 #[derive(Debug, Default)]
@@ -39,6 +39,22 @@ impl UiT for Setting {
 						self.set_font_sizes(ctx);
 					}
 				});
+				ui.end_row();
+
+				// TODO: `hide_on_lost_focus`.
+
+				ui.label("Active Function");
+				ComboBox::from_id_source("Active Function")
+					.selected_text(&ctx.components.setting.general.active_func)
+					.show_ui(ui, |ui| {
+						Function::basic_all().iter().for_each(|f| {
+							ui.selectable_value(
+								&mut ctx.components.setting.general.active_func,
+								f.to_owned(),
+								f,
+							);
+						});
+					});
 				ui.end_row();
 			});
 		});
@@ -92,7 +108,7 @@ impl UiT for Setting {
 								.selectable_value(
 									&mut ctx.components.setting.ai.model,
 									m.to_owned(),
-									m.as_str(),
+									m,
 								)
 								.changed();
 						});
@@ -128,7 +144,7 @@ impl UiT for Setting {
 							ui.selectable_value(
 								&mut ctx.components.setting.chat.translation.a,
 								l.to_owned(),
-								l.as_str(),
+								l,
 							);
 						});
 					});
@@ -142,7 +158,7 @@ impl UiT for Setting {
 							ui.selectable_value(
 								&mut ctx.components.setting.chat.translation.b,
 								l.to_owned(),
-								l.as_str(),
+								l,
 							);
 						});
 					});
@@ -170,24 +186,5 @@ impl ApiKeyWidget {
 impl Default for ApiKeyWidget {
 	fn default() -> Self {
 		Self { label: "show".into(), visibility: true }
-	}
-}
-
-impl Language {
-	pub fn as_str(&self) -> &'static str {
-		match self {
-			Self::ZhCn => "zh-CN",
-			Self::EnGb => "en-GB",
-		}
-	}
-
-	fn all() -> [Self; 2] {
-		[Self::ZhCn, Self::EnGb]
-	}
-}
-#[allow(clippy::from_over_into)]
-impl Into<WidgetText> for &Language {
-	fn into(self) -> WidgetText {
-		self.as_str().into()
 	}
 }

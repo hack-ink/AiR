@@ -89,12 +89,16 @@ impl Chat {
 		Self { tx, openai, chat_setting, abort_handle }
 	}
 
-	pub fn abort(&self) {
-		self.abort_handle.abort();
+	pub fn send(&self, args: ChatArgs) {
+		self.tx.send(args).expect("send must succeed");
 	}
 
 	pub fn renew(&mut self, setting: &Setting) {
 		*self.openai.blocking_lock() = OpenAi::new(setting.ai.clone());
 		*self.chat_setting.blocking_lock() = setting.chat.clone();
+	}
+
+	pub fn abort(&self) {
+		self.abort_handle.abort();
 	}
 }

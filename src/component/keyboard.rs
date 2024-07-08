@@ -62,7 +62,8 @@ impl FromStr for Keys {
 
 fn key_of(key: char) -> Result<Key> {
 	// TODO: create a `CGKeyCode` table for macOS in `build.rs`.
-	// Currently, we only support limited keys on macOS.
+	// Currently, we only support limited keys on macOS from:
+	// https://eastmanreference.com/complete-list-of-applescript-key-codes.
 	#[cfg(target_os = "macos")]
 	let k = Key::Other(match key {
 		'A' => 0,

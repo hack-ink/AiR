@@ -3,9 +3,10 @@ use std::{borrow::Cow, fs, path::PathBuf};
 // crates.io
 use app_dirs2::AppDataType;
 use async_openai::config::OPENAI_API_BASE;
+use eframe::egui::WidgetText;
 use serde::{Deserialize, Serialize};
 // self
-use super::openai::Model;
+use super::{function::Function, openai::Model};
 use crate::{prelude::*, APP_INFO};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -53,10 +54,11 @@ impl Setting {
 pub struct General {
 	pub font_size: f32,
 	pub hide_on_lost_focus: bool,
+	pub active_func: Function,
 }
 impl Default for General {
 	fn default() -> Self {
-		Self { font_size: 13., hide_on_lost_focus: true }
+		Self { font_size: 13., hide_on_lost_focus: true, active_func: Default::default() }
 	}
 }
 
@@ -144,6 +146,24 @@ pub enum Language {
 	ZhCn,
 	// English (United Kingdom).
 	EnGb,
+}
+impl Language {
+	pub fn as_str(&self) -> &'static str {
+		match self {
+			Self::ZhCn => "zh-CN",
+			Self::EnGb => "en-GB",
+		}
+	}
+
+	pub fn all() -> [Self; 2] {
+		[Self::ZhCn, Self::EnGb]
+	}
+}
+#[allow(clippy::from_over_into)]
+impl Into<WidgetText> for &Language {
+	fn into(self) -> WidgetText {
+		self.as_str().into()
+	}
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

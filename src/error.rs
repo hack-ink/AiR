@@ -1,4 +1,4 @@
-// TODO: Some errors are not used since we use `.unwrap()`.
+// TODO: check unused error types.
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
