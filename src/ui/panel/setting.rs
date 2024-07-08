@@ -113,15 +113,7 @@ impl UiT for Setting {
 			});
 
 			if changed {
-				ctx.services.chat.renew(
-					ctx.services.keyboard.clone(),
-					ctx.services.rt.as_ref().expect("runtime must exist"),
-					ctx.services.is_chatting.clone(),
-					ctx.components.setting.ai.clone(),
-					ctx.components.setting.chat.clone(),
-					ctx.state.chat.input.clone(),
-					ctx.state.chat.output.clone(),
-				);
+				ctx.services.chat.renew(&ctx.components.setting);
 			}
 		});
 

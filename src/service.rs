@@ -36,17 +36,10 @@ impl Services {
 		let rt = Runtime::new()?;
 		let quoter = Quoter::new(&rt, state.chat.quote.clone());
 		let is_chatting = Arc::new(AtomicBool::new(false));
-		let chat = Chat::new(
-			keyboard.clone(),
-			&rt,
-			is_chatting.clone(),
-			components.setting.ai.clone(),
-			components.setting.chat.clone(),
-			state.chat.input.clone(),
-			state.chat.output.clone(),
-		);
+		let chat =
+			Chat::new(keyboard.clone(), &rt, is_chatting.clone(), &components.setting, &state.chat);
 		let hotkey =
-			Hotkey::new(ctx, keyboard.clone(), &rt, &components.setting.hotkeys, chat.tx.clone())?;
+			Hotkey::new(ctx, keyboard.clone(), &components.setting.hotkeys, chat.tx.clone())?;
 
 		Ok(Self { keyboard, rt: Some(rt), quoter, is_chatting, chat, hotkey })
 	}

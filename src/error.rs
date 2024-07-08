@@ -12,8 +12,6 @@ pub enum Error {
 	#[error(transparent)]
 	Eframe(#[from] eframe::Error),
 	#[error(transparent)]
-	GlobalHotKey(#[from] global_hotkey::Error),
-	#[error(transparent)]
 	OpenAi(#[from] async_openai::error::OpenAIError),
 	#[error(transparent)]
 	Reqwew(#[from] reqwew::error::Error),
@@ -22,6 +20,10 @@ pub enum Error {
 
 	#[error(transparent)]
 	Enigo(#[from] EnigoError),
+	#[error(transparent)]
+	GlobalHotKey(#[from] GlobalHotKeyError),
+	#[error("unsupported key: {0}")]
+	UnsupportedKey(String)
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -30,4 +32,12 @@ pub enum EnigoError {
 	Input(#[from] enigo::InputError),
 	#[error(transparent)]
 	NewCon(#[from] enigo::NewConError),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum GlobalHotKeyError {
+	#[error(transparent)]
+	Main(#[from] global_hotkey::Error),
+	#[error(transparent)]
+	Parse(#[from] global_hotkey::hotkey::HotKeyParseError),
 }

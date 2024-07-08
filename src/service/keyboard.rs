@@ -4,7 +4,7 @@ use std::{
 	thread,
 };
 // self
-use crate::component::keyboard::Keyboard as Kb;
+use crate::component::keyboard::{Keyboard as Kb, Keys};
 
 #[derive(Clone, Debug)]
 pub struct Keyboard(Sender<Action>);
@@ -20,6 +20,8 @@ impl Keyboard {
 			loop {
 				match rx.recv().expect("receive must succeed") {
 					Action::Copy => kb.copy().expect("keyboard action must succeed"),
+					Action::ReleaseKeys(keys) =>
+						kb.release_keys(keys).expect("keyboard action must succeed"),
 					Action::Text(text) => kb.text(&text).expect("keyboard action must succeed"),
 					Action::Abort => return,
 				}
@@ -31,6 +33,10 @@ impl Keyboard {
 
 	pub fn copy(&self) {
 		self.0.send(Action::Copy).expect("send must succeed");
+	}
+
+	pub fn release_keys(&self, keys: Keys) {
+		self.0.send(Action::ReleaseKeys(keys)).expect("send must succeed");
 	}
 
 	pub fn text(&self, text: String) {
@@ -45,6 +51,7 @@ impl Keyboard {
 #[derive(Debug)]
 enum Action {
 	Copy,
+	ReleaseKeys(Keys),
 	Text(String),
 	Abort,
 }

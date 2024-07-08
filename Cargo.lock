@@ -155,7 +155,6 @@ dependencies = [
  "tracing",
  "tracing-appender",
  "tracing-subscriber",
- "xkeysym",
 ]
 
 [[package]]
@@ -1755,7 +1754,6 @@ dependencies = [
  "keyboard-types",
  "objc",
  "once_cell",
- "serde",
  "thiserror",
  "windows-sys 0.52.0",
  "x11-dl",

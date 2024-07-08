@@ -9,14 +9,16 @@ use std::{
 };
 // crates.io
 use futures::StreamExt;
-use parking_lot::RwLock;
-use tokio::{runtime::Runtime, task::AbortHandle, time};
+use tokio::{runtime::Runtime, sync::Mutex, task::AbortHandle, time};
 // self
 use super::keyboard::Keyboard;
-use crate::component::{
-	function::Function,
-	openai::OpenAi,
-	setting::{Ai, Chat as ChatSetting},
+use crate::{
+	component::{
+		function::Function,
+		openai::OpenAi,
+		setting::{Chat as ChatSetting, Setting},
+	},
+	state::Chat as ChatState,
 };
 
 pub type ChatArgs = (Function, String, bool);
@@ -24,6 +26,9 @@ pub type ChatArgs = (Function, String, bool);
 #[derive(Debug)]
 pub struct Chat {
 	pub tx: Sender<ChatArgs>,
+	// TODO?: get rid of the `Mutex`.
+	openai: Arc<Mutex<OpenAi>>,
+	chat_setting: Arc<Mutex<ChatSetting>>,
 	abort_handle: AbortHandle,
 }
 impl Chat {
@@ -31,12 +36,15 @@ impl Chat {
 		keyboard: Keyboard,
 		rt: &Runtime,
 		is_chatting: Arc<AtomicBool>,
-		ai_setting: Ai,
-		chat_setting: ChatSetting,
-		input: Arc<RwLock<String>>,
-		output: Arc<RwLock<String>>,
+		setting: &Setting,
+		state: &ChatState,
 	) -> Self {
-		let openai = OpenAi::new(ai_setting);
+		let openai = Arc::new(Mutex::new(OpenAi::new(setting.ai.clone())));
+		let openai_ = openai.clone();
+		let chat_setting = Arc::new(Mutex::new(setting.chat.clone()));
+		let chat_setting_ = chat_setting.clone();
+		let input = state.input.clone();
+		let output = state.output.clone();
 		let (tx, rx) = mpsc::channel();
 		// TODO: handle the error.
 		let abort_handle = rt
@@ -52,8 +60,12 @@ impl Chat {
 					input.write().clone_from(&content);
 					output.write().clear();
 
-					let mut stream =
-						openai.chat(&func.prompt(&chat_setting), &content).await.unwrap();
+					let mut stream = openai_
+						.lock()
+						.await
+						.chat(&func.prompt(&*chat_setting_.lock().await), &content)
+						.await
+						.unwrap();
 
 					while let Some(r) = stream.next().await {
 						for s in r.unwrap().choices.into_iter().filter_map(|c| c.delta.content) {
@@ -74,27 +86,15 @@ impl Chat {
 			})
 			.abort_handle();
 
-		Self { abort_handle, tx }
+		Self { tx, openai, chat_setting, abort_handle }
 	}
 
 	pub fn abort(&self) {
 		self.abort_handle.abort();
 	}
 
-	// TODO: fix clippy.
-	#[allow(clippy::too_many_arguments)]
-	pub fn renew(
-		&mut self,
-		keyboard: Keyboard,
-		rt: &Runtime,
-		is_chatting: Arc<AtomicBool>,
-		ai_setting: Ai,
-		chat_setting: ChatSetting,
-		input: Arc<RwLock<String>>,
-		output: Arc<RwLock<String>>,
-	) {
-		self.abort();
-
-		*self = Self::new(keyboard, rt, is_chatting, ai_setting, chat_setting, input, output);
+	pub fn renew(&mut self, setting: &Setting) {
+		*self.openai.blocking_lock() = OpenAi::new(setting.ai.clone());
+		*self.chat_setting.blocking_lock() = setting.chat.clone();
 	}
 }

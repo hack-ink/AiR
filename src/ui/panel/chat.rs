@@ -88,6 +88,10 @@ impl UiT for Chat {
 				if !self.shortcut.copy.triggered {
 					if ui.add(self.shortcut.copy.copy_img.clone()).clicked() {
 						self.shortcut.copy.triggered = true;
+						ctx.components
+							.clipboard
+							.set_text(&self.output)
+							.expect("clipboard must be available");
 					}
 				} else {
 					ui.add(self.shortcut.copy.copied_img.clone());

@@ -3,7 +3,6 @@ use std::{borrow::Cow, fs, path::PathBuf};
 // crates.io
 use app_dirs2::AppDataType;
 use async_openai::config::OPENAI_API_BASE;
-use global_hotkey::hotkey::{Code, HotKey, Modifiers};
 use serde::{Deserialize, Serialize};
 // self
 use super::openai::Model;
@@ -101,7 +100,8 @@ impl Default for Rewrite {
 	fn default() -> Self {
 		Self {
 			prompt: "As language professor, assist me in refining this text. \
-				Amend any grammatical errors and enhance the language to sound more like a native speaker.\
+				Amend any grammatical errors, \
+				enhance the language to sound more like a native speaker and keep the origin format. \
 				Just provide the refined text only, without any other things:"
 				.into(),
 		}
@@ -127,8 +127,10 @@ impl Translation {
 impl Default for Translation {
 	fn default() -> Self {
 		Self {
-			prompt: "As a language professor, amend any grammatical errors and enhance the language to sound more like a native speaker. \
-				Provide the translated text only, without any other things:".into(),
+			prompt: "As a language professor, amend any grammatical errors, \
+				enhance the language to sound more like a native speaker and keep the origin format. \
+				Provide the translated text only, without any other things:"
+				.into(),
 			a: Language::ZhCn,
 			b: Language::EnGb,
 		}
@@ -147,18 +149,18 @@ pub enum Language {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Hotkeys {
-	pub rewrite: HotKey,
-	pub rewrite_directly: HotKey,
-	pub translate: HotKey,
-	pub translate_directly: HotKey,
+	pub rewrite: String,
+	pub rewrite_directly: String,
+	pub translate: String,
+	pub translate_directly: String,
 }
 impl Default for Hotkeys {
 	fn default() -> Self {
 		Self {
-			rewrite: HotKey::new(Some(Modifiers::CONTROL), Code::KeyT),
-			rewrite_directly: HotKey::new(Some(Modifiers::CONTROL), Code::KeyY),
-			translate: HotKey::new(Some(Modifiers::CONTROL), Code::KeyU),
-			translate_directly: HotKey::new(Some(Modifiers::CONTROL), Code::KeyI),
+			rewrite: "Ctrl+Y".into(),
+			rewrite_directly: "Ctrl+U".into(),
+			translate: "Ctrl+I".into(),
+			translate_directly: "Ctrl+O".into(),
 		}
 	}
 }
