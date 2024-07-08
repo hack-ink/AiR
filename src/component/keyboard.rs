@@ -7,7 +7,7 @@ use crate::prelude::*;
 #[derive(Debug)]
 pub struct Keyboard(pub Enigo);
 impl Keyboard {
-	pub fn init() -> Result<Self> {
+	pub fn new() -> Result<Self> {
 		Ok(Self(Enigo::new(&Settings::default()).map_err(EnigoError::NewCon)?))
 	}
 

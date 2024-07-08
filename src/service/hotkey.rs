@@ -1,49 +1,30 @@
 // std
-use std::{
-	sync::{
-		atomic::{AtomicBool, Ordering},
-		Arc,
-	},
-	time::Duration,
-};
+use std::{sync::mpsc::Sender, time::Duration};
 // crates.io
 use arboard::Clipboard;
 use eframe::egui::{Context, ViewportCommand};
-use futures::StreamExt;
 use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager, HotKeyState};
 use tokio::{runtime::Runtime, task::AbortHandle, time};
 // self
+use super::{chat::ChatArgs, keyboard::Keyboard};
 use crate::{
-	component::{function::Function, setting::Hotkeys, Components},
+	component::{function::Function, setting::Hotkeys},
 	os::*,
 	prelude::*,
-	service::keyboard::Keyboard,
-	state::State,
 };
 
 #[derive(Debug)]
-pub struct Hotkey {
-	abort_handle: AbortHandle,
-	is_running: Arc<AtomicBool>,
-}
+pub struct Hotkey(AbortHandle);
 impl Hotkey {
-	// TODO: optimize parameters.
-	pub fn init(
+	pub fn new(
 		ctx: &Context,
 		keyboard: Keyboard,
 		rt: &Runtime,
-		components: &Components,
-		state: &State,
+		hotkeys: &Hotkeys,
+		tx: Sender<ChatArgs>,
 	) -> Result<Self> {
 		let ctx = ctx.to_owned();
-		// TODO: use `state.setting.hotkeys`.
-		let manager = Manager::init(&components.setting.hotkeys)?;
-		let openai = components.openai.clone();
-		let chat_input = state.chat.input.clone();
-		let chat_output = state.chat.output.clone();
-		let chat_setting = state.setting.chat.clone();
-		let is_running = Arc::new(AtomicBool::new(false));
-		let is_running_ = is_running.clone();
+		let manager = Manager::new(hotkeys)?;
 		let receiver = GlobalHotKeyEvent::receiver();
 		let mut clipboard = Clipboard::new()?;
 		// TODO: handle the error.
@@ -53,8 +34,6 @@ impl Hotkey {
 				let manager = manager;
 
 				loop {
-					is_running_.store(false, Ordering::SeqCst);
-
 					// Block the thread until a hotkey event is received.
 					let e = receiver.recv().unwrap();
 
@@ -62,8 +41,6 @@ impl Hotkey {
 					if let HotKeyState::Pressed = e.state {
 						// TODO: reset the hotkey state so that we don't need to wait for the user
 						// to release the keys.
-
-						is_running_.store(true, Ordering::SeqCst);
 
 						let func = manager.match_func(e.id);
 						let to_unhide = !func.is_directly();
@@ -86,49 +63,26 @@ impl Hotkey {
 							_ => continue,
 						};
 
+						tx.send((func, content, !to_unhide)).unwrap();
+
 						if to_unhide {
 							// Generally, this needs some time to wait the window available
 							// first, but the previous sleep in get selected text is enough.
 							ctx.send_viewport_cmd(ViewportCommand::Focus);
-						}
-
-						chat_input.write().clone_from(&content);
-						chat_output.write().clear();
-
-						let chat_setting = chat_setting.read().to_owned();
-						let mut stream = openai
-							.lock()
-							.await
-							.chat(&func.prompt(&chat_setting), &content)
-							.await
-							.unwrap();
-
-						while let Some(r) = stream.next().await {
-							for s in r.unwrap().choices.into_iter().filter_map(|c| c.delta.content)
-							{
-								chat_output.write().push_str(&s);
-
-								// TODO: move to outside of the loop.
-								if !to_unhide {
-									keyboard.text(s);
-								}
-							}
 						}
 					}
 				}
 			})
 			.abort_handle();
 
-		Ok(Self { abort_handle, is_running })
+		Ok(Self(abort_handle))
 	}
 
 	pub fn abort(&self) {
-		self.abort_handle.abort();
+		self.0.abort();
 	}
 
-	pub fn is_running(&self) -> bool {
-		self.is_running.load(Ordering::SeqCst)
-	}
+	// TODO: fn renew.
 }
 
 struct Manager {
@@ -137,7 +91,7 @@ struct Manager {
 	ids: [u32; 4],
 }
 impl Manager {
-	fn init(hotkeys: &Hotkeys) -> Result<Self> {
+	fn new(hotkeys: &Hotkeys) -> Result<Self> {
 		let _inner = GlobalHotKeyManager::new()?;
 		let hotkeys = [
 			hotkeys.rewrite,

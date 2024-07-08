@@ -1,3 +1,6 @@
+mod chat;
+use chat::Chat;
+
 mod hotkey;
 use hotkey::Hotkey;
 
@@ -7,6 +10,11 @@ use keyboard::Keyboard;
 mod quoter;
 use quoter::Quoter;
 
+// std
+use std::sync::{
+	atomic::{AtomicBool, Ordering},
+	Arc,
+};
 // crates.io
 use eframe::egui::Context;
 use tokio::runtime::Runtime;
@@ -18,21 +26,39 @@ pub struct Services {
 	pub keyboard: Keyboard,
 	pub rt: Option<Runtime>,
 	pub quoter: Quoter,
+	pub is_chatting: Arc<AtomicBool>,
+	pub chat: Chat,
 	pub hotkey: Hotkey,
 }
 impl Services {
-	pub fn init(ctx: &Context, components: &Components, state: &State) -> Result<Self> {
-		let keyboard = Keyboard::init();
+	pub fn new(ctx: &Context, components: &Components, state: &State) -> Result<Self> {
+		let keyboard = Keyboard::new();
 		let rt = Runtime::new()?;
-		let quoter = Quoter::init(&rt, state.chat.quote.clone());
-		let hotkey = Hotkey::init(ctx, keyboard.clone(), &rt, components, state)?;
+		let quoter = Quoter::new(&rt, state.chat.quote.clone());
+		let is_chatting = Arc::new(AtomicBool::new(false));
+		let chat = Chat::new(
+			keyboard.clone(),
+			&rt,
+			is_chatting.clone(),
+			components.setting.ai.clone(),
+			components.setting.chat.clone(),
+			state.chat.input.clone(),
+			state.chat.output.clone(),
+		);
+		let hotkey =
+			Hotkey::new(ctx, keyboard.clone(), &rt, &components.setting.hotkeys, chat.tx.clone())?;
 
-		Ok(Self { keyboard, rt: Some(rt), quoter, hotkey })
+		Ok(Self { keyboard, rt: Some(rt), quoter, is_chatting, chat, hotkey })
+	}
+
+	pub fn is_chatting(&self) -> bool {
+		self.is_chatting.load(Ordering::SeqCst)
 	}
 
 	pub fn abort(&mut self) {
 		self.keyboard.abort();
 		self.quoter.abort();
+		self.chat.abort();
 		self.hotkey.abort();
 
 		if let Some(rt) = self.rt.take() {

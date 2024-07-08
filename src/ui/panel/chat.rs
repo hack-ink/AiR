@@ -14,14 +14,14 @@ pub struct Chat {
 impl UiT for Chat {
 	fn draw(&mut self, ui: &mut Ui, ctx: &mut AiRContext) {
 		// TODO: other running cases.
-		let is_running = ctx.services.hotkey.is_running();
+		let ic_chatting = ctx.services.is_chatting();
 		let size = ui.available_size();
 
 		ScrollArea::vertical().id_source("Input").max_height((size.y - 50.) / 2.).show(ui, |ui| {
 			let input = ui.add_sized(
 				(size.x, ui.available_height()),
 				TextEdit::multiline({
-					if is_running {
+					if ic_chatting {
 						if let Some(i) = ctx.state.chat.input.try_read() {
 							i.clone_into(&mut self.input);
 						}
@@ -79,7 +79,7 @@ impl UiT for Chat {
 		// Shortcuts.
 		ui.horizontal(|ui| {
 			ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-				if is_running {
+				if ic_chatting {
 					ui.spinner();
 				} else {
 					// TODO: retry.
@@ -97,8 +97,7 @@ impl UiT for Chat {
 
 		ScrollArea::vertical().id_source("Output").show(ui, |ui| {
 			ui.label({
-				// FIXME: `is_running` is conflict with `try_read`.
-				if is_running {
+				if ic_chatting {
 					if let Some(o) = ctx.state.chat.output.try_read() {
 						o.clone_into(&mut self.output);
 					}

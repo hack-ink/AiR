@@ -82,7 +82,7 @@ impl UiT for Setting {
 				});
 				ui.end_row();
 
-				// TODO: we might not need to reload the client if only the model changed.
+				// TODO: we might not need to renew the client if only the model changed.
 				ui.label("Model");
 				ComboBox::from_id_source("Model")
 					.selected_text(&ctx.components.setting.ai.model)
@@ -99,7 +99,7 @@ impl UiT for Setting {
 					});
 				ui.end_row();
 
-				// TODO: we might not need to reload the client if only the temperature changed.
+				// TODO: we might not need to renew the client if only the temperature changed.
 				ui.label("Temperature");
 				ui.spacing_mut().slider_width = size.x;
 				changed |= ui
@@ -113,7 +113,15 @@ impl UiT for Setting {
 			});
 
 			if changed {
-				ctx.components.reload_openai();
+				ctx.services.chat.renew(
+					ctx.services.keyboard.clone(),
+					ctx.services.rt.as_ref().expect("runtime must exist"),
+					ctx.services.is_chatting.clone(),
+					ctx.components.setting.ai.clone(),
+					ctx.components.setting.chat.clone(),
+					ctx.state.chat.input.clone(),
+					ctx.state.chat.output.clone(),
+				);
 			}
 		});
 

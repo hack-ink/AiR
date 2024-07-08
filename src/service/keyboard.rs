@@ -9,21 +9,18 @@ use crate::component::keyboard::Keyboard as Kb;
 #[derive(Clone, Debug)]
 pub struct Keyboard(Sender<Action>);
 impl Keyboard {
-	pub fn init() -> Self {
+	pub fn new() -> Self {
 		let (tx, rx) = mpsc::channel::<Action>();
 
-		// TODO: handle the error.
+		// [`enigo::Enigo`] can't be sent between threads safely.
+		// So, we spawn a new thread to handle the keyboard action here.
 		thread::spawn(move || {
-			let mut kb = Kb::init().unwrap();
+			let mut kb = Kb::new().expect("keyboard action must succeed");
 
 			loop {
-				let act = rx.recv().unwrap();
-
-				tracing::info!("receive action: {act:?}");
-
-				match act {
-					Action::Copy => kb.copy().unwrap(),
-					Action::Text(text) => kb.text(&text).unwrap(),
+				match rx.recv().expect("receive must succeed") {
+					Action::Copy => kb.copy().expect("keyboard action must succeed"),
+					Action::Text(text) => kb.text(&text).expect("keyboard action must succeed"),
 					Action::Abort => return,
 				}
 			}

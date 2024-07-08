@@ -16,22 +16,16 @@ use crate::prelude::*;
 #[derive(Debug)]
 pub struct OpenAi {
 	pub client: Client<OpenAIConfig>,
-	pub setting: Ai,
+	pub model: Model,
+	pub temperature: f32,
 }
 impl OpenAi {
 	pub fn new(setting: Ai) -> Self {
-		let client = Client::with_config(
-			OpenAIConfig::new().with_api_base(&setting.api_base).with_api_key(&setting.api_key),
-		);
+		let Ai { api_base, api_key, model, temperature } = setting;
+		let client =
+			Client::with_config(OpenAIConfig::new().with_api_base(api_base).with_api_key(api_key));
 
-		Self { client, setting }
-	}
-
-	pub fn reload(&mut self, setting: Ai) {
-		self.client = Client::with_config(
-			OpenAIConfig::new().with_api_base(&setting.api_base).with_api_key(&setting.api_key),
-		);
-		self.setting = setting;
+		Self { client, model, temperature }
 	}
 
 	pub async fn chat(&self, prompt: &str, content: &str) -> Result<ChatCompletionResponseStream> {
@@ -40,8 +34,8 @@ impl OpenAi {
 			ChatCompletionRequestUserMessageArgs::default().content(content).build()?.into(),
 		];
 		let req = CreateChatCompletionRequestArgs::default()
-			.model(self.setting.model.as_str())
-			.temperature(self.setting.temperature)
+			.model(self.model.as_str())
+			.temperature(self.temperature)
 			.max_tokens(4_096_u16)
 			.messages(&msg)
 			.build()?;

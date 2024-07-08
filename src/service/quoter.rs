@@ -9,7 +9,7 @@ use crate::component::quote::Quoter as QuoterC;
 #[derive(Debug)]
 pub struct Quoter(AbortHandle);
 impl Quoter {
-	pub fn init(rt: &Runtime, quote: Arc<RwLock<String>>) -> Self {
+	pub fn new(rt: &Runtime, quote: Arc<RwLock<String>>) -> Self {
 		let quoter = QuoterC;
 		let abort_handle = rt
 			.spawn(async move {

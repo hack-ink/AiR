@@ -19,7 +19,7 @@ pub struct Uis {
 	pub setting: Setting,
 }
 impl Uis {
-	pub fn init() -> Self {
+	pub fn new() -> Self {
 		Default::default()
 	}
 
@@ -29,7 +29,11 @@ impl Uis {
 			.frame(util::transparent_frame(ctx.egui_ctx))
 			.show(ctx.egui_ctx, |ui| {
 				ui.horizontal(|ui| {
-					ui.selectable_value(&mut self.focused_panel, Panel::Chat, Panel::Chat.name());
+					ui.selectable_value(
+						&mut self.focused_panel,
+						Panel::Chat,
+						Panel::Chat.name(),
+					);
 					ui.separator();
 					ui.selectable_value(
 						&mut self.focused_panel,

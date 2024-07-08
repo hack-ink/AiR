@@ -102,7 +102,7 @@ impl Default for Rewrite {
 		Self {
 			prompt: "As language professor, assist me in refining this text. \
 				Amend any grammatical errors and enhance the language to sound more like a native speaker.\
-				Just provide the refined text only, without any other things."
+				Just provide the refined text only, without any other things:"
 				.into(),
 		}
 	}
@@ -128,7 +128,7 @@ impl Default for Translation {
 	fn default() -> Self {
 		Self {
 			prompt: "As a language professor, amend any grammatical errors and enhance the language to sound more like a native speaker. \
-				Provide the translated text only, without any other things.".into(),
+				Provide the translated text only, without any other things:".into(),
 			a: Language::ZhCn,
 			b: Language::EnGb,
 		}
@@ -144,7 +144,7 @@ pub enum Language {
 	EnGb,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Hotkeys {
 	pub rewrite: HotKey,

@@ -16,17 +16,17 @@ struct AiR {
 	uis: Uis,
 }
 impl AiR {
-	fn init(ctx: &Context) -> Result<Self> {
+	fn new(ctx: &Context) -> Result<Self> {
 		Self::set_fonts(ctx);
 
 		// To enable SVG.
 		egui_extras::install_image_loaders(ctx);
 
 		let once = Once::new();
-		let components = Components::init()?;
+		let components = Components::new()?;
 		let state = Default::default();
-		let services = Services::init(ctx, &components, &state)?;
-		let uis = Uis::init();
+		let services = Services::new(ctx, &components, &state)?;
+		let uis = Uis::new();
 
 		Ok(Self { once, components, state, services, uis })
 	}
@@ -62,7 +62,7 @@ impl App for AiR {
 			egui_ctx: ctx,
 			components: &mut self.components,
 			state: &self.state,
-			services: &self.services,
+			services: &mut self.services,
 		};
 
 		self.uis.draw(air_ctx);
@@ -108,7 +108,7 @@ pub struct AiRContext<'a> {
 	pub egui_ctx: &'a Context,
 	pub components: &'a mut Components,
 	pub state: &'a State,
-	pub services: &'a Services,
+	pub services: &'a mut Services,
 }
 
 pub fn launch() -> Result<()> {
@@ -125,7 +125,7 @@ pub fn launch() -> Result<()> {
 				.with_transparent(true),
 			..Default::default()
 		},
-		Box::new(|c| Ok(Box::new(AiR::init(&c.egui_ctx).unwrap()))),
+		Box::new(|c| Ok(Box::new(AiR::new(&c.egui_ctx).unwrap()))),
 	)?;
 
 	Ok(())
