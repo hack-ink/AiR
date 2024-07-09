@@ -1,5 +1,7 @@
+// std
+use std::sync::atomic::Ordering;
 // crates.io
-use eframe::egui::*;
+use eframe::egui::{self, *};
 // self
 use super::super::UiT;
 use crate::{
@@ -41,7 +43,15 @@ impl UiT for Setting {
 				});
 				ui.end_row();
 
-				// TODO: `hide_on_lost_focus`.
+				ui.label("Hide on Lost Focus");
+				if ui.add(toggle(&mut ctx.components.setting.general.hide_on_lost_focus)).changed()
+				{
+					ctx.state.general.hide_on_lost_focus.store(
+						ctx.components.setting.general.hide_on_lost_focus,
+						Ordering::Relaxed,
+					);
+				};
+				ui.end_row();
 
 				ui.label("Active Function");
 				ComboBox::from_id_source("Active Function")
@@ -187,4 +197,35 @@ impl Default for ApiKeyWidget {
 	fn default() -> Self {
 		Self { label: "show".into(), visibility: true }
 	}
+}
+
+// https://github.com/emilk/egui/blob/aa96b257460a07b30489d104fae08d095a9e3a4e/crates/egui_demo_lib/src/demo/toggle_switch.rs#L109.
+fn toggle(on: &mut bool) -> impl Widget + '_ {
+	fn toggle_ui(ui: &mut Ui, on: &mut bool) -> Response {
+		let desired_size = ui.spacing().interact_size.y * vec2(2.0, 1.0);
+		let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click());
+
+		if response.clicked() {
+			*on = !*on;
+
+			response.mark_changed();
+		}
+		if ui.is_rect_visible(rect) {
+			let how_on = ui.ctx().animate_bool_responsive(response.id, *on);
+			let visuals = ui.style().interact_selectable(&response, *on);
+			let rect = rect.expand(visuals.expansion);
+			let radius = 0.5 * rect.height();
+
+			ui.painter().rect(rect, radius, visuals.bg_fill, visuals.bg_stroke);
+
+			let circle_x = egui::lerp((rect.left() + radius)..=(rect.right() - radius), how_on);
+			let center = egui::pos2(circle_x, rect.center().y);
+
+			ui.painter().circle(center, 0.75 * radius, visuals.bg_fill, visuals.fg_stroke);
+		}
+
+		response
+	}
+
+	move |ui: &mut Ui| toggle_ui(ui, on)
 }

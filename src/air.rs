@@ -24,7 +24,7 @@ impl AiR {
 
 		let once = Once::new();
 		let components = Components::new()?;
-		let state = Default::default();
+		let state = State::new(&components.setting);
 		let services = Services::new(ctx, &components, &state)?;
 		let uis = Uis::new();
 
@@ -89,7 +89,9 @@ impl App for AiR {
 			}
 			// TODO: https://github.com/emilk/egui/issues/4468.
 			// Allow 1 second for initialization during the first boot.
-			else if raw_input.time.unwrap_or_default() >= 1. {
+			else if raw_input.time.unwrap_or_default() >= 1.
+				&& self.components.setting.general.hide_on_lost_focus
+			{
 				// TODO: https://github.com/emilk/egui/discussions/4635.
 				// We can get rid of the OS API if this works.
 				// ctx.send_viewport_cmd(ViewportCommand::Minimized(false));

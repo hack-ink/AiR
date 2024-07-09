@@ -98,9 +98,9 @@ impl Rewrite {
 		const DEFAULT: &str = "As a language professor, assist me in refining text! \
 			Amend any grammatical errors and enhance the language to sound more like a native speaker! \
 			Text is always provided in format ```AiR\n$TEXT\n```! \
-			$TEXT can be provided in any style, such as programming code! \
-			Maintain the origin style but without the ```AiR\n\n``` surroundings! \
-			Return the refined $TEXT only!";
+			$TEXT can be provided in any style! \
+			Discard the ```AiR\n\n``` surroundings! \
+			Extract the $TEXT and return the refined $TEXT only!";
 
 		if self.additional_prompt.is_empty() {
 			DEFAULT.into()
@@ -122,9 +122,9 @@ impl Translation {
 			"As a language professor, assist me in translate text between {} and {}! \
 			Amend any grammatical errors and enhance the language to sound more like a native speaker! \
 			Text is always provided in format ```AiR\n$TEXT\n```! \
-			$TEXT can be provided in any style, such as programming code! \
-			Maintain the origin style but without the ```AiR\n\n``` surroundings! \
-			Return the translated $TEXT only!",
+			$TEXT can be provided in any style! \
+			Discard the ```AiR\n\n``` surroundings! \
+			Extract the $TEXT and return the translated $TEXT only!",
 			self.a.as_str(),
 			self.b.as_str(),
 		);

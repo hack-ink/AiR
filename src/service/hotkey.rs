@@ -27,6 +27,7 @@ impl Hotkey {
 		ctx: &Context,
 		keyboard: Keyboard,
 		hotkeys: &Hotkeys,
+		hide_on_lost_focus: Arc<AtomicBool>,
 		tx: Sender<ChatArgs>,
 	) -> Result<Self> {
 		let ctx = ctx.to_owned();
@@ -48,9 +49,9 @@ impl Hotkey {
 				// We don't care about the release event.
 				if let HotKeyState::Pressed = e.state {
 					let (func, keys) = manager.match_func(e.id);
-					let to_unhide = !func.is_directly();
+					let to_focus = !func.is_directly();
 
-					if to_unhide {
+					if to_focus && hide_on_lost_focus.load(Ordering::Relaxed) {
 						Os::unhide();
 					}
 
@@ -71,9 +72,9 @@ impl Hotkey {
 						_ => continue,
 					};
 
-					tx.send((func, content, !to_unhide)).expect("send must succeed");
+					tx.send((func, content, !to_focus)).expect("send must succeed");
 
-					if to_unhide {
+					if to_focus {
 						ctx.send_viewport_cmd(ViewportCommand::Focus);
 					}
 				}

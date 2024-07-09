@@ -52,7 +52,7 @@ impl Chat {
 				loop {
 					let (func, content, type_in): ChatArgs = rx.recv().unwrap();
 
-					is_chatting.store(true, Ordering::SeqCst);
+					is_chatting.store(true, Ordering::Relaxed);
 
 					tracing::info!("func: {func:?}");
 
@@ -80,7 +80,7 @@ impl Chat {
 					// Allow the UI a moment to refresh the content.
 					time::sleep(Duration::from_millis(50)).await;
 
-					is_chatting.store(false, Ordering::SeqCst);
+					is_chatting.store(false, Ordering::Relaxed);
 				}
 			})
 			.abort_handle();

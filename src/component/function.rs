@@ -13,6 +13,7 @@ pub enum Function {
 	RewriteDirectly,
 	Translate,
 	TranslateDirectly,
+	// TODO: refactor code.
 }
 impl Function {
 	pub fn basic(&self) -> Self {

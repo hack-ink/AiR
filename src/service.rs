@@ -38,14 +38,19 @@ impl Services {
 		let is_chatting = Arc::new(AtomicBool::new(false));
 		let chat =
 			Chat::new(keyboard.clone(), &rt, is_chatting.clone(), &components.setting, &state.chat);
-		let hotkey =
-			Hotkey::new(ctx, keyboard.clone(), &components.setting.hotkeys, chat.tx.clone())?;
+		let hotkey = Hotkey::new(
+			ctx,
+			keyboard.clone(),
+			&components.setting.hotkeys,
+			state.general.hide_on_lost_focus.clone(),
+			chat.tx.clone(),
+		)?;
 
 		Ok(Self { keyboard, rt: Some(rt), quoter, is_chatting, chat, hotkey })
 	}
 
 	pub fn is_chatting(&self) -> bool {
-		self.is_chatting.load(Ordering::SeqCst)
+		self.is_chatting.load(Ordering::Relaxed)
 	}
 
 	pub fn abort(&mut self) {
