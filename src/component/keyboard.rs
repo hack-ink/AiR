@@ -61,6 +61,9 @@ impl FromStr for Keys {
 }
 
 fn key_of(key: char) -> Result<Key> {
+	// We can't use [`enigo::Key::Unicode`] in macOS, it will cause panic.
+	// Don't know why, maybe that can only be used in main thread.
+	//
 	// TODO: create a `CGKeyCode` table for macOS in `build.rs`.
 	// Currently, we only support limited keys on macOS from:
 	// https://eastmanreference.com/complete-list-of-applescript-key-codes.
