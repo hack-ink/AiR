@@ -13,7 +13,7 @@ use arboard::Clipboard;
 use eframe::egui::{Context, ViewportCommand};
 use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager, HotKeyState};
 // self
-use super::{chat::ChatArgs, keyboard::Keyboard};
+use super::{audio::Audio, chat::ChatArgs, keyboard::Keyboard};
 use crate::{
 	component::{function::Function, keyboard::Keys, setting::Hotkeys},
 	os::*,
@@ -28,6 +28,7 @@ impl Hotkey {
 		keyboard: Keyboard,
 		hotkeys: &Hotkeys,
 		hide_on_lost_focus: Arc<AtomicBool>,
+		audio: Audio,
 		tx: Sender<ChatArgs>,
 	) -> Result<Self> {
 		let ctx = ctx.to_owned();
@@ -39,7 +40,7 @@ impl Hotkey {
 
 		// TODO: handle the error.
 		thread::spawn(move || {
-			// The manager need to be kept alive during the whole program life.
+			// Manager must be kept alive.
 			let manager = manager;
 
 			while !abort_.load(Ordering::Relaxed) {
@@ -48,6 +49,8 @@ impl Hotkey {
 
 				// We don't care about the release event.
 				if let HotKeyState::Pressed = e.state {
+					audio.play_notification();
+
 					let (func, keys) = manager.match_func(e.id);
 					let to_focus = !func.is_directly();
 
@@ -60,12 +63,12 @@ impl Hotkey {
 					// operation successfully.
 					keyboard.release_keys(keys);
 					// Give system some time to response `releases_keys`.
-					thread::sleep(Duration::from_millis(200));
+					thread::sleep(Duration::from_millis(250));
 
 					keyboard.copy();
 
 					// Give some time to the system to refresh the clipboard.
-					thread::sleep(Duration::from_millis(500));
+					thread::sleep(Duration::from_millis(250));
 
 					let content = match clipboard.get_text() {
 						Ok(c) if !c.is_empty() => c,

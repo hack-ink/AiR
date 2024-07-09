@@ -95,11 +95,12 @@ pub struct Rewrite {
 }
 impl Rewrite {
 	pub fn prompt(&self) -> Cow<str> {
-		const DEFAULT: &str = "As a language professor, assist me in refining text! \
+		const DEFAULT: &str =
+			"As a professional writer and language master, assist me in refining text! \
 			Amend any grammatical errors and enhance the language to sound more like a native speaker! \
-			Text is always provided in format ```AiR\n$TEXT\n```! \
+			Text is always provided in format `<AiR>$TEXT</AiR>`! \
 			$TEXT can be provided in any style! \
-			Discard the ```AiR\n\n``` surroundings! \
+			Discard the `<AiR></AiR>` tag! \
 			Extract the $TEXT and return the refined $TEXT only!";
 
 		if self.additional_prompt.is_empty() {
@@ -119,11 +120,13 @@ pub struct Translation {
 impl Translation {
 	pub fn prompt(&self) -> Cow<str> {
 		let default = format!(
-			"As a language professor, assist me in translate text between {} and {}! \
+			"As a professional translator and language master, assist me in translating text! \
+			I provide two languages, {} and {}! \
+			Determine which language the text I give is in, and then translate accordingly. \
 			Amend any grammatical errors and enhance the language to sound more like a native speaker! \
-			Text is always provided in format ```AiR\n$TEXT\n```! \
+			Text is always provided in format `<AiR>$TEXT</AiR>`! \
 			$TEXT can be provided in any style! \
-			Discard the ```AiR\n\n``` surroundings! \
+			Discard the `<AiR></AiR>` tag! \
 			Extract the $TEXT and return the translated $TEXT only!",
 			self.a.as_str(),
 			self.b.as_str(),
@@ -180,10 +183,10 @@ pub struct Hotkeys {
 impl Default for Hotkeys {
 	fn default() -> Self {
 		Self {
-			rewrite: "ctrl+y".into(),
-			rewrite_directly: "ctrl+u".into(),
-			translate: "ctrl+i".into(),
-			translate_directly: "ctrl+o".into(),
+			rewrite: "ctrl+t".into(),
+			rewrite_directly: "ctrl+y".into(),
+			translate: "ctrl+u".into(),
+			translate_directly: "ctrl+i".into(),
 		}
 	}
 }

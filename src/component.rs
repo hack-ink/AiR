@@ -1,3 +1,5 @@
+pub mod audio;
+
 pub mod function;
 
 pub mod keyboard;

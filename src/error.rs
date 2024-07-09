@@ -22,6 +22,8 @@ pub enum Error {
 	Enigo(#[from] EnigoError),
 	#[error(transparent)]
 	GlobalHotKey(#[from] GlobalHotKeyError),
+	#[error(transparent)]
+	Rodio(#[from] RodioError),
 	#[error("unsupported key: {0}")]
 	UnsupportedKey(String),
 }
@@ -40,4 +42,14 @@ pub enum GlobalHotKeyError {
 	Main(#[from] global_hotkey::Error),
 	#[error(transparent)]
 	Parse(#[from] global_hotkey::hotkey::HotKeyParseError),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum RodioError {
+	#[error(transparent)]
+	Decoder(#[from] rodio::decoder::DecoderError),
+	#[error(transparent)]
+	Play(#[from] rodio::PlayError),
+	#[error(transparent)]
+	Stream(#[from] rodio::StreamError),
 }

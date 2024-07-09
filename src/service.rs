@@ -1,3 +1,6 @@
+mod audio;
+use audio::Audio;
+
 mod chat;
 use chat::Chat;
 
@@ -28,6 +31,7 @@ pub struct Services {
 	pub quoter: Quoter,
 	pub is_chatting: Arc<AtomicBool>,
 	pub chat: Chat,
+	pub audio: Audio,
 	pub hotkey: Hotkey,
 }
 impl Services {
@@ -38,15 +42,17 @@ impl Services {
 		let is_chatting = Arc::new(AtomicBool::new(false));
 		let chat =
 			Chat::new(keyboard.clone(), &rt, is_chatting.clone(), &components.setting, &state.chat);
+		let audio = Audio::new()?;
 		let hotkey = Hotkey::new(
 			ctx,
 			keyboard.clone(),
 			&components.setting.hotkeys,
 			state.general.hide_on_lost_focus.clone(),
+			audio.clone(),
 			chat.tx.clone(),
 		)?;
 
-		Ok(Self { keyboard, rt: Some(rt), quoter, is_chatting, chat, hotkey })
+		Ok(Self { keyboard, rt: Some(rt), quoter, is_chatting, chat, audio, hotkey })
 	}
 
 	pub fn is_chatting(&self) -> bool {
@@ -57,6 +63,7 @@ impl Services {
 		self.keyboard.abort();
 		self.quoter.abort();
 		self.chat.abort();
+		self.audio.abort();
 		self.hotkey.abort();
 
 		if let Some(rt) = self.rt.take() {

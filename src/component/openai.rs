@@ -32,7 +32,7 @@ impl OpenAi {
 		let msg = [
 			ChatCompletionRequestSystemMessageArgs::default().content(prompt).build()?.into(),
 			ChatCompletionRequestUserMessageArgs::default()
-				.content(format!("```AiR\n{content}\n```"))
+				.content(format!("<AiR>\n{content}\n</AiR>"))
 				.build()?
 				.into(),
 		];
