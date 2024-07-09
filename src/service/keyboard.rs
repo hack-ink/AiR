@@ -18,7 +18,11 @@ impl Keyboard {
 			let mut kb = Kb::new().expect("keyboard action must succeed");
 
 			loop {
-				match rx.recv().expect("receive must succeed") {
+				let act = rx.recv().expect("receive must succeed");
+
+				tracing::debug!("receive action: {act:?}");
+
+				match act {
 					Action::Copy => kb.copy().expect("keyboard action must succeed"),
 					Action::ReleaseKeys(keys) =>
 						kb.release_keys(keys).expect("keyboard action must succeed"),

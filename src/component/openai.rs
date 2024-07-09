@@ -31,8 +31,14 @@ impl OpenAi {
 	pub async fn chat(&self, prompt: &str, content: &str) -> Result<ChatCompletionResponseStream> {
 		let msg = [
 			ChatCompletionRequestSystemMessageArgs::default().content(prompt).build()?.into(),
-			ChatCompletionRequestUserMessageArgs::default().content(content).build()?.into(),
+			ChatCompletionRequestUserMessageArgs::default()
+				.content(format!("```AiR\n{content}\n```"))
+				.build()?
+				.into(),
 		];
+
+		tracing::debug!("chatting with: {msg:?}");
+
 		let req = CreateChatCompletionRequestArgs::default()
 			.model(self.model.as_str())
 			.temperature(self.temperature)

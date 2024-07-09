@@ -21,7 +21,7 @@ impl Quoter {
 	pub async fn fetch(&self) -> Result<String> {
 		tracing::info!("fetching quote");
 
-		let b = HTTP_CLIENT.get_with_reties(Self::API, 3, 500).await?;
+		let b = HTTP_CLIENT.get_with_reties(Self::API, 3, 200).await?;
 		// let q = b.json::<Quote>()?;
 		let q = b.json::<[Quote; 1]>()?;
 

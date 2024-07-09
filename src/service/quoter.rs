@@ -18,7 +18,7 @@ impl Quoter {
 
 					*quote.write() = quoter.fetch().await.unwrap_or(QuoterC::DEFAULT.into());
 
-					time::sleep(Duration::from_secs(50)).await;
+					time::sleep(Duration::from_millis(30_000)).await;
 				}
 			})
 			.abort_handle();

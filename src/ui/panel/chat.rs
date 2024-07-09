@@ -84,6 +84,8 @@ impl UiT for Chat {
 				if is_chatting {
 					ui.spinner();
 				} else {
+					// TODO: change retry to send.
+					// TODO: the state will not be synced if previous action is triggered by hotkey.
 					if ui.add(self.shortcut.retry.clone()).clicked() {
 						ctx.services.chat.send((
 							ctx.components.setting.general.active_func.basic(),

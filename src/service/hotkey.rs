@@ -58,6 +58,9 @@ impl Hotkey {
 					// If the user is still holding the keys, we can still perform the copy
 					// operation successfully.
 					keyboard.release_keys(keys);
+					// Give system some time to response `releases_keys`.
+					thread::sleep(Duration::from_millis(200));
+
 					keyboard.copy();
 
 					// Give some time to the system to refresh the clipboard.

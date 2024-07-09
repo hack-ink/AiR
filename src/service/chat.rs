@@ -55,7 +55,6 @@ impl Chat {
 					is_chatting.store(true, Ordering::SeqCst);
 
 					tracing::info!("func: {func:?}");
-					tracing::debug!("content: {content}");
 
 					input.write().clone_from(&content);
 					output.write().clear();

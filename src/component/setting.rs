@@ -101,10 +101,12 @@ impl Rewrite {
 impl Default for Rewrite {
 	fn default() -> Self {
 		Self {
-			prompt: "As language professor, assist me in refining this text. \
-				Amend any grammatical errors, \
-				enhance the language to sound more like a native speaker and keep the origin format. \
-				Just provide the refined text only, without any other things:"
+			prompt: "As a language professor, assist me in refining text! \
+				Amend any grammatical errors and enhance the language to sound more like a native speaker! \
+				Text is always provided in format ```AiR\n$TEXT\n```! \
+				$TEXT can be provided in any style, such as programming code! \
+				Maintain the origin style but without the ```AiR\n\n``` surroundings! \
+				Return the refined $TEXT only!"
 				.into(),
 		}
 	}
@@ -119,7 +121,7 @@ pub struct Translation {
 impl Translation {
 	pub fn prompt(&self) -> Cow<str> {
 		Cow::Owned(format!(
-			"Assist me in translate this text between {} and {}. {}",
+			"As a language professor, assist me in translate text between {} and {}! {}",
 			self.a.as_str(),
 			self.b.as_str(),
 			self.prompt
@@ -129,9 +131,11 @@ impl Translation {
 impl Default for Translation {
 	fn default() -> Self {
 		Self {
-			prompt: "As a language professor, amend any grammatical errors, \
-				enhance the language to sound more like a native speaker and keep the origin format. \
-				Provide the translated text only, without any other things:"
+			prompt: "Amend any grammatical errors and enhance the language to sound more like a native speaker! \
+				Text is always provided in format ```AiR\n$TEXT\n```! \
+				$TEXT can be provided in any style, such as programming code! \
+				Maintain the origin style but without the ```AiR\n\n``` surroundings! \
+				Return the translated $TEXT only!"
 				.into(),
 			a: Language::ZhCn,
 			b: Language::EnGb,
@@ -177,10 +181,10 @@ pub struct Hotkeys {
 impl Default for Hotkeys {
 	fn default() -> Self {
 		Self {
-			rewrite: "Ctrl+Y".into(),
-			rewrite_directly: "Ctrl+U".into(),
-			translate: "Ctrl+I".into(),
-			translate_directly: "Ctrl+O".into(),
+			rewrite: "ctrl+y".into(),
+			rewrite_directly: "ctrl+u".into(),
+			translate: "ctrl+i".into(),
+			translate_directly: "ctrl+o".into(),
 		}
 	}
 }
