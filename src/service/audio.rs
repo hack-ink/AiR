@@ -18,7 +18,7 @@ impl Audio {
 
 			loop {
 				match rx.recv().expect("receive must succeed") {
-					Effect::Notification => audio.play(audio.notification.clone()),
+					Effect::Notification => audio.play_notification(),
 					Effect::Abort => return,
 				}
 			}

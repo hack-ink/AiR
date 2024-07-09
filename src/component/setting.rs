@@ -3,11 +3,10 @@ use std::{borrow::Cow, fs, path::PathBuf};
 // crates.io
 use app_dirs2::AppDataType;
 use async_openai::config::OPENAI_API_BASE;
-use eframe::egui::WidgetText;
 use serde::{Deserialize, Serialize};
 // self
 use super::{function::Function, openai::Model};
-use crate::{prelude::*, APP_INFO};
+use crate::{prelude::*, widget::ComboBoxItem, APP_INFO};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -153,22 +152,20 @@ pub enum Language {
 	// English (United Kingdom).
 	EnGb,
 }
-impl Language {
-	pub fn as_str(&self) -> &'static str {
+impl ComboBoxItem for Language {
+	type Array = [Self; Self::COUNT];
+
+	const COUNT: usize = 2;
+
+	fn all() -> Self::Array {
+		[Self::ZhCn, Self::EnGb]
+	}
+
+	fn as_str(&self) -> &'static str {
 		match self {
 			Self::ZhCn => "zh-CN",
 			Self::EnGb => "en-GB",
 		}
-	}
-
-	pub fn all() -> [Self; 2] {
-		[Self::ZhCn, Self::EnGb]
-	}
-}
-#[allow(clippy::from_over_into)]
-impl Into<WidgetText> for &Language {
-	fn into(self) -> WidgetText {
-		self.as_str().into()
 	}
 }
 

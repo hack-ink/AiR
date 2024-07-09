@@ -31,8 +31,8 @@ impl Audio {
 		Ok(Audio { notification, sink, _stream })
 	}
 
-	pub fn play(&self, audio_src: Source) {
-		self.sink.append(audio_src);
+	pub fn play_notification(&self) {
+		self.sink.append(self.notification.clone());
 		self.sink.sleep_until_end();
 	}
 }

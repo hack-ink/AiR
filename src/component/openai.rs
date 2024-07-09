@@ -7,11 +7,10 @@ use async_openai::{
 	},
 	Client,
 };
-use eframe::egui::WidgetText;
 use serde::{Deserialize, Serialize};
 // self
 use super::setting::Ai;
-use crate::prelude::*;
+use crate::{prelude::*, widget::ComboBoxItem};
 
 #[derive(Debug)]
 pub struct OpenAi {
@@ -59,15 +58,8 @@ pub enum Model {
 	Gpt35Turbo,
 }
 impl Model {
-	pub const MODEL_URI: &'static str = "https://platform.openai.com/docs/models";
+	// pub const MODEL_URI: &'static str = "https://platform.openai.com/docs/models";
 	pub const PRICE_URI: &'static str = "https://openai.com/pricing";
-
-	pub fn as_str(&self) -> &'static str {
-		match self {
-			Self::Gpt4o => "gpt-4o",
-			Self::Gpt35Turbo => "gpt-3.5-turbo",
-		}
-	}
 
 	pub fn prices(&self) -> (f32, f32) {
 		match self {
@@ -75,19 +67,25 @@ impl Model {
 			Self::Gpt35Turbo => (0.0000005, 0.0000015),
 		}
 	}
-
-	pub fn all() -> [Self; 2] {
-		[Self::Gpt4o, Self::Gpt35Turbo]
-	}
 }
 impl Default for Model {
 	fn default() -> Self {
 		Self::Gpt4o
 	}
 }
-#[allow(clippy::from_over_into)]
-impl Into<WidgetText> for &Model {
-	fn into(self) -> WidgetText {
-		self.as_str().into()
+impl ComboBoxItem for Model {
+	type Array = [Self; Self::COUNT];
+
+	const COUNT: usize = 2;
+
+	fn all() -> Self::Array {
+		[Self::Gpt4o, Self::Gpt35Turbo]
+	}
+
+	fn as_str(&self) -> &'static str {
+		match self {
+			Self::Gpt4o => "gpt-4o",
+			Self::Gpt35Turbo => "gpt-3.5-turbo",
+		}
 	}
 }

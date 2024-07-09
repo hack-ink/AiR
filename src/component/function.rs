@@ -1,10 +1,10 @@
 // std
 use std::borrow::Cow;
 // crates.io
-use eframe::egui::WidgetText;
 use serde::{Deserialize, Serialize};
 // self
 use super::setting::Chat;
+use crate::widget::ComboBoxItem;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -20,17 +20,6 @@ impl Function {
 		match self {
 			Self::Rewrite | Self::RewriteDirectly => Self::Rewrite,
 			Self::Translate | Self::TranslateDirectly => Self::Translate,
-		}
-	}
-
-	pub fn basic_all() -> [Self; 2] {
-		[Self::Rewrite, Self::Translate]
-	}
-
-	pub fn basic_as_str(&self) -> &'static str {
-		match self {
-			Self::Rewrite | Self::RewriteDirectly => "Rewrite",
-			Self::Translate | Self::TranslateDirectly => "Translate",
 		}
 	}
 
@@ -50,9 +39,19 @@ impl Default for Function {
 		Self::Rewrite
 	}
 }
-#[allow(clippy::from_over_into)]
-impl Into<WidgetText> for &Function {
-	fn into(self) -> WidgetText {
-		self.basic_as_str().into()
+impl ComboBoxItem for Function {
+	type Array = [Self; Self::COUNT];
+
+	const COUNT: usize = 2;
+
+	fn all() -> Self::Array {
+		[Self::Rewrite, Self::Translate]
+	}
+
+	fn as_str(&self) -> &'static str {
+		match self {
+			Self::Rewrite | Self::RewriteDirectly => "Rewrite",
+			Self::Translate | Self::TranslateDirectly => "Translate",
+		}
 	}
 }

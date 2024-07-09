@@ -20,7 +20,7 @@ impl Keyboard {
 			loop {
 				let act = rx.recv().expect("receive must succeed");
 
-				tracing::info!("receive action: {act:?}");
+				tracing::debug!("receive action: {act:?}");
 
 				match act {
 					Action::Copy => kb.copy().expect("keyboard action must succeed"),

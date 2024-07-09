@@ -15,6 +15,7 @@ mod os;
 mod service;
 mod state;
 mod ui;
+mod widget;
 
 mod prelude {
 	pub type Result<T, E = Error> = std::result::Result<T, E>;

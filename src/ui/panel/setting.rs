@@ -1,13 +1,10 @@
 // std
 use std::sync::atomic::Ordering;
 // crates.io
-use eframe::egui::{self, *};
+use eframe::egui::*;
 // self
 use super::super::UiT;
-use crate::{
-	air::AiRContext,
-	component::{function::Function, openai::Model, setting::Language},
-};
+use crate::{air::AiRContext, widget};
 
 #[derive(Debug, Default)]
 pub struct Setting {
@@ -44,7 +41,9 @@ impl UiT for Setting {
 				ui.end_row();
 
 				ui.label("Hide on Lost Focus");
-				if ui.add(toggle(&mut ctx.components.setting.general.hide_on_lost_focus)).changed()
+				if ui
+					.add(widget::toggle(&mut ctx.components.setting.general.hide_on_lost_focus))
+					.changed()
 				{
 					ctx.state.general.hide_on_lost_focus.store(
 						ctx.components.setting.general.hide_on_lost_focus,
@@ -53,18 +52,10 @@ impl UiT for Setting {
 				};
 				ui.end_row();
 
-				ui.label("Active Function");
-				ComboBox::from_id_source("Active Function")
-					.selected_text(&ctx.components.setting.general.active_func)
-					.show_ui(ui, |ui| {
-						Function::basic_all().iter().for_each(|f| {
-							ui.selectable_value(
-								&mut ctx.components.setting.general.active_func,
-								f.to_owned(),
-								f,
-							);
-						});
-					});
+				ui.add(widget::combo_box(
+					"Active Function",
+					&mut ctx.components.setting.general.active_func,
+				));
 				ui.end_row();
 			});
 		});
@@ -109,20 +100,9 @@ impl UiT for Setting {
 				ui.end_row();
 
 				// TODO: we might not need to renew the client if only the model changed.
-				ui.label("Model");
-				ComboBox::from_id_source("Model")
-					.selected_text(&ctx.components.setting.ai.model)
-					.show_ui(ui, |ui| {
-						Model::all().iter().for_each(|m| {
-							changed |= ui
-								.selectable_value(
-									&mut ctx.components.setting.ai.model,
-									m.to_owned(),
-									m,
-								)
-								.changed();
-						});
-					});
+				changed |= ui
+					.add(widget::combo_box("Model", &mut ctx.components.setting.ai.model))
+					.changed();
 				ui.end_row();
 
 				// TODO: we might not need to renew the client if only the temperature changed.
@@ -146,32 +126,11 @@ impl UiT for Setting {
 		// TODO: [`crate::component::setting::Chat`].
 		ui.collapsing("Translation", |ui| {
 			Grid::new("Translation").num_columns(2).striped(true).show(ui, |ui| {
-				ui.label("A");
-				ComboBox::from_id_source("A")
-					.selected_text(&ctx.components.setting.chat.translation.a)
-					.show_ui(ui, |ui| {
-						Language::all().iter().for_each(|l| {
-							ui.selectable_value(
-								&mut ctx.components.setting.chat.translation.a,
-								l.to_owned(),
-								l,
-							);
-						});
-					});
+				// TODO: A and B should be mutually exclusive.
+				ui.add(widget::combo_box("A", &mut ctx.components.setting.chat.translation.a));
 				ui.end_row();
 
-				ui.label("B");
-				ComboBox::from_id_source("B")
-					.selected_text(&ctx.components.setting.chat.translation.b)
-					.show_ui(ui, |ui| {
-						Language::all().iter().for_each(|l| {
-							ui.selectable_value(
-								&mut ctx.components.setting.chat.translation.b,
-								l.to_owned(),
-								l,
-							);
-						});
-					});
+				ui.add(widget::combo_box("B", &mut ctx.components.setting.chat.translation.b));
 				ui.end_row();
 			});
 		});
@@ -197,35 +156,4 @@ impl Default for ApiKeyWidget {
 	fn default() -> Self {
 		Self { label: "show".into(), visibility: true }
 	}
-}
-
-// https://github.com/emilk/egui/blob/aa96b257460a07b30489d104fae08d095a9e3a4e/crates/egui_demo_lib/src/demo/toggle_switch.rs#L109.
-fn toggle(on: &mut bool) -> impl Widget + '_ {
-	fn toggle_ui(ui: &mut Ui, on: &mut bool) -> Response {
-		let desired_size = ui.spacing().interact_size.y * vec2(2.0, 1.0);
-		let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click());
-
-		if response.clicked() {
-			*on = !*on;
-
-			response.mark_changed();
-		}
-		if ui.is_rect_visible(rect) {
-			let how_on = ui.ctx().animate_bool_responsive(response.id, *on);
-			let visuals = ui.style().interact_selectable(&response, *on);
-			let rect = rect.expand(visuals.expansion);
-			let radius = 0.5 * rect.height();
-
-			ui.painter().rect(rect, radius, visuals.bg_fill, visuals.bg_stroke);
-
-			let circle_x = egui::lerp((rect.left() + radius)..=(rect.right() - radius), how_on);
-			let center = egui::pos2(circle_x, rect.center().y);
-
-			ui.painter().circle(center, 0.75 * radius, visuals.bg_fill, visuals.fg_stroke);
-		}
-
-		response
-	}
-
-	move |ui: &mut Ui| toggle_ui(ui, on)
 }
