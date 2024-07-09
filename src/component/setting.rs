@@ -88,58 +88,57 @@ pub struct Chat {
 	pub rewrite: Rewrite,
 	pub translation: Translation,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Rewrite {
-	pub prompt: String,
+	pub additional_prompt: String,
 }
 impl Rewrite {
 	pub fn prompt(&self) -> Cow<str> {
-		Cow::Borrowed(&self.prompt)
-	}
-}
-impl Default for Rewrite {
-	fn default() -> Self {
-		Self {
-			prompt: "As a language professor, assist me in refining text! \
-				Amend any grammatical errors and enhance the language to sound more like a native speaker! \
-				Text is always provided in format ```AiR\n$TEXT\n```! \
-				$TEXT can be provided in any style, such as programming code! \
-				Maintain the origin style but without the ```AiR\n\n``` surroundings! \
-				Return the refined $TEXT only!"
-				.into(),
+		const DEFAULT: &str = "As a language professor, assist me in refining text! \
+			Amend any grammatical errors and enhance the language to sound more like a native speaker! \
+			Text is always provided in format ```AiR\n$TEXT\n```! \
+			$TEXT can be provided in any style, such as programming code! \
+			Maintain the origin style but without the ```AiR\n\n``` surroundings! \
+			Return the refined $TEXT only!";
+
+		if self.additional_prompt.is_empty() {
+			DEFAULT.into()
+		} else {
+			format!("{DEFAULT} {}", self.additional_prompt).into()
 		}
 	}
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Translation {
-	pub prompt: String,
+	pub additional_prompt: String,
 	pub a: Language,
 	pub b: Language,
 }
 impl Translation {
 	pub fn prompt(&self) -> Cow<str> {
-		Cow::Owned(format!(
-			"As a language professor, assist me in translate text between {} and {}! {}",
+		let default = format!(
+			"As a language professor, assist me in translate text between {} and {}! \
+			Amend any grammatical errors and enhance the language to sound more like a native speaker! \
+			Text is always provided in format ```AiR\n$TEXT\n```! \
+			$TEXT can be provided in any style, such as programming code! \
+			Maintain the origin style but without the ```AiR\n\n``` surroundings! \
+			Return the translated $TEXT only!",
 			self.a.as_str(),
 			self.b.as_str(),
-			self.prompt
-		))
+		);
+
+		if self.additional_prompt.is_empty() {
+			default.into()
+		} else {
+			format!("{default} {}", self.additional_prompt).into()
+		}
 	}
 }
 impl Default for Translation {
 	fn default() -> Self {
-		Self {
-			prompt: "Amend any grammatical errors and enhance the language to sound more like a native speaker! \
-				Text is always provided in format ```AiR\n$TEXT\n```! \
-				$TEXT can be provided in any style, such as programming code! \
-				Maintain the origin style but without the ```AiR\n\n``` surroundings! \
-				Return the translated $TEXT only!"
-				.into(),
-			a: Language::ZhCn,
-			b: Language::EnGb,
-		}
+		Self { additional_prompt: Default::default(), a: Language::ZhCn, b: Language::EnGb }
 	}
 }
 // https://www.alchemysoftware.com/livedocs/ezscript/Topics/Catalyst/Language.htm
