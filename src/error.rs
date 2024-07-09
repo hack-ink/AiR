@@ -23,7 +23,7 @@ pub enum Error {
 	#[error(transparent)]
 	GlobalHotKey(#[from] GlobalHotKeyError),
 	#[error("unsupported key: {0}")]
-	UnsupportedKey(String)
+	UnsupportedKey(String),
 }
 
 #[derive(Debug, thiserror::Error)]

@@ -29,11 +29,7 @@ impl Uis {
 			.frame(util::transparent_frame(ctx.egui_ctx))
 			.show(ctx.egui_ctx, |ui| {
 				ui.horizontal(|ui| {
-					ui.selectable_value(
-						&mut self.focused_panel,
-						Panel::Chat,
-						Panel::Chat.name(),
-					);
+					ui.selectable_value(&mut self.focused_panel, Panel::Chat, Panel::Chat.name());
 					ui.separator();
 					ui.selectable_value(
 						&mut self.focused_panel,

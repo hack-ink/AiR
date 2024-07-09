@@ -25,7 +25,6 @@ lto      = true
 [features]
 default = []
 dev     = []
-# tokenizer = ["llm_utils"]
 
 [dependencies]
 # crates.io
@@ -47,7 +46,6 @@ toml               = { version = "0.8" }
 tracing            = { version = "0.1" }
 tracing-appender   = { version = "0.2" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-# llm_utils          = { version = "0.0.6", optional = true }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-app-kit    = { version = "0.2", features = ["NSApplication", "NSResponder", "NSRunningApplication", "NSWindow"] }

@@ -45,6 +45,7 @@ impl Chat {
 		let chat_setting_ = chat_setting.clone();
 		let input = state.input.clone();
 		let output = state.output.clone();
+		let tcs = state.token_counts.clone();
 		let (tx, rx) = mpsc::channel();
 		// TODO: handle the error.
 		let abort_handle = rt
@@ -67,13 +68,20 @@ impl Chat {
 						.unwrap();
 
 					while let Some(r) = stream.next().await {
-						for s in r.unwrap().choices.into_iter().filter_map(|c| c.delta.content) {
+						let resp = r.unwrap();
+
+						for s in resp.choices.into_iter().filter_map(|c| c.delta.content) {
 							output.write().push_str(&s);
 
 							// TODO?: move to outside of the loop.
 							if type_in {
 								keyboard.text(s);
 							}
+						}
+
+						if let Some(u) = resp.usage {
+							tcs.0.store(u.prompt_tokens, Ordering::Relaxed);
+							tcs.1.store(u.completion_tokens, Ordering::Relaxed);
 						}
 					}
 
@@ -93,6 +101,8 @@ impl Chat {
 	}
 
 	pub fn renew(&mut self, setting: &Setting) {
+		tracing::info!("renewing chat service");
+
 		*self.openai.blocking_lock() = OpenAi::new(setting.ai.clone());
 		*self.chat_setting.blocking_lock() = setting.chat.clone();
 	}

@@ -1,5 +1,8 @@
 // std
-use std::sync::{atomic::AtomicBool, Arc};
+use std::sync::{
+	atomic::{AtomicBool, AtomicU32},
+	Arc,
+};
 // crates.io
 use parking_lot::RwLock;
 // self
@@ -20,6 +23,7 @@ impl State {
 				quote: Arc::new(RwLock::new(String::new())),
 				input: Arc::new(RwLock::new(String::new())),
 				output: Arc::new(RwLock::new(String::new())),
+				token_counts: Arc::new((AtomicU32::new(0), AtomicU32::new(0))),
 			},
 		}
 	}
@@ -35,4 +39,5 @@ pub struct Chat {
 	pub quote: Arc<RwLock<String>>,
 	pub input: Arc<RwLock<String>>,
 	pub output: Arc<RwLock<String>>,
+	pub token_counts: Arc<(AtomicU32, AtomicU32)>,
 }

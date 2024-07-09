@@ -1,6 +1,3 @@
-#[cfg(feature = "tokenizer")] pub mod tokenizer;
-#[cfg(feature = "tokenizer")] use tokenizer::Tokenizer;
-
 pub mod function;
 
 pub mod keyboard;
@@ -26,8 +23,6 @@ use crate::prelude::*;
 pub struct Components {
 	pub clipboard: Clipboard,
 	pub setting: Setting,
-	#[cfg(feature = "tokenizer")]
-	pub tokenizer: Tokenizer,
 }
 impl Components {
 	pub fn new() -> Result<Self> {
@@ -37,25 +32,14 @@ impl Components {
 		// TODO: https://github.com/emilk/egui/discussions/4670.
 		debug_assert_eq!(setting.ai.temperature, setting.ai.temperature * 10. / 10.);
 
-		#[cfg(feature = "tokenizer")]
-		let tokenizer = Tokenizer::new(setting.ai.model.as_str());
-
-		Ok(Self {
-			clipboard,
-			setting,
-			#[cfg(feature = "tokenizer")]
-			tokenizer,
-		})
+		Ok(Self { clipboard, setting })
 	}
 }
 impl Debug for Components {
 	fn fmt(&self, f: &mut Formatter) -> FmtResult {
-		let mut s = f.debug_struct("Components");
-
-		s.field("clipboard", &"..").field("setting", &self.setting);
-		#[cfg(feature = "tokenizer")]
-		s.field("tokenizer", &self.tokenizer);
-
-		s.finish()
+		f.debug_struct("Components")
+			.field("clipboard", &"..")
+			.field("setting", &self.setting)
+			.finish()
 	}
 }

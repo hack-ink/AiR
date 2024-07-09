@@ -3,7 +3,7 @@ use async_openai::{
 	config::OpenAIConfig,
 	types::{
 		ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
-		ChatCompletionResponseStream, CreateChatCompletionRequestArgs,
+		ChatCompletionResponseStream, ChatCompletionStreamOptions, CreateChatCompletionRequestArgs,
 	},
 	Client,
 };
@@ -36,28 +36,32 @@ impl OpenAi {
 				.build()?
 				.into(),
 		];
-
-		tracing::debug!("chatting with: {msg:?}");
-
 		let req = CreateChatCompletionRequestArgs::default()
 			.model(self.model.as_str())
 			.temperature(self.temperature)
 			.max_tokens(4_096_u16)
 			.messages(&msg)
+			.stream(true)
+			.stream_options(ChatCompletionStreamOptions { include_usage: true })
 			.build()?;
+
+		tracing::debug!("chatting with: {req:?}");
+
 		let stream = self.client.chat().create_stream(req).await?;
 
 		Ok(stream)
 	}
 }
 
-// https://platform.openai.com/docs/models.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Model {
 	Gpt4o,
 	Gpt35Turbo,
 }
 impl Model {
+	pub const MODEL_URI: &'static str = "https://platform.openai.com/docs/models";
+	pub const PRICE_URI: &'static str = "https://openai.com/pricing";
+
 	pub fn as_str(&self) -> &'static str {
 		match self {
 			Self::Gpt4o => "gpt-4o",
@@ -65,7 +69,6 @@ impl Model {
 		}
 	}
 
-	// https://openai.com/pricing
 	pub fn prices(&self) -> (f32, f32) {
 		match self {
 			Self::Gpt4o => (0.000005, 0.000015),

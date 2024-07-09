@@ -1,9 +1,13 @@
+// std
+use std::sync::atomic::Ordering;
 // crates.io
 use eframe::egui::*;
 // self
 use super::super::UiT;
-use crate::air::AiRContext;
-#[cfg(feature = "tokenizer")] use crate::component::util;
+use crate::{
+	air::AiRContext,
+	component::{openai::Model, util},
+};
 
 #[derive(Debug, Default)]
 pub struct Chat {
@@ -55,22 +59,20 @@ impl UiT for Chat {
 		});
 
 		// Indicators.
-		#[cfg(feature = "tokenizer")]
 		ui.horizontal(|ui| {
 			ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
 				ui.vertical(|ui| {
-					// TODO: maybe don't need this.
-					// ui.add_space(4.5);
+					ui.add_space(4.5);
 					ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-						let (ic, oc) =
-							ctx.components.tokenizer.count_token(&self.input, &self.output);
+						let tcs = &ctx.state.chat.token_counts;
+						let (itc, otc) =
+							(tcs.0.load(Ordering::Relaxed), tcs.1.load(Ordering::Relaxed));
 						let (ip, op) = ctx.components.setting.ai.model.prices();
 
-						ui.label(format!(
-							"{} tokens (${:.6})",
-							ic + oc,
-							util::price_rounded(ic as f32 * ip + oc as f32 * op)
-						));
+						ui.hyperlink_to(format!(
+							"input: {itc} output: {otc} price: ${:.6}",
+							util::price_rounded(itc as f32 * ip + otc as f32 * op)
+						),Model::PRICE_URI).on_hover_text("The token indicator might not work if you are using a custom API provider.");
 					});
 				});
 			});
