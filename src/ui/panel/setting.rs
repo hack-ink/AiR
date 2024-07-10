@@ -8,7 +8,7 @@ use crate::{air::AiRContext, widget};
 
 #[derive(Debug, Default)]
 pub struct Setting {
-	pub api_key: ApiKeyWidget,
+	api_key: ApiKeyWidget,
 }
 impl Setting {
 	fn set_font_sizes(&self, ctx: &AiRContext) {

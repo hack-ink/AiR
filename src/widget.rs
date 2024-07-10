@@ -68,3 +68,10 @@ pub fn toggle(on: &mut bool) -> impl Widget + '_ {
 		response
 	}
 }
+
+pub fn image_button<S>(src: S) -> Image<'static>
+where
+	S: Into<ImageSource<'static>>,
+{
+	Image::new(src).max_size((16., 16.).into()).sense(Sense::click())
+}

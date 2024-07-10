@@ -14,9 +14,9 @@ trait UiT {
 
 #[derive(Debug, Default)]
 pub struct Uis {
-	pub focused_panel: Panel,
-	pub chat: Chat,
-	pub setting: Setting,
+	focused_panel: Panel,
+	chat: Chat,
+	setting: Setting,
 }
 impl Uis {
 	pub fn new() -> Self {
@@ -25,8 +25,9 @@ impl Uis {
 
 	pub fn draw(&mut self, mut ctx: AiRContext) {
 		CentralPanel::default()
+			// TODO:? transparent window.
 			// FIXME: it looks like there some invalid cache.
-			.frame(util::transparent_frame(ctx.egui_ctx))
+			// .frame(util::transparent_frame(ctx.egui_ctx))
 			.show(ctx.egui_ctx, |ui| {
 				ui.horizontal(|ui| {
 					ui.selectable_value(&mut self.focused_panel, Panel::Chat, Panel::Chat.name());

@@ -123,8 +123,10 @@ pub fn launch() -> Result<()> {
 						.unwrap(),
 				)
 				.with_inner_size((720., 360.))
-				.with_min_inner_size((720., 360.))
-				.with_transparent(true),
+				.with_min_inner_size((720., 360.)),
+				// TODO?: transparent window.
+				// .with_transparent(true),
+			follow_system_theme: true,
 			..Default::default()
 		},
 		Box::new(|c| Ok(Box::new(AiR::new(&c.egui_ctx).unwrap()))),

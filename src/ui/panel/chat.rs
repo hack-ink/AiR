@@ -7,18 +7,20 @@ use super::super::UiT;
 use crate::{
 	air::AiRContext,
 	component::{openai::Model, util},
+	widget,
 };
 
 #[derive(Debug, Default)]
 pub struct Chat {
-	pub input: String,
-	pub output: String,
-	pub shortcut: ShortcutWidget,
+	input: String,
+	output: String,
+	shortcut: ShortcutWidget,
 }
 impl UiT for Chat {
 	fn draw(&mut self, ui: &mut Ui, ctx: &mut AiRContext) {
-		let is_chatting = ctx.services.is_chatting();
+		let dark_mode = ui.visuals().dark_mode;
 		let size = ui.available_size();
+		let is_chatting = ctx.services.is_chatting();
 
 		ScrollArea::vertical().id_source("Input").max_height((size.y - 50.) / 2.).show(ui, |ui| {
 			let input = ui.add_sized(
@@ -88,7 +90,7 @@ impl UiT for Chat {
 				} else {
 					// TODO: change retry to send.
 					// TODO: the state will not be synced if previous action is triggered by hotkey.
-					if ui.add(self.shortcut.retry.clone()).clicked() {
+					if ui.add(self.shortcut.retry.img(dark_mode)).clicked() {
 						ctx.services.chat.send((
 							ctx.components.setting.general.active_func.basic(),
 							self.input.clone(),
@@ -97,7 +99,7 @@ impl UiT for Chat {
 					}
 				}
 				if !self.shortcut.copy.triggered {
-					if ui.add(self.shortcut.copy.copy_img.clone()).clicked() {
+					if ui.add(self.shortcut.copy.copy_img(dark_mode)).clicked() {
 						self.shortcut.copy.triggered = true;
 						ctx.components
 							.clipboard
@@ -105,7 +107,7 @@ impl UiT for Chat {
 							.expect("clipboard must be available");
 					}
 				} else {
-					ui.add(self.shortcut.copy.copied_img.clone());
+					ui.add(self.shortcut.copy.copied_img(dark_mode));
 				}
 			});
 		});
@@ -124,37 +126,67 @@ impl UiT for Chat {
 	}
 }
 
-#[derive(Debug)]
-pub struct ShortcutWidget {
-	retry: Image<'static>,
+#[derive(Debug, Default)]
+struct ShortcutWidget {
 	copy: CopyWidget,
-}
-impl Default for ShortcutWidget {
-	fn default() -> Self {
-		Self {
-			retry: Image::new(include_image!("../../../asset/retry.svg"))
-				.max_size((16., 16.).into())
-				.sense(Sense::click()),
-			copy: Default::default(),
-		}
-	}
+	retry: RetryWidget,
 }
 // TODO: https://github.com/emilk/egui/issues/3453.
 #[derive(Debug)]
-pub struct CopyWidget {
-	copy_img: Image<'static>,
-	copied_img: Image<'static>,
+struct CopyWidget {
+	copy_img_l: Image<'static>,
+	copy_img_d: Image<'static>,
+	copied_img_l: Image<'static>,
+	copied_img_d: Image<'static>,
 	triggered: bool,
+}
+impl CopyWidget {
+	fn copy_img(&self, dark_mode: bool) -> Image<'static> {
+		if dark_mode {
+			self.copy_img_d.clone()
+		} else {
+			self.copy_img_l.clone()
+		}
+	}
+
+	fn copied_img(&self, dark_mode: bool) -> Image<'static> {
+		if dark_mode {
+			self.copied_img_d.clone()
+		} else {
+			self.copied_img_l.clone()
+		}
+	}
 }
 impl Default for CopyWidget {
 	fn default() -> Self {
 		Self {
-			copy_img: Image::new(include_image!("../../../asset/copy.svg"))
-				.max_size((16., 16.).into())
-				.sense(Sense::click()),
-			copied_img: Image::new(include_image!("../../../asset/check.svg"))
-				.max_size((16., 16.).into()),
+			copy_img_d: widget::image_button(include_image!("../../../asset/copy-dark.svg")),
+			copy_img_l: widget::image_button(include_image!("../../../asset/copy-light.svg")),
+			copied_img_d: widget::image_button(include_image!("../../../asset/copied-dark.svg")),
+			copied_img_l: widget::image_button(include_image!("../../../asset/copied-light.svg")),
 			triggered: false,
+		}
+	}
+}
+#[derive(Debug)]
+struct RetryWidget {
+	retry_img_d: Image<'static>,
+	retry_img_l: Image<'static>,
+}
+impl RetryWidget {
+	fn img(&self, dark_mode: bool) -> Image<'static> {
+		if dark_mode {
+			self.retry_img_d.clone()
+		} else {
+			self.retry_img_l.clone()
+		}
+	}
+}
+impl Default for RetryWidget {
+	fn default() -> Self {
+		Self {
+			retry_img_d: widget::image_button(include_image!("../../../asset/retry-dark.svg")),
+			retry_img_l: widget::image_button(include_image!("../../../asset/retry-light.svg")),
 		}
 	}
 }
