@@ -123,7 +123,6 @@ impl UiT for Setting {
 			}
 		});
 
-		// TODO: [`crate::component::setting::Chat`].
 		ui.collapsing("Translation", |ui| {
 			Grid::new("Translation").num_columns(2).striped(true).show(ui, |ui| {
 				// TODO: A and B should be mutually exclusive.
@@ -131,6 +130,26 @@ impl UiT for Setting {
 				ui.end_row();
 
 				ui.add(widget::combo_box("B", &mut ctx.components.setting.chat.translation.b));
+				ui.end_row();
+			});
+		});
+
+		ui.collapsing("Development", |ui| {
+			Grid::new("Development").num_columns(2).striped(true).show(ui, |ui| {
+				if ui
+					.add(widget::combo_box(
+						"Log Level",
+						&mut ctx.components.setting.development.log_level,
+					))
+					.changed()
+				{
+					ctx.state
+						.development
+						.reload_log_filter(
+							ctx.components.setting.development.log_level.clone().into(),
+						)
+						.expect("reload must succeed");
+				}
 				ui.end_row();
 			});
 		});

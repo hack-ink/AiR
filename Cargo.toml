@@ -55,3 +55,7 @@ objc2-foundation = { version = "0.2" }
 # accessibility-sys = { version = "0.1" }
 # core-foundation   = { version = "0.9" }
 # objc2             = { version = "0.5" }
+
+# Development only.
+# [patch.crates-io]
+# async-openai = { path = "tmp/async-openai/async-openai" }

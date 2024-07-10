@@ -2,6 +2,7 @@
 use std::sync::Once;
 // crates.io
 use eframe::{egui::*, glow::Context as GlowContext, Frame, *};
+use tracing_subscriber::{reload::Handle, EnvFilter, Registry};
 // self
 use crate::{
 	component::Components, os::Os, prelude::Result, service::Services, state::State, ui::Uis,
@@ -16,7 +17,7 @@ struct AiR {
 	uis: Uis,
 }
 impl AiR {
-	fn new(ctx: &Context) -> Result<Self> {
+	fn new(log_filter_handle: Handle<EnvFilter, Registry>, ctx: &Context) -> Result<Self> {
 		Self::set_fonts(ctx);
 
 		// To enable SVG.
@@ -24,7 +25,7 @@ impl AiR {
 
 		let once = Once::new();
 		let components = Components::new()?;
-		let state = State::new(&components.setting);
+		let state = State::new(log_filter_handle, &components.setting)?;
 		let services = Services::new(ctx, &components, &state)?;
 		let uis = Uis::new();
 
@@ -88,13 +89,13 @@ impl App for AiR {
 				self.once.call_once(Os::set_move_to_active_space);
 			}
 			// TODO: https://github.com/emilk/egui/issues/4468.
-			// Allow 1 second for initialization during the first boot.
-			else if raw_input.time.unwrap_or_default() >= 1.
+			// Allow 250ms for initialization during the first boot.
+			else if raw_input.time.unwrap_or_default() >= 0.25
 				&& self.components.setting.general.hide_on_lost_focus
 			{
 				// TODO: https://github.com/emilk/egui/discussions/4635.
 				// We can get rid of the OS API if this works.
-				// ctx.send_viewport_cmd(ViewportCommand::Minimized(false));
+				// ctx.send_viewport_cmd(ViewportCommand::Minimized(true));
 				Os::hide();
 			}
 		}
@@ -113,7 +114,7 @@ pub struct AiRContext<'a> {
 	pub services: &'a mut Services,
 }
 
-pub fn launch() -> Result<()> {
+pub fn launch(log_filter_handle: Handle<EnvFilter, Registry>) -> Result<()> {
 	eframe::run_native(
 		"AiR",
 		NativeOptions {
@@ -124,12 +125,12 @@ pub fn launch() -> Result<()> {
 				)
 				.with_inner_size((720., 360.))
 				.with_min_inner_size((720., 360.)),
-				// TODO?: transparent window.
-				// .with_transparent(true),
+			// TODO?: transparent window.
+			// .with_transparent(true),
 			follow_system_theme: true,
 			..Default::default()
 		},
-		Box::new(|c| Ok(Box::new(AiR::new(&c.egui_ctx).unwrap()))),
+		Box::new(|c| Ok(Box::new(AiR::new(log_filter_handle, &c.egui_ctx).unwrap()))),
 	)?;
 
 	Ok(())

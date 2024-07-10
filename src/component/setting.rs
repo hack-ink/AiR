@@ -4,6 +4,7 @@ use std::{borrow::Cow, fs, path::PathBuf};
 use app_dirs2::AppDataType;
 use async_openai::config::OPENAI_API_BASE;
 use serde::{Deserialize, Serialize};
+use tracing::Level;
 // self
 use super::{function::Function, openai::Model};
 use crate::{prelude::*, widget::ComboBoxItem, APP_INFO};
@@ -15,6 +16,7 @@ pub struct Setting {
 	pub ai: Ai,
 	pub chat: Chat,
 	pub hotkeys: Hotkeys,
+	pub development: Development,
 }
 impl Setting {
 	pub fn path() -> Result<PathBuf> {
@@ -184,6 +186,57 @@ impl Default for Hotkeys {
 			rewrite_directly: "ctrl+y".into(),
 			translate: "ctrl+u".into(),
 			translate_directly: "ctrl+i".into(),
+		}
+	}
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct Development {
+	pub log_level: LogLevel,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum LogLevel {
+	Trace,
+	Debug,
+	Info,
+	Warn,
+	Error,
+}
+impl Default for LogLevel {
+	fn default() -> Self {
+		Self::Warn
+	}
+}
+impl From<LogLevel> for Level {
+	fn from(l: LogLevel) -> Self {
+		match l {
+			LogLevel::Trace => Level::TRACE,
+			LogLevel::Debug => Level::DEBUG,
+			LogLevel::Info => Level::INFO,
+			LogLevel::Warn => Level::WARN,
+			LogLevel::Error => Level::ERROR,
+		}
+	}
+}
+impl ComboBoxItem for LogLevel {
+	type Array = [Self; Self::COUNT];
+
+	const COUNT: usize = 5;
+
+	fn all() -> Self::Array {
+		[Self::Trace, Self::Debug, Self::Info, Self::Warn, Self::Error]
+	}
+
+	fn as_str(&self) -> &'static str {
+		match self {
+			Self::Trace => "Trace",
+			Self::Debug => "Debug",
+			Self::Info => "Info",
+			Self::Warn => "Warn",
+			Self::Error => "Error",
 		}
 	}
 }

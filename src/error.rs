@@ -17,6 +17,8 @@ pub enum Error {
 	Reqwew(#[from] reqwew::error::Error),
 	#[error(transparent)]
 	Toml(#[from] toml::de::Error),
+	#[error(transparent)]
+	TracingSubscriber(#[from] tracing_subscriber::reload::Error),
 
 	#[error(transparent)]
 	Enigo(#[from] EnigoError),

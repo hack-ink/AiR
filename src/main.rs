@@ -29,7 +29,8 @@ mod prelude {
 use app_dirs2::{AppDataType, AppInfo};
 use tracing_appender::rolling::{RollingFileAppender, Rotation};
 use tracing_subscriber::{
-	filter::LevelFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter,
+	filter::LevelFilter, fmt, layer::SubscriberExt, reload::Layer, util::SubscriberInitExt,
+	EnvFilter,
 };
 
 const APP_INFO: AppInfo = AppInfo { name: "AiR", author: "xavier@inv.cafe" };
@@ -44,14 +45,13 @@ fn main() {
 			.build(app_dirs2::get_app_root(AppDataType::UserData, &APP_INFO).unwrap())
 			.unwrap(),
 	);
+	let filter =
+		EnvFilter::builder().with_default_directive(LevelFilter::INFO.into()).from_env_lossy();
+	let (reloadable_filter, filter_handle) = Layer::new(filter);
 	let file_layer = fmt::layer().with_ansi(false).with_writer(non_blocking);
+	let subscriber = tracing_subscriber::registry().with(reloadable_filter).with(file_layer);
 	#[cfg(feature = "dev")]
 	let console_layer = fmt::layer();
-	let subscriber = tracing_subscriber::registry()
-		.with(
-			EnvFilter::builder().with_default_directive(LevelFilter::INFO.into()).from_env_lossy(),
-		)
-		.with(file_layer);
 	#[cfg(feature = "dev")]
 	let subscriber = subscriber.with(console_layer);
 
@@ -59,5 +59,5 @@ fn main() {
 
 	#[cfg(not(feature = "dev"))]
 	panic::set_hook(Box::new(|p| tracing::error!("{p}")));
-	air::launch().unwrap();
+	air::launch(filter_handle).unwrap();
 }
