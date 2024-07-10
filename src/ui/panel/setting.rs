@@ -4,153 +4,189 @@ use std::sync::atomic::Ordering;
 use eframe::egui::*;
 // self
 use super::super::UiT;
-use crate::{air::AiRContext, widget};
+use crate::{
+	air::AiRContext,
+	widget::{self, HotkeyListener},
+};
 
 #[derive(Debug, Default)]
 pub struct Setting {
 	api_key: ApiKeyWidget,
-}
-impl Setting {
-	fn set_font_sizes(&self, ctx: &AiRContext) {
-		ctx.egui_ctx.style_mut(|s| {
-			s.text_styles
-				.values_mut()
-				.for_each(|s| s.size = ctx.components.setting.general.font_size);
-		});
-	}
+	hotkey_listeners: [HotkeyListener; 4],
 }
 impl UiT for Setting {
 	fn draw(&mut self, ui: &mut Ui, ctx: &mut AiRContext) {
-		ui.collapsing("General", |ui| {
-			Grid::new("General").num_columns(2).striped(true).show(ui, |ui| {
-				ui.label("Font Size");
-				ui.horizontal(|ui| {
-					ui.spacing_mut().slider_width = ui.available_width() - 56.;
+		ScrollArea::vertical().id_source("Setting").auto_shrink(false).show(ui, |ui| {
+			let margin = 36. + ctx.components.setting.general.font_size * 2.;
 
-					if ui
-						.add(
-							Slider::new(&mut ctx.components.setting.general.font_size, 9_f32..=16.)
+			ui.collapsing("General", |ui| {
+				Grid::new("General").num_columns(2).show(ui, |ui| {
+					ui.label("Font Size");
+					ui.horizontal(|ui| {
+						ui.spacing_mut().slider_width = ui.available_width() - margin;
+
+						if ui
+							.add(
+								Slider::new(
+									&mut ctx.components.setting.general.font_size,
+									9_f32..=16.,
+								)
 								.step_by(1.)
 								.fixed_decimals(0),
-						)
+							)
+							.changed()
+						{
+							super::super::set_font_size(
+								ctx.egui_ctx,
+								ctx.components.setting.general.font_size,
+							);
+						}
+					});
+					ui.end_row();
+
+					ui.label("Hide on Lost Focus");
+					if ui
+						.add(widget::toggle(&mut ctx.components.setting.general.hide_on_lost_focus))
 						.changed()
 					{
-						self.set_font_sizes(ctx);
-					}
+						ctx.state.general.hide_on_lost_focus.store(
+							ctx.components.setting.general.hide_on_lost_focus,
+							Ordering::Relaxed,
+						);
+					};
+					ui.end_row();
+
+					// TODO?: separate functions into different panels; then we won't need this.
+					ui.add(widget::combo_box(
+						"Active Function",
+						&mut ctx.components.setting.general.active_func,
+					));
+					ui.end_row();
 				});
-				ui.end_row();
-
-				ui.label("Hide on Lost Focus");
-				if ui
-					.add(widget::toggle(&mut ctx.components.setting.general.hide_on_lost_focus))
-					.changed()
-				{
-					ctx.state.general.hide_on_lost_focus.store(
-						ctx.components.setting.general.hide_on_lost_focus,
-						Ordering::Relaxed,
-					);
-				};
-				ui.end_row();
-
-				ui.add(widget::combo_box(
-					"Active Function",
-					&mut ctx.components.setting.general.active_func,
-				));
-				ui.end_row();
 			});
-		});
 
-		ui.collapsing("AI", |ui| {
-			let mut changed = false;
+			ui.collapsing("AI", |ui| {
+				Grid::new("AI").num_columns(2).show(ui, |ui| {
+					let mut changed = false;
 
-			Grid::new("AI").num_columns(2).striped(true).show(ui, |ui| {
-				ui.label("API Base");
-				let size = ui
-					.horizontal(|ui| {
-						let mut size = ui.available_size();
-
-						size.x -= 56.;
-
+					ui.label("API Base");
+					// The available size only works after there is an existing element.
+					let mut size = ui.available_size();
+					size.x -= margin;
+					ui.horizontal(|ui| {
 						changed |= ui
 							.add_sized(
 								size,
 								TextEdit::singleline(&mut ctx.components.setting.ai.api_base),
 							)
 							.changed();
+					});
+					ui.end_row();
 
-						size
-					})
-					.inner;
-				ui.end_row();
+					ui.label("API Key");
+					ui.horizontal(|ui| {
+						changed |= ui
+							.add_sized(
+								size,
+								TextEdit::singleline(&mut ctx.components.setting.ai.api_key)
+									.password(self.api_key.visibility),
+							)
+							.changed();
 
-				ui.label("API Key");
-				ui.horizontal(|ui| {
+						if ui.button(&self.api_key.label).clicked() {
+							self.api_key.clicked();
+						}
+					});
+					ui.end_row();
+
 					changed |= ui
-						.add_sized(
-							size,
-							TextEdit::singleline(&mut ctx.components.setting.ai.api_key)
-								.password(self.api_key.visibility),
+						.add(widget::combo_box("Model", &mut ctx.components.setting.ai.model))
+						.changed();
+					ui.end_row();
+
+					ui.label("Temperature");
+					ui.spacing_mut().slider_width = size.x;
+					changed |= ui
+						.add(
+							Slider::new(&mut ctx.components.setting.ai.temperature, 0_f32..=2.)
+								.fixed_decimals(1)
+								.step_by(0.1),
 						)
 						.changed();
+					ui.end_row();
 
-					if ui.button(&self.api_key.label).clicked() {
-						self.api_key.clicked();
+					if changed {
+						ctx.services
+							.chat
+							.renew(&ctx.components.setting.ai, &ctx.components.setting.chat);
 					}
 				});
-				ui.end_row();
-
-				// TODO: we might not need to renew the client if only the model changed.
-				changed |= ui
-					.add(widget::combo_box("Model", &mut ctx.components.setting.ai.model))
-					.changed();
-				ui.end_row();
-
-				// TODO: we might not need to renew the client if only the temperature changed.
-				ui.label("Temperature");
-				ui.spacing_mut().slider_width = size.x;
-				changed |= ui
-					.add(
-						Slider::new(&mut ctx.components.setting.ai.temperature, 0_f32..=2.)
-							.fixed_decimals(1)
-							.step_by(0.1),
-					)
-					.changed();
-				ui.end_row();
 			});
 
-			if changed {
-				ctx.services.chat.renew(&ctx.components.setting);
-			}
-		});
-
-		ui.collapsing("Translation", |ui| {
-			Grid::new("Translation").num_columns(2).striped(true).show(ui, |ui| {
-				// TODO: A and B should be mutually exclusive.
-				ui.add(widget::combo_box("A", &mut ctx.components.setting.chat.translation.a));
-				ui.end_row();
-
-				ui.add(widget::combo_box("B", &mut ctx.components.setting.chat.translation.b));
-				ui.end_row();
+			ui.collapsing("Translation", |ui| {
+				Grid::new("Translation").num_columns(2).show(ui, |ui| {
+					// TODO: A and B should be mutually exclusive.
+					for (l, c) in [
+						("Language A", &mut ctx.components.setting.chat.translation.a),
+						("Language B", &mut ctx.components.setting.chat.translation.b),
+					] {
+						ui.add(widget::combo_box(l, c));
+						ui.end_row();
+					}
+					ui.end_row();
+				});
 			});
-		});
 
-		ui.collapsing("Development", |ui| {
-			Grid::new("Development").num_columns(2).striped(true).show(ui, |ui| {
-				if ui
-					.add(widget::combo_box(
-						"Log Level",
-						&mut ctx.components.setting.development.log_level,
-					))
-					.changed()
-				{
-					ctx.state
-						.development
-						.reload_log_filter(
-							ctx.components.setting.development.log_level.clone().into(),
+			ui.collapsing("Hotkey", |ui| {
+				Grid::new("Hotkey").num_columns(2).show(ui, |ui| {
+					if self
+						.hotkey_listeners
+						.iter_mut()
+						.zip(
+							[
+								("Rewrite", &mut ctx.components.setting.hotkeys.rewrite),
+								(
+									"Rewrite Directly",
+									&mut ctx.components.setting.hotkeys.rewrite_directly,
+								),
+								("Translate", &mut ctx.components.setting.hotkeys.translate),
+								(
+									"Translate Directly",
+									&mut ctx.components.setting.hotkeys.translate_directly,
+								),
+							]
+							.iter_mut(),
 						)
-						.expect("reload must succeed");
-				}
-				ui.end_row();
+						.fold(false, |mut changed, (kl, (l, hk))| {
+							changed |= kl.listen(ui, l, hk);
+
+							ui.end_row();
+
+							changed
+						}) {
+						ctx.services.hotkey.renew(&ctx.components.setting.hotkeys);
+					}
+				});
+			});
+
+			ui.collapsing("Development", |ui| {
+				Grid::new("Development").num_columns(2).show(ui, |ui| {
+					if ui
+						.add(widget::combo_box(
+							"Log Level",
+							&mut ctx.components.setting.development.log_level,
+						))
+						.changed()
+					{
+						ctx.state
+							.development
+							.reload_log_filter(
+								ctx.components.setting.development.log_level.clone().into(),
+							)
+							.expect("reload must succeed");
+					}
+					ui.end_row();
+				});
 			});
 		});
 	}

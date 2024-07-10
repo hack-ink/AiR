@@ -5,7 +5,12 @@ use eframe::{egui::*, glow::Context as GlowContext, Frame, *};
 use tracing_subscriber::{reload::Handle, EnvFilter, Registry};
 // self
 use crate::{
-	component::Components, os::Os, prelude::Result, service::Services, state::State, ui::Uis,
+	component::Components,
+	os::Os,
+	prelude::Result,
+	service::Services,
+	state::State,
+	ui::{self, Uis},
 };
 
 #[derive(Debug)]
@@ -18,55 +23,31 @@ struct AiR {
 }
 impl AiR {
 	fn new(log_filter_handle: Handle<EnvFilter, Registry>, ctx: &Context) -> Result<Self> {
-		Self::set_fonts(ctx);
+		ui::set_fonts(ctx);
 
 		// To enable SVG.
 		egui_extras::install_image_loaders(ctx);
 
 		let once = Once::new();
 		let components = Components::new()?;
+
+		ui::set_font_size(ctx, components.setting.general.font_size);
+
 		let state = State::new(log_filter_handle, &components.setting)?;
 		let services = Services::new(ctx, &components, &state)?;
 		let uis = Uis::new();
 
 		Ok(Self { once, components, state, services, uis })
 	}
-
-	fn set_fonts(ctx: &Context) {
-		let mut fonts = FontDefinitions::default();
-
-		// Cascadia Code.
-		fonts.font_data.insert(
-			"Cascadia Code".into(),
-			FontData::from_static(include_bytes!("../asset/CascadiaCode.ttf")),
-		);
-		fonts
-			.families
-			.entry(FontFamily::Proportional)
-			.or_default()
-			.insert(0, "Cascadia Code".into());
-		fonts.families.entry(FontFamily::Monospace).or_default().insert(0, "Cascadia Code".into());
-		// NotoSerifSC.
-		fonts.font_data.insert(
-			"NotoSerifSC".into(),
-			FontData::from_static(include_bytes!("../asset/NotoSerifSC-VariableFont_wght.ttf")),
-		);
-		fonts.families.entry(FontFamily::Proportional).or_default().insert(1, "NotoSerifSC".into());
-		fonts.families.entry(FontFamily::Monospace).or_default().insert(1, "NotoSerifSC".into());
-
-		ctx.set_fonts(fonts);
-	}
 }
 impl App for AiR {
 	fn update(&mut self, ctx: &Context, _: &mut Frame) {
-		let air_ctx = AiRContext {
+		self.uis.draw(AiRContext {
 			egui_ctx: ctx,
 			components: &mut self.components,
 			state: &self.state,
 			services: &mut self.services,
-		};
-
-		self.uis.draw(air_ctx);
+		});
 	}
 
 	fn save(&mut self, _: &mut dyn Storage) {
@@ -123,8 +104,8 @@ pub fn launch(log_filter_handle: Handle<EnvFilter, Registry>) -> Result<()> {
 					icon_data::from_png_bytes(include_bytes!("../asset/icon.png").as_slice())
 						.unwrap(),
 				)
-				.with_inner_size((720., 360.))
-				.with_min_inner_size((720., 360.)),
+				.with_inner_size((760., 360.))
+				.with_min_inner_size((760., 360.)),
 			// TODO?: transparent window.
 			// .with_transparent(true),
 			follow_system_theme: true,

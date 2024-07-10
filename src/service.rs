@@ -40,8 +40,14 @@ impl Services {
 		let rt = Runtime::new()?;
 		let quoter = Quoter::new(&rt, state.chat.quote.clone());
 		let is_chatting = Arc::new(AtomicBool::new(false));
-		let chat =
-			Chat::new(keyboard.clone(), &rt, is_chatting.clone(), &components.setting, &state.chat);
+		let chat = Chat::new(
+			keyboard.clone(),
+			&rt,
+			is_chatting.clone(),
+			&components.setting.ai,
+			&components.setting.chat,
+			&state.chat,
+		);
 		let audio = Audio::new()?;
 		let hotkey = Hotkey::new(
 			ctx,

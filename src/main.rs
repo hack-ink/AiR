@@ -15,6 +15,7 @@ mod os;
 mod service;
 mod state;
 mod ui;
+mod util;
 mod widget;
 
 mod prelude {

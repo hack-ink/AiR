@@ -16,7 +16,7 @@ use crate::{
 	component::{
 		function::Function,
 		openai::OpenAi,
-		setting::{Chat as ChatSetting, Setting},
+		setting::{Ai, Chat as ChatSetting},
 	},
 	state::Chat as ChatState,
 };
@@ -36,12 +36,13 @@ impl Chat {
 		keyboard: Keyboard,
 		rt: &Runtime,
 		is_chatting: Arc<AtomicBool>,
-		setting: &Setting,
+		ai_setting: &Ai,
+		chat_setting: &ChatSetting,
 		state: &ChatState,
 	) -> Self {
-		let openai = Arc::new(Mutex::new(OpenAi::new(setting.ai.clone())));
+		let openai = Arc::new(Mutex::new(OpenAi::new(ai_setting.to_owned())));
 		let openai_ = openai.clone();
-		let chat_setting = Arc::new(Mutex::new(setting.chat.clone()));
+		let chat_setting = Arc::new(Mutex::new(chat_setting.to_owned()));
 		let chat_setting_ = chat_setting.clone();
 		let input = state.input.clone();
 		let output = state.output.clone();
@@ -100,11 +101,12 @@ impl Chat {
 		self.tx.send(args).expect("send must succeed");
 	}
 
-	pub fn renew(&mut self, setting: &Setting) {
-		tracing::info!("renewing chat service");
+	pub fn renew(&self, ai_setting: &Ai, chat_setting: &ChatSetting) {
+		tracing::info!("renewing openai client");
 
-		*self.openai.blocking_lock() = OpenAi::new(setting.ai.clone());
-		*self.chat_setting.blocking_lock() = setting.chat.clone();
+		*self.openai.blocking_lock() = OpenAi::new(ai_setting.to_owned());
+
+		chat_setting.clone_into(&mut self.chat_setting.blocking_lock());
 	}
 
 	pub fn abort(&self) {

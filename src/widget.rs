@@ -1,5 +1,7 @@
 // crates.io
 use eframe::egui::{self, *};
+// self
+use crate::util;
 
 pub trait ComboBoxItem
 where
@@ -14,6 +16,55 @@ where
 	fn all() -> Self::Array;
 
 	fn as_str(&self) -> &'static str;
+}
+
+#[derive(Debug, Default)]
+pub struct HotkeyListener {
+	listening: bool,
+}
+impl HotkeyListener {
+	pub fn listen(&mut self, ui: &mut Ui, label: &str, hotkey: &mut String) -> bool {
+		ui.label(label);
+
+		let text = if self.listening { "Press Desired Key Combination" } else { hotkey.as_str() };
+		let resp = ui.add(Label::new(text).selectable(false).sense(Sense::click()));
+		let mut changed = false;
+
+		if resp.clicked() {
+			self.listening = true;
+		}
+		if self.listening {
+			ui.input(|i| {
+				let mut abort = false;
+
+				for e in &i.events {
+					if let Event::Key { key, pressed, modifiers, .. } = e {
+						if *pressed {
+							// TODO?: do we allow a single key here.
+							*hotkey = format!("{}{key:?}", util::modifiers_to_string(modifiers));
+							changed = true;
+							abort = true;
+
+							break;
+						}
+					}
+					if let Event::PointerButton { pressed, .. } = e {
+						abort = *pressed;
+					}
+
+					if matches!(e, Event::WindowFocused(..)) {
+						abort = true;
+					}
+				}
+
+				if abort {
+					self.listening = false;
+				}
+			});
+		}
+
+		changed
+	}
 }
 
 pub fn combo_box<'a, I>(label: &'a str, current: &'a mut I) -> impl Widget + 'a
