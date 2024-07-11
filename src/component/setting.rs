@@ -38,7 +38,7 @@ impl Setting {
 			},
 		};
 
-		// TODO: validate the setting.
+		// TODO: https://github.com/hack-ink/AiR/issues/62.
 		Ok(toml::from_str(&s)?)
 	}
 
@@ -120,6 +120,7 @@ pub struct Translation {
 	pub b: Language,
 }
 impl Translation {
+	// TODO: https://github.com/hack-ink/AiR/issues/41.
 	pub fn prompt(&self) -> Cow<str> {
 		let default = format!(
 			"As a professional translator and language master, assist me in translating text! \
@@ -183,10 +184,10 @@ pub struct Hotkeys {
 impl Default for Hotkeys {
 	fn default() -> Self {
 		Self {
-			rewrite: "ctrl+t".into(),
-			rewrite_directly: "ctrl+y".into(),
-			translate: "ctrl+u".into(),
-			translate_directly: "ctrl+i".into(),
+			rewrite: "CTRL+T".into(),
+			rewrite_directly: "CTRL+Y".into(),
+			translate: "CTRL+U".into(),
+			translate_directly: "CTRL+I".into(),
 		}
 	}
 }
