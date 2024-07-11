@@ -2,9 +2,7 @@
 
 # AiR
 
-<h3 style="display: flex; align-items: center; justify-content: center;">
-	AI with Rust ｜ <img src="asset/icon.png" alt="App Icon" style="width: 105; height: 105; margin-left: 10px;">
-</h3>
+<h3>AI with Rust ｜ <img align="center" height="110" src="asset/icon.png"></h3>
 
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Checks](https://github.com/hack-ink/air/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/hack-ink/air/actions/workflows/checks.yml)
