@@ -21,7 +21,7 @@ pub struct Audio {
 }
 impl Audio {
 	pub fn new() -> Result<Self> {
-		let sound_data = include_bytes!("../../asset/notification.mp3");
+		let sound_data = include_bytes!("../../asset/notification-0.mp3");
 		let cursor = Cursor::new(sound_data.as_ref());
 		let decoder = Decoder::new(cursor).map_err(RodioError::Decoder)?;
 		let notification = decoder.buffered();

@@ -38,6 +38,7 @@ impl Setting {
 			},
 		};
 
+		// TODO: validate the setting.
 		Ok(toml::from_str(&s)?)
 	}
 
