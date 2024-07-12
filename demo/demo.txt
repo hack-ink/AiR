@@ -22,38 +22,3 @@ The default direct translate hotkey is CTRL+I.
 Upon pressing the hotkey,
 AiR will trigger CTRL+C/META+C (depending on your operating system),
 to capture the selected text, then it will begin performing its task!
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
