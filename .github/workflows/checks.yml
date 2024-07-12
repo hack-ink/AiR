@@ -38,10 +38,9 @@ jobs:
           key: ${{ matrix.action }}
       - name: Cargo clippy
         if: matrix.action == 'clippy'
-        uses: actions-rs/clippy-check@v1
+        uses: giraffate/clippy-action@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --workspace --all-features --all-targets --locked
+          clippy_flags: --workspace --all-features --all-targets --locked
       - name: Cargo fmt
         if: matrix.action == 'fmt'
         run: |
