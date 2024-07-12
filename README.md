@@ -18,6 +18,8 @@ AiR is a great assistant for non-native speakers, automatically fixing errors an
 More awesome features are on the horizon!
 
 [English](README.md) ｜ [中文](README-zh-CN.md)
+
+[![AiR](https://repobeats.axiom.co/api/embed/0077d1532f0a8a35e5301e86b32552fd70c03547.svg "Repobeats analytics image")](https://github.com/hack-ink/air/pulse)
 </div>
 
 
