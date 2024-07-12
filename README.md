@@ -37,6 +37,7 @@ More awesome features are on the horizon!
   - [ ] **Windows** (Coming Soon)
   - [ ] **Unix**
 - **Features**
+  - [x] **Dark/Light Theme**
   - [x] **Rewrite**
   - [x] **Rewrite Directly**
   - [x] **Translate**
