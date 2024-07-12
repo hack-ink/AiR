@@ -103,6 +103,7 @@ impl Rewrite {
 			Text is always provided in format `<AiR>$TEXT</AiR>`! \
 			$TEXT can be provided in any style! \
 			Discard the `<AiR></AiR>` tag! \
+			But keep the indentation and line breaks format! \
 			Extract the $TEXT and return the refined $TEXT only!";
 
 		if self.additional_prompt.is_empty() {
@@ -130,6 +131,7 @@ impl Translation {
 			Text is always provided in format `<AiR>$TEXT</AiR>`! \
 			$TEXT can be provided in any style! \
 			Discard the `<AiR></AiR>` tag! \
+			But keep the indentation and line breaks format! \
 			Extract the $TEXT and return the translated $TEXT only!",
 			self.a.as_str(),
 			self.b.as_str(),

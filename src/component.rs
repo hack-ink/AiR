@@ -13,8 +13,6 @@ pub mod quote;
 pub mod setting;
 use setting::Setting;
 
-pub mod util;
-
 // std
 use std::fmt::{Debug, Formatter, Result as FmtResult};
 // crates.io

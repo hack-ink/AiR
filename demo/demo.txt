@@ -1,0 +1,59 @@
+default hotkey fOr rewrite-directly is CTRL+Y.
+Afer press the hotky,
+AiR will triger CTRL+C/META+C (depending on your OS) to geet the selected text.
+Than it wil start itss jooob!
+
+                    <Pretending to be a novice in English>
+
+The default hotkey for rewrite directly is CTRL+Y.
+After pressing the hotkey,
+AiR will trigger CTRL+C/META+C (depending on your OS) to get the selected text.
+Then it will start its job!
+
+
+默认的直接翻译热键是 CTRL+I。
+按下热键后，
+AiR 将触发 CTRL+C/META+C（取决于您的操作系统）,
+以获取选中的文本，然后它将开始执行其任务！
+
+                  <Don't know Chinese at all>
+
+The default direct translate hotkey is CTRL+I.
+Upon pressing the hotkey,
+AiR will trigger CTRL+C/META+C (depending on your operating system),
+to capture the selected text, then it will begin performing its task!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

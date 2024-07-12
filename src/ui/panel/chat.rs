@@ -4,11 +4,7 @@ use std::sync::atomic::Ordering;
 use eframe::egui::*;
 // self
 use super::super::UiT;
-use crate::{
-	air::AiRContext,
-	component::{openai::Model, util},
-	widget,
-};
+use crate::{air::AiRContext, component::openai::Model, util, widget};
 
 #[derive(Debug, Default)]
 pub struct Chat {

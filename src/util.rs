@@ -1,6 +1,10 @@
 // crates.io
 use eframe::egui::*;
 
+pub fn price_rounded(value: f32) -> f32 {
+	(value * 1_000_000.).round() / 1_000_000.
+}
+
 // TODO?: transparent window.
 #[allow(unused)]
 pub fn transparent_frame(ctx: &Context) -> Frame {
