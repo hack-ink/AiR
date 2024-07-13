@@ -34,7 +34,7 @@ AiR 是非母语者的绝佳助手，能够自动修正错误并润色语言，�
 ## 状态
 - **操作系统**
   - [x] **macOS**
-  - [ ] **Windows** (即将推出)
+  - [x] **Windows**
   - [ ] **Unix**
 - **功能**
   - [x] **深色/浅色主题**
@@ -51,12 +51,19 @@ AiR 是非母语者的绝佳助手，能够自动修正错误并润色语言，�
 ### 安装
 #### 从源代码构建
 ```sh
-# 安装 Rust。
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable
-
-# 克隆代码库。
+# 克隆仓库。
 git clone https://github.com/hack-ink/air
 cd air
+
+# 要在 macOS 和 Unix 上安装 Rust，请运行以下命令。
+#
+# 要在 Windows 上安装 Rust，请从 `https://rustup.rs` 下载并运行安装程序。
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable
+
+# 安装必要的依赖项。(仅限 Unix 系统)
+# 以 Ubuntu 为例，这实际上取决于你的发行版。
+sudo apt-get update
+sudo apt-get install libasound2-dev libxdo-dev
 
 # 构建项目后，二进制文件将位于 `target/release/air`。
 cargo build --release
@@ -130,7 +137,7 @@ AiR目前正在进行大量开发，并非所有设置都会在用户界面中�
 
 设置文件的位置因操作系统而异。
 - `~/Library/Application\ Support/AiR/setting.toml` (macOS)
-- `C:\Users\<username>\AppData\Roaming\AiR\setting.toml` (Windows)
+- `C:\Users\<username>\AppData\Roaming\hack.ink\AiR\setting.toml` (Windows)
 - `~/.config/AiR/setting.toml` (Unix)
 
 #### 交互

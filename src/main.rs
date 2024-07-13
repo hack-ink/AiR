@@ -2,11 +2,7 @@
 
 // Hide console window on Windows in release.
 #![cfg_attr(all(not(debug_assertions), not(feature = "dev")), windows_subsystem = "windows")]
-#![deny(
-	// clippy::all,
-	missing_docs,
-	unused_crate_dependencies,
-)]
+#![deny(clippy::all, missing_docs, unused_crate_dependencies)]
 
 mod air;
 mod component;

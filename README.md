@@ -34,7 +34,7 @@ More awesome features are on the horizon!
 ## Status
 - **OS**
   - [x] **macOS**
-  - [ ] **Windows** (Coming Soon)
+  - [x] **Windows**
   - [ ] **Unix**
 - **Features**
   - [x] **Dark/Light Theme**
@@ -51,12 +51,19 @@ More awesome features are on the horizon!
 ### Installation
 #### Build from Source
 ```sh
-# Install Rust.
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable
-
 # Clone the repository.
 git clone https://github.com/hack-ink/air
 cd air
+
+# To install Rust on macOS and Unix, run the following command.
+#
+# To install Rust on Windows, download and run the installer from `https://rustup.rs`.
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable
+
+# Install the necessary dependencies. (Unix only)
+# Using Ubuntu as an example, this really depends on your distribution.
+sudo apt-get update
+sudo apt-get install libasound2-dev libxdo-dev
 
 # Build the project, and the binary will be available at `target/release/air`.
 cargo build --release
@@ -130,7 +137,7 @@ However, all settings can always be found in the settings file.
 
 The location of the settings file varies depending on the OS.
 - `~/Library/Application\ Support/AiR/setting.toml` (macOS)
-- `C:\Users\<username>\AppData\Roaming\AiR\setting.toml` (Windows)
+- `C:\Users\<username>\AppData\Roaming\hack.ink\AiR\setting.toml` (Windows)
 - `~/.config/AiR/setting.toml` (Unix)
 
 #### Interaction

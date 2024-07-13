@@ -23,7 +23,7 @@ pub fn modifiers_to_string(modifiers: &Modifiers) -> String {
 	if modifiers.alt {
 		s.push_str("ALT+");
 	}
-	if modifiers.command {
+	if modifiers.mac_cmd {
 		s.push_str("META+");
 	}
 
