@@ -46,7 +46,7 @@ AiR 是非母语者的绝佳助手，能够自动修正错误并润色语言，�
   - [x] **翻译**
   - [x] **直接翻译**
   - [ ] **重构代码** (即将推出)
-  - [ ] **光学字符识别** (计划中)
+  - [ ] **光学字符识别** (已计划)
   - [ ] **文字转语音** (已计划)
 
 
@@ -79,10 +79,8 @@ cargo bundle --release
 ```
 
 #### 下载预构建二进制文件
-- **macOS**
+- **macOS** 与 **Windows**
   - 从 [GitHub Releases](https://github.com/hack-ink/air/releases/latest) 下载最新的预构建二进制文件。
-- **Windows**
-  - 即将推出
 - **Unix**
   - 已计划
 

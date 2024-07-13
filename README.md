@@ -79,10 +79,8 @@ cargo bundle --release
 ```
 
 #### Download Pre-built Binary
-- **macOS**
+- **macOS** and **Windows**
   - Download the latest pre-built binary from [GitHub Releases](https://github.com/hack-ink/air/releases/latest).
-- **Windows**
-  - Coming Soon
 - **Unix**
   - Planed
 
