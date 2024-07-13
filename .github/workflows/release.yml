@@ -53,7 +53,8 @@ jobs:
       - name: Bundle (macOS)
         if: matrix.target.os == 'macos-latest'
         run: cargo bundle --profile ci-release --target ${{ matrix.target.name }}
-      - name: Codesign
+      - name: Codesign (macOS)
+        if: matrix.target.os == 'macos-latest'
         run: |
           codesign --deep --force --verify --verbose --sign "Xavier Lau" target/${{ matrix.target.name }}/ci-release/bundle/osx/AiR.app
       # TODO: notarize the app.
