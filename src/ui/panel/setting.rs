@@ -17,6 +17,7 @@ pub struct Setting {
 impl UiT for Setting {
 	fn draw(&mut self, ui: &mut Ui, ctx: &mut AiRContext) {
 		ScrollArea::vertical().id_source("Setting").auto_shrink(false).show(ui, |ui| {
+			let mut chat_need_reload = false;
 			let margin = 36. + ctx.components.setting.general.font_size * 2.;
 
 			ui.collapsing("General", |ui| {
@@ -67,14 +68,12 @@ impl UiT for Setting {
 
 			ui.collapsing("AI", |ui| {
 				Grid::new("AI").num_columns(2).show(ui, |ui| {
-					let mut changed = false;
-
 					ui.label("API Base");
 					// The available size only works after there is an existing element.
 					let mut size = ui.available_size();
 					size.x -= margin;
 					ui.horizontal(|ui| {
-						changed |= ui
+						chat_need_reload |= ui
 							.add_sized(
 								size,
 								TextEdit::singleline(&mut ctx.components.setting.ai.api_base),
@@ -85,7 +84,7 @@ impl UiT for Setting {
 
 					ui.label("API Key");
 					ui.horizontal(|ui| {
-						changed |= ui
+						chat_need_reload |= ui
 							.add_sized(
 								size,
 								TextEdit::singleline(&mut ctx.components.setting.ai.api_key)
@@ -99,14 +98,14 @@ impl UiT for Setting {
 					});
 					ui.end_row();
 
-					changed |= ui
+					chat_need_reload |= ui
 						.add(widget::combo_box("Model", &mut ctx.components.setting.ai.model))
 						.changed();
 					ui.end_row();
 
 					ui.label("Temperature");
 					ui.spacing_mut().slider_width = size.x;
-					changed |= ui
+					chat_need_reload |= ui
 						.add(
 							Slider::new(&mut ctx.components.setting.ai.temperature, 0_f32..=2.)
 								.fixed_decimals(1)
@@ -114,12 +113,6 @@ impl UiT for Setting {
 						)
 						.changed();
 					ui.end_row();
-
-					if changed {
-						ctx.services
-							.chat
-							.renew(&ctx.components.setting.ai, &ctx.components.setting.chat);
-					}
 				});
 			});
 
@@ -130,7 +123,7 @@ impl UiT for Setting {
 						("Language A", &mut ctx.components.setting.chat.translation.a),
 						("Language B", &mut ctx.components.setting.chat.translation.b),
 					] {
-						ui.add(widget::combo_box(l, c));
+						chat_need_reload |= ui.add(widget::combo_box(l, c)).changed();
 						ui.end_row();
 					}
 					ui.end_row();
@@ -188,6 +181,10 @@ impl UiT for Setting {
 					ui.end_row();
 				});
 			});
+
+			if chat_need_reload {
+				ctx.services.chat.renew(&ctx.components.setting.ai, &ctx.components.setting.chat);
+			}
 		});
 	}
 }
