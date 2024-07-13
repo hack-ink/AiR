@@ -54,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: air-${{ matrix.target.name }}
-          path: air-${{ matrix.target.name }}.zst
+          path: air-${{ matrix.target.name }}.*
           retention-days: 1
 
   release:
