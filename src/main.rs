@@ -11,7 +11,6 @@
 mod air;
 mod component;
 mod error;
-mod os;
 mod service;
 mod state;
 mod ui;

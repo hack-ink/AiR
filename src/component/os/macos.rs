@@ -6,14 +6,14 @@ use super::*;
 
 impl Os {
 	// #[deprecated(note = "use `ViewportCommand` instead")]
-	pub fn hide() {
+	pub fn hide(&self) {
 		unsafe {
 			NSRunningApplication::currentApplication().hide();
 		}
 	}
 
 	// #[deprecated(note = "use `ViewportCommand` instead")]
-	pub fn unhide() {
+	pub fn unhide(&self) {
 		unsafe {
 			NSRunningApplication::currentApplication().unhide();
 		}

@@ -59,6 +59,9 @@ objc2-foundation = { version = "0.2" }
 # core-foundation   = { version = "0.9" }
 # objc2             = { version = "0.5" }
 
+[target.'cfg(target_os = "windows")'.dependencies]
+winapi = { version = "0.3" }
+
 # Development only.
 # [patch.crates-io]
 # async-openai = { path = "tmp/async-openai/async-openai" }

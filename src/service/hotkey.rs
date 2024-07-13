@@ -17,8 +17,7 @@ use parking_lot::RwLock;
 // self
 use super::{audio::Audio, chat::ChatArgs, keyboard::Keyboard};
 use crate::{
-	component::{function::Function, keyboard::Keys, setting::Hotkeys},
-	os::*,
+	component::{function::Function, keyboard::Keys, os::Os, setting::Hotkeys},
 	prelude::*,
 };
 
@@ -48,6 +47,8 @@ impl Hotkey {
 
 		// TODO: handle the error.
 		thread::spawn(move || {
+			let os = Os::new();
+
 			while !abort_.load(Ordering::Relaxed) {
 				// Block the thread until a hotkey event is received.
 				let e = hk_rx.recv().unwrap();
@@ -60,7 +61,7 @@ impl Hotkey {
 					let to_focus = !func.is_directly();
 
 					if to_focus && hide_on_lost_focus.load(Ordering::Relaxed) {
-						Os::unhide();
+						os.unhide();
 					}
 
 					// Reset the keys' state after the user triggers them.

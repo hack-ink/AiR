@@ -156,6 +156,7 @@ dependencies = [
  "tracing",
  "tracing-appender",
  "tracing-subscriber",
+ "winapi",
 ]
 
 [[package]]

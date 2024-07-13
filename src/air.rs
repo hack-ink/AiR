@@ -5,8 +5,7 @@ use eframe::{egui::*, glow::Context as GlowContext, Frame, *};
 use tracing_subscriber::{reload::Handle, EnvFilter, Registry};
 // self
 use crate::{
-	component::Components,
-	os::Os,
+	component::{os::Os, Components},
 	prelude::Result,
 	service::Services,
 	state::State,
@@ -77,7 +76,7 @@ impl App for AiR {
 				// TODO: https://github.com/emilk/egui/discussions/4635.
 				// We can get rid of the OS API if this works.
 				// ctx.send_viewport_cmd(ViewportCommand::Minimized(true));
-				Os::hide();
+				self.components.os.hide();
 			}
 		}
 	}
