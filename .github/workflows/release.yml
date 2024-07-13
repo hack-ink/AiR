@@ -34,6 +34,8 @@ jobs:
           APPLE_CERTIFICATES_P12: ${{ secrets.APPLE_CERTIFICATES_P12 }}
           APPLE_CERTIFICATES_PWD: ${{ secrets.APPLE_CERTIFICATES_PWD }}
         run: |
+          brew update
+          brew install create-dmg
           cargo install cargo-bundle
           echo "$APPLE_CERTIFICATES_P12" | base64 --decode > certificate.p12
           security create-keychain -p actions temp.keychain
@@ -41,11 +43,6 @@ jobs:
           security list-keychains -d user -s temp.keychain
           security unlock-keychain -p actions temp.keychain
           security set-key-partition-list -S apple-tool:,apple: -s -k actions temp.keychain
-      - name: Setup build environment (macOS)
-        if: matrix.target.os == 'macos-latest'
-        run: |
-          brew update
-          brew install create-dmg
       - name: Setup build environment (Linux)
         if: matrix.target.os == 'ubuntu-latest'
         run: |
