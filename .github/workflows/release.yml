@@ -36,17 +36,17 @@ jobs:
       - name: Build
         run: cargo build --profile ci-release --locked --target ${{ matrix.target.name }}
       - name: Compress for macOS
-        if: matrix.os == 'macos-latest'
+        if: matrix.target.os == 'macos-latest'
         run: |
           mv target/${{ matrix.target.name }}/ci-release/air${{ matrix.target.extension }} .
           zip air-${{ matrix.target.name }}.zip air${{ matrix.target.extension }}
       - name: Compress for Windows
-        if: matrix.os == 'windows-latest'
+        if: matrix.target.os == 'windows-latest'
         run: |
           mv target/${{ matrix.target.name }}/ci-release/air${{ matrix.target.extension }} .
           Compress-Archive -Path air${{ matrix.target.extension }} -DestinationPath air-${{ matrix.target.name }}.zip
       - name: Compress for Linux
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.target.os == 'ubuntu-latest'
         run: |
           mv target/${{ matrix.target.name }}/ci-release/air${{ matrix.target.extension }} .
           tar -czvf air-${{ matrix.target.name }}.tar.gz air${{ matrix.target.extension }}
