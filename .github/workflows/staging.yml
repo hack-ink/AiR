@@ -26,6 +26,24 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Rust toolchain
         run: rustup target add ${{ matrix.target.name }}
+      - name: Setup build environment (macOS)
+        if: matrix.target.os == 'macos-latest'
+        env:
+          APPLE_CERTIFICATES_P12: ${{ secrets.APPLE_CERTIFICATES_P12 }}
+          APPLE_CERTIFICATES_PWD: ${{ secrets.APPLE_CERTIFICATES_PWD }}
+        run: |
+          cargo install cargo-bundle
+          echo "$APPLE_CERTIFICATES_P12" | base64 --decode > certificate.p12
+          security create-keychain -p actions temp.keychain
+          security import certificate.p12 -k temp.keychain -P "$APPLE_CERTIFICATES_PWD" -T /usr/bin/codesign
+          security list-keychains -d user -s temp.keychain
+          security unlock-keychain -p actions temp.keychain
+          security set-key-partition-list -S apple-tool:,apple: -s -k actions temp.keychain
+      - name: Setup build environment (macOS)
+        if: matrix.target.os == 'macos-latest'
+        run: |
+          brew update
+          brew install create-dmg
       - name: Setup build environment (Linux)
         if: matrix.target.os == 'ubuntu-latest'
         run: |
@@ -33,26 +51,31 @@ jobs:
           sudo apt-get install libasound2-dev libxdo-dev
       - name: Build
         run: cargo build --profile ci-release --locked --target ${{ matrix.target.name }}
-      - name: Compress for macOS
-        if: matrix.os == 'macos-latest'
+      - name: Bundle (macOS)
+        if: matrix.target.os == 'macos-latest'
+        run: cargo bundle --profile ci-release --target ${{ matrix.target.name }}
+      - name: Codesign
+        run: |
+          codesign --deep --force --verify --verbose --sign "Xavier Lau" target/${{ matrix.target.name }}/ci-release/bundle/osx/AiR.app
+      # TODO: notarize the app.
+      - name: Pack (macOS)
+        if: matrix.target.os == 'macos-latest'
+        run: .github/create-dmg
+      - name: Pack (Windows)
+        if: matrix.target.os == 'windows-latest'
         run: |
           mv target/${{ matrix.target.name }}/ci-release/air${{ matrix.target.extension }} .
-          zip air-${{ matrix.target.name }}.zip air${{ matrix.target.extension }}
-      - name: Compress for Windows
-        if: matrix.os == 'windows-latest'
+          Compress-Archive -Path air${{ matrix.target.extension }} -DestinationPath AiR-${{ matrix.target.name }}.zip
+      - name: Pack (Linux)
+        if: matrix.target.os == 'ubuntu-latest'
         run: |
           mv target/${{ matrix.target.name }}/ci-release/air${{ matrix.target.extension }} .
-          Compress-Archive -Path air${{ matrix.target.extension }} -DestinationPath air-${{ matrix.target.name }}.zip
-      - name: Compress for Linux
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          mv target/${{ matrix.target.name }}/ci-release/air${{ matrix.target.extension }} .
-          tar -czvf air-${{ matrix.target.name }}.tar.gz air${{ matrix.target.extension }}
+          tar -czvf AiR-${{ matrix.target.name }}.tar.gz air${{ matrix.target.extension }}
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: air-${{ matrix.target.name }}
-          path: air-${{ matrix.target.name }}.*
+          name: AiR-${{ matrix.target.name }}
+          path: AiR-${{ matrix.target.name }}.*
           retention-days: 1
 
   staging:
@@ -68,7 +91,7 @@ jobs:
       - name: Hash
         run: |
           mkdir -p artifacts
-          mv air-*/* artifacts/
+          mv AiR-*/* artifacts/
           cd artifacts
           sha256sum * | tee ../SHA256
           md5sum * | tee ../MD5
