@@ -38,7 +38,7 @@ impl Services {
 	pub fn new(ctx: &Context, components: &Components, state: &State) -> Result<Self> {
 		let keyboard = Keyboard::new();
 		let rt = Runtime::new()?;
-		let quoter = Quoter::new(&rt, state.chat.quote.clone());
+		let quoter = Quoter::new(&rt, state.chat.quote.clone(), state.chat.input.clone());
 		let is_chatting = Arc::new(AtomicBool::new(false));
 		let chat = Chat::new(
 			keyboard.clone(),
