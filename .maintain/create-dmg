@@ -1,0 +1,11 @@
+#!/bin/sh
+
+create-dmg \
+  --volname "AiR Installer" \
+  --window-size 640 320 \
+  --icon-size 128 \
+  --icon "AiR.app" 165 135 \
+  --hide-extension "AiR.app" \
+  --app-drop-link 470 135 \
+  "AiR-Installer.dmg" \
+  "target/release/bundle/osx/"
