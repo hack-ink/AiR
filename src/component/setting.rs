@@ -29,6 +29,12 @@ impl Setting {
 
 		tracing::info!("loading from {}", p.display());
 
+		if !p.is_file() {
+			tracing::warn!("it looks like you are running AiR for the first time, creating a new setting file from template");
+
+			return Ok(Default::default());
+		}
+
 		let s = match fs::read_to_string(p) {
 			Ok(s) => s,
 			Err(e) => {
@@ -44,6 +50,11 @@ impl Setting {
 
 	pub fn save(&self) -> Result<()> {
 		let p = Self::path()?;
+		let d = p.parent().unwrap();
+
+		if !d.is_dir() {
+			fs::create_dir_all(d)?;
+		}
 
 		tracing::info!("saving to {}", p.display());
 
