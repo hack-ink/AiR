@@ -24,6 +24,9 @@ AiR 是非母语者的绝佳助手，能够自动修正错误并润色语言，�
 
 
 ## 功能亮点
+### 用户界面
+<div align="center"><img src="demo/ui-1.png" width="49.7%"/> <img src="demo/ui-2.png" width="49.7%"/></div>
+
 ### 直接重写
 ![rewrite-directly](demo/rewrite-directly.gif)
 
