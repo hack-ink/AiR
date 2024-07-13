@@ -85,12 +85,20 @@ cargo bundle --release
   - Planed
 
 ### Configuration
+#### API Key
+**Please configure the API key the first time you run AiR!**
+
+1. `Open AiR.`
+2. `Navigate to the "Setting" panel.`
+3. `Click the "AI" section.`
+4. `Fill in the "API Key" field.`
+
 #### Open a Mac app from an unidentified developer (macOS only)
-When you open the app for the first time, you'll see the following message:
+When you open AiR for the first time, you'll see the following message:
 
 `"AiR" cannot be opened because the developer cannot be verified.`
 
-Since I'm not an identified developer, you need to allow the app to run on your Mac.
+Since I'm not an identified developer, you need to allow AiR to run on your Mac.
 
 Buy me a coffee so I can get an Apple Developer Certificate. 😄
 
@@ -114,12 +122,12 @@ You can configure the settings by navigating to the "Settings" panel.
 
 - General
   - Font Size
-  - Hide on Lost Focus: Hide the app when it loses focus.
+  - Hide on Lost Focus: Hide AiR when it loses focus.
   - Active Function: The active function when using non-directly functions.
 - AI
   - API Base: The base URL of the AI API. It's crucial to ensure you don't forget the `v1` part. (e.g., https://api.openai.com/v1).
-  - API	Key: The AI API key.
-  - Model: The AI model.
+  - API	Key
+  - Model
   - Temperature: The unpredictability of AI.
 - Translation
   - Language A: The language you want to translate from/to B.
@@ -149,7 +157,7 @@ You can also select text and use hotkeys to directly apply the corresponding fun
 ### Update
 An automatic update feature is under development.
 
-For now, you can manually update the app by repeating the installation steps.
+For now, you can manually update AiR by repeating the installation steps.
 
 #### Re-gain System Accessibility Permission (macOS only)
 1. `Follow the "Gain System Accessibility Permission" section to locate the "AiR.app" or "air" binary.`
