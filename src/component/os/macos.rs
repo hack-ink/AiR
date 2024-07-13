@@ -6,19 +6,19 @@ use objc2_foundation::MainThreadMarker;
 use super::*;
 
 impl Os {
-	pub fn get_nsra() -> Retained<NSRunningApplication> {
+	pub fn get_ca() -> Retained<NSRunningApplication> {
 		unsafe { NSRunningApplication::currentApplication() }
 	}
 
 	pub fn hide(&self) {
 		unsafe {
-			self.nsra.hide();
+			self.ca.hide();
 		}
 	}
 
 	pub fn unhide(&self) {
 		unsafe {
-			self.nsra.unhide();
+			self.ca.unhide();
 		}
 	}
 
