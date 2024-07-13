@@ -24,7 +24,7 @@ mod prelude {
 }
 
 // std
-#[cfg(not(feature = "dev"))] use std::panic;
+use std::{panic, process};
 // crates.io
 use app_dirs2::{AppDataType, AppInfo};
 use tracing_appender::rolling::{RollingFileAppender, Rotation};
@@ -57,7 +57,13 @@ fn main() {
 
 	subscriber.init();
 
-	#[cfg(not(feature = "dev"))]
-	panic::set_hook(Box::new(|p| tracing::error!("{p}")));
+	let default_hook = panic::take_hook();
+
+	panic::set_hook(Box::new(move |p| {
+		default_hook(p);
+
+		process::abort();
+	}));
+
 	air::launch(filter_handle).unwrap();
 }
