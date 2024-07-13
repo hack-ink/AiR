@@ -34,7 +34,7 @@ use tracing_subscriber::{
 	EnvFilter,
 };
 
-const APP_INFO: AppInfo = AppInfo { name: "AiR", author: "xavier@inv.cafe" };
+const APP_INFO: AppInfo = AppInfo { name: "AiR", author: "hack.ink" };
 
 fn main() {
 	color_eyre::install().unwrap();
