@@ -32,7 +32,7 @@ impl Audio {
 	}
 
 	pub fn abort(&self) {
-		self.0.send(Effect::Abort).expect("send must succeed");
+		let _ = self.0.send(Effect::Abort);
 	}
 }
 impl Debug for Audio {

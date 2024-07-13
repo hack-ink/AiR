@@ -48,7 +48,7 @@ impl Keyboard {
 	}
 
 	pub fn abort(&self) {
-		self.0.send(Action::Abort).expect("send must succeed");
+		let _ = self.0.send(Action::Abort);
 	}
 }
 
