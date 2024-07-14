@@ -8,9 +8,9 @@ pub struct Tabs {
 	pub focused_tab: Panel,
 }
 impl Tabs {
-	pub fn draw(&mut self, ui: &mut Ui, height: f32) {
+	pub fn draw(&mut self, ui: &mut Ui, y: f32) {
 		ui.horizontal(|ui| {
-			ui.set_height(height);
+			ui.set_height(y);
 			ui.selectable_value(&mut self.focused_tab, Panel::Chat, Panel::Chat.name());
 			ui.separator();
 			ui.selectable_value(&mut self.focused_tab, Panel::Setting, Panel::Setting.name());

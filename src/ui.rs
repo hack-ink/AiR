@@ -25,12 +25,15 @@ impl Uis {
 		TopBottomPanel::top("Top Panel").show(ctx.egui_ctx, |ui| self.tabs.draw(ui, bar_h));
 		// Main body.
 		CentralPanel::default().show(ctx.egui_ctx, |ui| match self.tabs.focused_tab {
-			Panel::Chat => self.chat.draw(&mut ctx, ui, bar_h),
-			Panel::Setting => self.setting.draw(&mut ctx, ui, bar_h),
+			Panel::Chat => {
+				self.chat.draw(&mut ctx, ui, bar_h);
+
+				// Status bar.
+				TopBottomPanel::bottom("Bottom Panel")
+					.show(ctx.egui_ctx, |ui| self.status.draw(&mut ctx, ui, bar_h, &self.chat));
+			},
+			Panel::Setting => self.setting.draw(&mut ctx, ui),
 		});
-		// Status bar.
-		TopBottomPanel::bottom("Bottom Panel")
-			.show(ctx.egui_ctx, |ui| self.status.draw(&mut ctx, ui, bar_h, &self.chat));
 	}
 }
 

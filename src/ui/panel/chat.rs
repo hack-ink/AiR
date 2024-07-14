@@ -10,27 +10,27 @@ pub struct Chat {
 	pub output: String,
 }
 impl Chat {
-	pub fn draw(&mut self, ctx: &mut AiRContext, ui: &mut Ui, bar_height: f32) {
+	pub fn draw(&mut self, ctx: &mut AiRContext, ui: &mut Ui, bar_y: f32) {
 		let size = ui.min_rect().size();
-		let h = size.y - bar_height * 2.;
-		let separator_h = ui.spacing().item_spacing.y * 2.;
+		let h = size.y - bar_y * 2.;
+		let separator_y = ui.spacing().item_spacing.y * 2.;
 		// TODO: this isn't really the height.
-		let shortcut_h = ctx.components.setting.general.font_size;
-		let scroll_h = (h - separator_h - shortcut_h) / 2.;
-		// let scroll_h = (h - shortcut_h) / 2.;
+		let shortcut_y = ctx.components.setting.general.font_size;
+		let scroll_y = (h - separator_y - shortcut_y) / 2.;
+		// let scroll_y = (h - shortcut_y) / 2.;
 
-		// dbg!(size.y, h, shortcut_h, scroll_h);
+		// dbg!(size.y, h, shortcut_y, scroll_y);
 
 		let dark_mode = ui.visuals().dark_mode;
 		let is_chatting = ctx.services.is_chatting();
 
 		// Input.
 		ui.vertical(|ui| {
-			ui.set_height(scroll_h);
+			ui.set_height(scroll_y);
 
 			ScrollArea::vertical().id_source("Input").show(ui, |ui| {
 				let input = ui.add_sized(
-					(size.x, scroll_h),
+					(size.x, scroll_y),
 					TextEdit::multiline({
 						if is_chatting {
 							if let Some(i) = ctx.state.chat.input.try_read() {
@@ -74,7 +74,7 @@ impl Chat {
 			})
 			.color(if dark_mode { Color32::GOLD } else { Color32::BROWN });
 
-			ui.set_height(shortcut_h);
+			ui.set_height(shortcut_y);
 			ui.with_layout(Layout::centered_and_justified(Direction::LeftToRight), |ui| {
 				ui.label(tip.size(ctx.components.setting.general.font_size - SMALL_FONT_OFFSET));
 			});
@@ -82,7 +82,7 @@ impl Chat {
 		ui.separator();
 		// Output.
 		ui.vertical(|ui| {
-			ui.set_height(scroll_h);
+			ui.set_height(scroll_y);
 
 			ScrollArea::vertical().id_source("Output").show(ui, |ui| {
 				if is_chatting {
@@ -94,7 +94,7 @@ impl Chat {
 				// Read-only trick.
 				let mut output = self.output.as_str();
 
-				ui.add_sized((size.x, scroll_h), TextEdit::multiline(&mut output));
+				ui.add_sized((size.x, scroll_y), TextEdit::multiline(&mut output));
 			});
 		});
 	}

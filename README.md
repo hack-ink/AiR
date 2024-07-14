@@ -25,7 +25,7 @@ More awesome features are on the horizon!
 
 ## Feature Highlights
 ### UIs
-<div align="center"><img src="demo/ui-1.png" width="49.7%"/> <img src="demo/ui-2.png" width="49.7%"/></div>
+<div align="center"><img src="demo/ui-0.png" width="49.7%"/> <img src="demo/ui-1.png" width="49.7%"/></div>
 
 ### Rewrite Directly
 ![rewrite-directly](demo/rewrite-directly.gif)

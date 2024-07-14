@@ -16,11 +16,11 @@ pub struct Status {
 	shortcut: ShortcutWidget,
 }
 impl Status {
-	pub fn draw(&mut self, ctx: &mut AiRContext, ui: &mut Ui, height: f32, chat: &Chat) {
+	pub fn draw(&mut self, ctx: &mut AiRContext, ui: &mut Ui, y: f32, chat: &Chat) {
 		let dark_mode = ui.visuals().dark_mode;
 
 		ui.horizontal(|ui| {
-			ui.set_height(height);
+			ui.set_height(y);
 			ui.vertical(|ui| {
 				ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
 					let tcs = &ctx.state.chat.token_counts;
