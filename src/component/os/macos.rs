@@ -34,7 +34,7 @@ impl Os {
 
 			NSApplication::sharedApplication(MainThreadMarker::new_unchecked())
 				.mainWindow()
-				.expect("no main window")
+				.expect("main window must be found")
 				.setCollectionBehavior(NSWindowCollectionBehavior::MoveToActiveSpace);
 		}
 	}
