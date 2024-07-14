@@ -127,7 +127,6 @@ struct ShortcutWidget {
 	copy: CopyWidget,
 	retry: RetryWidget,
 }
-// TODO: https://github.com/emilk/egui/issues/3453.
 #[derive(Debug)]
 struct CopyWidget {
 	copy_img_l: Image<'static>,

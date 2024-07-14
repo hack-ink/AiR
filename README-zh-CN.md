@@ -74,7 +74,7 @@ cargo build --release
 # 如果您是 macOS 用户并且想拥有一个 `AiR.app`，请运行以下命令。
 # 安装 `cargo-bundle` 将二进制文件打包成应用程序。
 cargo install cargo-bundle
-# 构建应用程序后，它将位于 `target/release/bundle/osx/AiR.app`。
+# 打包应用程序后，它将位于 `target/release/bundle/osx/AiR.app`。
 cargo bundle --release
 ```
 
@@ -149,10 +149,9 @@ AiR目前正在进行大量开发，并非所有设置都会在用户界面中�
 - `C:\Users\<username>\AppData\Roaming\hack.ink\AiR\setting.toml` (Windows)
 - `~/.config/AiR/setting.toml` (Unix)
 
-#### 交互
-在输入区域中键入文本，然后在 macOS 上按 `META+ENTER` 或在其他操作系统上按 `CTRL+ENTER` 以触发相应的功能。
-
-您还可以选择文本并使用快捷键直接对选定的文本应用相应的功能。
+### 交互
+- 在输入区域中键入文本，然后在 macOS 上按 `META+ENTER` 或在其他操作系统上按 `CTRL+ENTER` 以触发相应的功能。
+- 您还可以选择文本并使用快捷键直接对选定的文本应用相应的功能。
 
 ### 更新
 正在开发自动更新功能。

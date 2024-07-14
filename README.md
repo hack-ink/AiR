@@ -72,9 +72,9 @@ sudo apt-get install libasound2-dev libxdo-dev
 cargo build --release
 
 # If you are a macOS user and want to have a `AiR.app`, run the following command.
-# Install `cargo-bundle` to package the binary into an app.
+# Install `cargo-bundle` to pack the binary into an app.
 cargo install cargo-bundle
-# Build the app, and the it will be available at `target/release/bundle/osx/AiR.app`.
+# Pack the app, and the it will be available at `target/release/bundle/osx/AiR.app`.
 cargo bundle --release
 ```
 
@@ -149,10 +149,9 @@ The location of the settings file varies depending on the OS.
 - `C:\Users\<username>\AppData\Roaming\hack.ink\AiR\setting.toml` (Windows)
 - `~/.config/AiR/setting.toml` (Unix)
 
-#### Interaction
-Type the text in the input area and press `META+ENTER` on macOS or `CTRL+ENTER` on other OS to trigger the corresponding function.
-
-You can also select text and use hotkeys to directly apply the corresponding function to the selected text.
+### Interaction
+- Type the text in the input area and press `META+ENTER` on macOS or `CTRL+ENTER` on other OS to trigger the corresponding function.
+- You can also select text and use hotkeys to directly apply the corresponding function to the selected text.
 
 ### Update
 An automatic update feature is under development.
