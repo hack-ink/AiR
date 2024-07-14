@@ -23,8 +23,56 @@ where
 
 #[derive(Debug, Default)]
 pub struct ShortcutWidget {
-	pub copy: CopyWidget,
 	pub send: SendWidget,
+	pub interrupt: InterruptWidget,
+	pub copy: CopyWidget,
+}
+#[derive(Debug)]
+pub struct SendWidget {
+	pub send_icon_d: Image<'static>,
+	pub send_icon_l: Image<'static>,
+}
+impl SendWidget {
+	pub fn icon(&self, dark_mode: bool) -> Image<'static> {
+		if dark_mode {
+			self.send_icon_d.clone()
+		} else {
+			self.send_icon_l.clone()
+		}
+	}
+}
+impl Default for SendWidget {
+	fn default() -> Self {
+		Self {
+			send_icon_d: image_button(include_image!("../asset/send-dark.svg"), ICON_PIXELS),
+			send_icon_l: image_button(include_image!("../asset/send-light.svg"), ICON_PIXELS),
+		}
+	}
+}
+#[derive(Debug)]
+pub struct InterruptWidget {
+	pub interrupt_icon_d: Image<'static>,
+	pub interrupt: Image<'static>,
+}
+impl InterruptWidget {
+	pub fn icon(&self, dark_mode: bool) -> Image<'static> {
+		if dark_mode {
+			self.interrupt_icon_d.clone()
+		} else {
+			self.interrupt.clone()
+		}
+	}
+}
+impl Default for InterruptWidget {
+	fn default() -> Self {
+		Self {
+			interrupt_icon_d: image_button(
+				include_image!("../asset/interrupt-dark.svg"),
+				ICON_PIXELS,
+			),
+			interrupt: image_button(include_image!("../asset/interrupt-light.svg"), ICON_PIXELS),
+		}
+	}
 }
 #[derive(Debug)]
 pub struct CopyWidget {
@@ -59,28 +107,6 @@ impl Default for CopyWidget {
 			copied_icon_d: image_button(include_image!("../asset/copied-dark.svg"), ICON_PIXELS),
 			copied_icon_l: image_button(include_image!("../asset/copied-light.svg"), ICON_PIXELS),
 			triggered: false,
-		}
-	}
-}
-#[derive(Debug)]
-pub struct SendWidget {
-	pub send_icon_d: Image<'static>,
-	pub send_icon_l: Image<'static>,
-}
-impl SendWidget {
-	pub fn icon(&self, dark_mode: bool) -> Image<'static> {
-		if dark_mode {
-			self.send_icon_d.clone()
-		} else {
-			self.send_icon_l.clone()
-		}
-	}
-}
-impl Default for SendWidget {
-	fn default() -> Self {
-		Self {
-			send_icon_d: image_button(include_image!("../asset/send-dark.svg"), ICON_PIXELS),
-			send_icon_l: image_button(include_image!("../asset/send-light.svg"), ICON_PIXELS),
 		}
 	}
 }

@@ -18,6 +18,7 @@ pub struct Status {
 impl Status {
 	pub fn draw(&mut self, ctx: &mut AiRContext, ui: &mut Ui, y: f32, chat: &Chat) {
 		let dark_mode = ui.visuals().dark_mode;
+		let is_chatting = ctx.services.is_chatting();
 
 		ui.horizontal(|ui| {
 			ui.set_height(y);
@@ -39,7 +40,7 @@ impl Status {
 						"The token indicator might not work if you are using a custom API provider.",
 					);
 
-					if ctx.services.is_chatting() {
+					if is_chatting {
 						self.shortcut.copy.triggered = false;
 
 						ui.spinner();
@@ -48,17 +49,6 @@ impl Status {
 			});
 			ui.vertical(|ui| {
 				ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-					if ui.add(self.shortcut.send.icon(dark_mode)).clicked() {
-						// TODO: the state will not be synced if previous action is triggered by
-						// hotkey.
-						if ui.add(self.shortcut.send.icon(dark_mode)).clicked() {
-							ctx.services.chat.send((
-								ctx.components.setting.general.active_func.basic(),
-								chat.input.clone(),
-								false,
-							));
-						}
-					}
 					if !self.shortcut.copy.triggered {
 						if ui.add(self.shortcut.copy.copy_icon(dark_mode)).clicked() {
 							self.shortcut.copy.triggered = true;
@@ -69,6 +59,21 @@ impl Status {
 						}
 					} else {
 						ui.add(self.shortcut.copy.copied_icon(dark_mode));
+					}
+					if is_chatting {
+						if ui.add(self.shortcut.interrupt.icon(dark_mode)).clicked() {
+							ctx.services.chat.interrupt();
+						}
+					} else {
+						// TODO: the state will not be synced if previous action is triggered by
+						// hotkey.
+						if ui.add(self.shortcut.send.icon(dark_mode)).clicked() {
+							ctx.services.chat.send((
+								ctx.components.setting.general.active_func.basic(),
+								chat.input.clone(),
+								false,
+							));
+						}
 					}
 				});
 			});

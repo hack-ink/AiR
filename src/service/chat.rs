@@ -27,6 +27,7 @@ pub type ChatArgs = (Function, String, bool);
 #[derive(Debug)]
 pub struct Chat {
 	pub tx: Sender<ChatArgs>,
+	to_interrupt: Arc<AtomicBool>,
 	// TODO?: get rid of the `Mutex`.
 	openai: Arc<Mutex<OpenAi>>,
 	chat_setting: Arc<Mutex<ChatSetting>>,
@@ -41,6 +42,9 @@ impl Chat {
 		chat_setting: &ChatSetting,
 		state: &ChatState,
 	) -> Self {
+		let (tx, rx) = mpsc::channel();
+		let to_interrupt = Arc::new(AtomicBool::new(false));
+		let to_interrupt_ = to_interrupt.clone();
 		let openai = Arc::new(Mutex::new(OpenAi::new(ai_setting.to_owned())));
 		let openai_ = openai.clone();
 		let chat_setting = Arc::new(Mutex::new(chat_setting.to_owned()));
@@ -49,7 +53,6 @@ impl Chat {
 		let output = state.output.clone();
 		let tcs = state.token_counts.clone();
 		let error = state.error.clone();
-		let (tx, rx) = mpsc::channel();
 		// TODO: handle the error.
 		let abort_handle = rt
 			.spawn(async move {
@@ -78,6 +81,13 @@ impl Chat {
 					};
 
 					while let Some(r) = stream.next().await {
+						if to_interrupt_.load(Ordering::Relaxed) {
+							to_interrupt_.store(false, Ordering::Relaxed);
+							is_chatting.store(false, Ordering::Relaxed);
+
+							continue 'listen;
+						}
+
 						let Some(resp) = util::unwrap_or_tracing(
 							r,
 							"failed to retrieve the next item from the stream",
@@ -112,11 +122,15 @@ impl Chat {
 			})
 			.abort_handle();
 
-		Self { tx, openai, chat_setting, abort_handle }
+		Self { tx, to_interrupt, openai, chat_setting, abort_handle }
 	}
 
 	pub fn send(&self, args: ChatArgs) {
 		self.tx.send(args).expect("send must succeed");
+	}
+
+	pub fn interrupt(&self) {
+		self.to_interrupt.store(true, Ordering::Relaxed);
 	}
 
 	pub fn renew(&self, ai_setting: &Ai, chat_setting: &ChatSetting) {
