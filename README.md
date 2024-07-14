@@ -229,6 +229,8 @@ We would like to extend our heartfelt gratitude to the following projects and co
 
 
 ## Additional Acknowledgements
+- Google provides an excellent Chinese font, [Noto Serif SC](https://fonts.google.com/noto/specimen/Noto+Serif+SC).
+- Microsoft provides an excellent English monospace font, [Cascadia Code](https://github.com/microsoft/cascadia-code).
 - [OpenAI Translator](https://github.com/openai-translator/openai-translator) for providing the inspiration for this work.
 - The awesome icon created through [recraft.ai](https://app.recraft.ai).
 
