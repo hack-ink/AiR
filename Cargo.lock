@@ -1278,7 +1278,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2e6b451ff1143f6de0f33fc7f1b68fecfd2c7de06e104de96c4514de3f5396f8"
 dependencies = [
  "bytemuck",
- "emath",
+ "emath 0.28.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "ecolor"
+version = "0.28.1"
+source = "git+https://github.com/AurevoirXavier/egui?branch=master_#aa25a934d7eb0f746c2c555c9efcc792fbe6cc5b"
+dependencies = [
+ "bytemuck",
+ "emath 0.28.1 (git+https://github.com/AurevoirXavier/egui?branch=master_)",
  "serde",
 ]
 
@@ -1323,13 +1332,12 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.28.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20c97e70a2768de630f161bb5392cbd3874fcf72868f14df0e002e82e06cb798"
+source = "git+https://github.com/AurevoirXavier/egui?branch=master_#aa25a934d7eb0f746c2c555c9efcc792fbe6cc5b"
 dependencies = [
  "accesskit",
  "ahash",
- "emath",
- "epaint",
+ "emath 0.28.1 (git+https://github.com/AurevoirXavier/egui?branch=master_)",
+ "epaint 0.28.1 (git+https://github.com/AurevoirXavier/egui?branch=master_)",
  "log",
  "nohash-hasher",
  "ron",
@@ -1346,7 +1354,7 @@ dependencies = [
  "bytemuck",
  "document-features",
  "egui",
- "epaint",
+ "epaint 0.28.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log",
  "thiserror",
  "type-map",
@@ -1417,6 +1425,14 @@ name = "emath"
 version = "0.28.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0a6a21708405ea88f63d8309650b4d77431f4bc28fb9d8e6f77d3963b51249e6"
+dependencies = [
+ "bytemuck",
+]
+
+[[package]]
+name = "emath"
+version = "0.28.1"
+source = "git+https://github.com/AurevoirXavier/egui?branch=master_#aa25a934d7eb0f746c2c555c9efcc792fbe6cc5b"
 dependencies = [
  "bytemuck",
  "serde",
@@ -1510,8 +1526,22 @@ dependencies = [
  "ab_glyph",
  "ahash",
  "bytemuck",
- "ecolor",
- "emath",
+ "ecolor 0.28.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "emath 0.28.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nohash-hasher",
+ "parking_lot",
+]
+
+[[package]]
+name = "epaint"
+version = "0.28.1"
+source = "git+https://github.com/AurevoirXavier/egui?branch=master_#aa25a934d7eb0f746c2c555c9efcc792fbe6cc5b"
+dependencies = [
+ "ab_glyph",
+ "ahash",
+ "bytemuck",
+ "ecolor 0.28.1 (git+https://github.com/AurevoirXavier/egui?branch=master_)",
+ "emath 0.28.1 (git+https://github.com/AurevoirXavier/egui?branch=master_)",
  "log",
  "nohash-hasher",
  "parking_lot",
