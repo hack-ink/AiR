@@ -1,3 +1,5 @@
+// std
+use std::sync::atomic::Ordering;
 // crates.io
 use eframe::egui::*;
 // self
@@ -67,12 +69,20 @@ impl Chat {
 		ui.separator();
 		// Information.
 		ui.horizontal(|ui| {
-			let tip = RichText::new(if is_chatting {
-				"Thinking"
+			let tip = if ctx.state.chat.error.load(Ordering::Relaxed) {
+				RichText::new(format!(
+					"An error occurred while connecting with \"{}\". Press CTRL/CMD+ENTER to retry.",
+					ctx.components.setting.ai.api_base
+				))
+				.color(Color32::RED)
 			} else {
-				"Press CTRL/CMD+Enter to Send"
-			})
-			.color(if dark_mode { Color32::GOLD } else { Color32::BROWN });
+				RichText::new(if is_chatting {
+					"Thinking..."
+				} else {
+					"Press CTRL/CMD+ENTER to send."
+				})
+				.color(if dark_mode { Color32::GOLD } else { Color32::BROWN })
+			};
 
 			ui.set_height(shortcut_y);
 			ui.with_layout(Layout::centered_and_justified(Direction::LeftToRight), |ui| {

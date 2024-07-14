@@ -43,6 +43,7 @@ pub struct Chat {
 	pub input: Arc<RwLock<String>>,
 	pub output: Arc<RwLock<String>>,
 	pub token_counts: Arc<(AtomicU32, AtomicU32)>,
+	pub error: Arc<AtomicBool>,
 }
 
 #[derive(Debug)]

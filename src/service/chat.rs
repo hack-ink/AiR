@@ -19,6 +19,7 @@ use crate::{
 		setting::{Ai, Chat as ChatSetting},
 	},
 	state::Chat as ChatState,
+	util,
 };
 
 pub type ChatArgs = (Function, String, bool);
@@ -47,11 +48,12 @@ impl Chat {
 		let input = state.input.clone();
 		let output = state.output.clone();
 		let tcs = state.token_counts.clone();
+		let error = state.error.clone();
 		let (tx, rx) = mpsc::channel();
 		// TODO: handle the error.
 		let abort_handle = rt
 			.spawn(async move {
-				loop {
+				'listen: loop {
 					let (func, content, type_in): ChatArgs = rx.recv().unwrap();
 
 					is_chatting.store(true, Ordering::Relaxed);
@@ -61,15 +63,30 @@ impl Chat {
 					input.write().clone_from(&content);
 					output.write().clear();
 
-					let mut stream = openai_
-						.lock()
-						.await
-						.chat(&func.prompt(&*chat_setting_.lock().await), &content)
-						.await
-						.unwrap();
+					let Some(mut stream) = util::unwrap_or_tracing(
+						openai_
+							.lock()
+							.await
+							.chat(&func.prompt(&*chat_setting_.lock().await), &content)
+							.await,
+						"failed to create the chat stream",
+					) else {
+						is_chatting.store(false, Ordering::Relaxed);
+						error.store(true, Ordering::Relaxed);
+
+						continue;
+					};
 
 					while let Some(r) = stream.next().await {
-						let resp = r.unwrap();
+						let Some(resp) = util::unwrap_or_tracing(
+							r,
+							"failed to retrieve the next item from the stream",
+						) else {
+							is_chatting.store(false, Ordering::Relaxed);
+							error.store(true, Ordering::Relaxed);
+
+							continue 'listen;
+						};
 
 						for s in resp.choices.into_iter().filter_map(|c| c.delta.content) {
 							output.write().push_str(&s);
@@ -90,6 +107,7 @@ impl Chat {
 					time::sleep(Duration::from_millis(50)).await;
 
 					is_chatting.store(false, Ordering::Relaxed);
+					error.store(false, Ordering::Relaxed);
 				}
 			})
 			.abort_handle();

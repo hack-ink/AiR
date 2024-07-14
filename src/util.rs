@@ -1,5 +1,21 @@
+// std
+use std::fmt::Debug;
 // crates.io
 use eframe::egui::*;
+
+pub fn unwrap_or_tracing<T, E>(result: Result<T, E>, tracing_prefix: &str) -> Option<T>
+where
+	E: Debug,
+{
+	match result {
+		Ok(value) => Some(value),
+		Err(ref e) => {
+			tracing::error!("{tracing_prefix} due to: {e:?}");
+
+			None
+		},
+	}
+}
 
 pub fn price_rounded(value: f32) -> f32 {
 	(value * 1_000_000.).round() / 1_000_000.
