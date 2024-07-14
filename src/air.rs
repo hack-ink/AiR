@@ -69,8 +69,8 @@ impl App for AiR {
 				self.once.call_once(Os::set_move_to_active_space);
 			}
 			// TODO: https://github.com/emilk/egui/issues/4468.
-			// Allow 250ms for initialization during the first boot.
-			else if raw_input.time.unwrap_or_default() >= 0.25
+			// Allow 1,000ms for initialization during the first boot.
+			else if raw_input.time.unwrap_or_default() >= 1.
 				&& self.components.setting.general.hide_on_lost_focus
 			{
 				// TODO: https://github.com/emilk/egui/discussions/4635.

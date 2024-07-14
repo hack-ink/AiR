@@ -3,6 +3,9 @@ use eframe::egui::{self, *};
 // self
 use crate::util;
 
+pub const ICON_PIXELS: f32 = 16.;
+pub const SMALL_FONT_OFFSET: f32 = 3.;
+
 pub trait ComboBoxItem
 where
 	Self: Sized + Clone + PartialEq,
@@ -16,6 +19,70 @@ where
 	fn all() -> Self::Array;
 
 	fn as_str(&self) -> &'static str;
+}
+
+#[derive(Debug, Default)]
+pub struct ShortcutWidget {
+	pub copy: CopyWidget,
+	pub send: SendWidget,
+}
+#[derive(Debug)]
+pub struct CopyWidget {
+	pub copy_icon_l: Image<'static>,
+	pub copy_icon_d: Image<'static>,
+	pub copied_icon_l: Image<'static>,
+	pub copied_icon_d: Image<'static>,
+	pub triggered: bool,
+}
+impl CopyWidget {
+	pub fn copy_icon(&self, dark_mode: bool) -> Image<'static> {
+		if dark_mode {
+			self.copy_icon_d.clone()
+		} else {
+			self.copy_icon_l.clone()
+		}
+	}
+
+	pub fn copied_icon(&self, dark_mode: bool) -> Image<'static> {
+		if dark_mode {
+			self.copied_icon_d.clone()
+		} else {
+			self.copied_icon_l.clone()
+		}
+	}
+}
+impl Default for CopyWidget {
+	fn default() -> Self {
+		Self {
+			copy_icon_d: image_button(include_image!("../asset/copy-dark.svg"), ICON_PIXELS),
+			copy_icon_l: image_button(include_image!("../asset/copy-light.svg"), ICON_PIXELS),
+			copied_icon_d: image_button(include_image!("../asset/copied-dark.svg"), ICON_PIXELS),
+			copied_icon_l: image_button(include_image!("../asset/copied-light.svg"), ICON_PIXELS),
+			triggered: false,
+		}
+	}
+}
+#[derive(Debug)]
+pub struct SendWidget {
+	pub send_icon_d: Image<'static>,
+	pub send_icon_l: Image<'static>,
+}
+impl SendWidget {
+	pub fn icon(&self, dark_mode: bool) -> Image<'static> {
+		if dark_mode {
+			self.send_icon_d.clone()
+		} else {
+			self.send_icon_l.clone()
+		}
+	}
+}
+impl Default for SendWidget {
+	fn default() -> Self {
+		Self {
+			send_icon_d: image_button(include_image!("../asset/send-dark.svg"), ICON_PIXELS),
+			send_icon_l: image_button(include_image!("../asset/send-light.svg"), ICON_PIXELS),
+		}
+	}
 }
 
 #[derive(Debug, Default)]
@@ -120,9 +187,9 @@ pub fn toggle(on: &mut bool) -> impl Widget + '_ {
 	}
 }
 
-pub fn image_button<S>(src: S) -> Image<'static>
+pub fn image_button<S>(src: S, pixels: f32) -> Image<'static>
 where
 	S: Into<ImageSource<'static>>,
 {
-	Image::new(src).max_size((16., 16.).into()).sense(Sense::click())
+	Image::new(src).max_size((pixels, pixels).into()).sense(Sense::click())
 }

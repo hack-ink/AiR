@@ -4,6 +4,12 @@ pub use chat::Chat;
 mod setting;
 pub use setting::Setting;
 
+mod status;
+pub use status::Status;
+
+mod tabs;
+pub use tabs::Tabs;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum Panel {
 	Chat,
