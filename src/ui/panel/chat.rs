@@ -71,7 +71,7 @@ impl Chat {
 		ui.horizontal(|ui| {
 			let tip = if ctx.state.chat.error.load(Ordering::Relaxed) {
 				RichText::new(format!(
-					"An error occurred while connecting with \"{}\". Press CTRL/CMD+ENTER to retry.",
+					"An error occurred while connecting with \"{}\". Press CTRL/META+ENTER to retry.",
 					ctx.components.setting.ai.api_base
 				))
 				.color(Color32::RED)
@@ -79,7 +79,7 @@ impl Chat {
 				RichText::new(if is_chatting {
 					"Thinking..."
 				} else {
-					"Press CTRL/CMD+ENTER to send."
+					"Press CTRL/META+ENTER to send."
 				})
 				.color(if dark_mode { Color32::GOLD } else { Color32::BROWN })
 			};
