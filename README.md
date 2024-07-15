@@ -159,6 +159,7 @@ An automatic update feature is under development.
 For now, you can manually update AiR by repeating the installation steps.
 
 #### Re-gain System Accessibility Permission (macOS only)
+Sometimes, you might need to regain system accessibility permission after updating AiR. However, in most cases, this step is unnecessary.
 1. `Follow the "Gain System Accessibility Permission" section to locate the "AiR.app" or "air" binary.`
 2. `Click the "-" button to remove the existing permission, then click the "+" button to re-add it.`
 
