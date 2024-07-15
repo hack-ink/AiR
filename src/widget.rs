@@ -1,5 +1,8 @@
+// std
+use std::borrow::Cow;
 // crates.io
 use eframe::egui::{self, *};
+use language::Language;
 // self
 use crate::util;
 
@@ -18,7 +21,7 @@ where
 	// `[Self; Self::COUNT]` is not allowed.
 	fn all() -> Self::Array;
 
-	fn as_str(&self) -> &'static str;
+	fn as_str(&self) -> Cow<str>;
 }
 
 #[derive(Debug, Default)]
@@ -157,6 +160,20 @@ impl HotkeyListener {
 		}
 
 		changed
+	}
+}
+
+impl ComboBoxItem for Language {
+	type Array = [Language; Self::COUNT];
+
+	const COUNT: usize = 250;
+
+	fn all() -> Self::Array {
+		Language::all()
+	}
+
+	fn as_str(&self) -> Cow<str> {
+		Cow::Owned(format!("{} {}", self.as_tag(), self.as_local()))
 	}
 }
 

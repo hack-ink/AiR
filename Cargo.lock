@@ -144,6 +144,7 @@ dependencies = [
  "enigo",
  "futures",
  "global-hotkey",
+ "language",
  "objc2 0.5.2",
  "objc2-app-kit",
  "objc2-foundation",
@@ -2440,6 +2441,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd85a5776cd9500c2e2059c8c76c3b01528566b7fcbaf8098b55a33fc298849b"
 dependencies = [
  "arrayvec",
+]
+
+[[package]]
+name = "language"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "897f447d5900f5db29433f209a476c0e31de4b42c3f26b184adb60e4221dbd6b"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

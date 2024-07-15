@@ -44,6 +44,7 @@ egui_extras        = { version = "0.28", features = ["svg"] }
 enigo              = { version = "0.2" }
 futures            = { version = "0.3" }
 global-hotkey      = { version = "0.5" }
+language           = { version = "0.1", features = ["serde"] }
 parking_lot        = { version = "0.12" }
 reqwew             = { version = "0.2" }
 rodio              = { version = "0.19" }

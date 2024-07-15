@@ -48,10 +48,10 @@ impl ComboBoxItem for Function {
 		[Self::Rewrite, Self::Translate]
 	}
 
-	fn as_str(&self) -> &'static str {
-		match self {
+	fn as_str(&self) -> Cow<str> {
+		Cow::Borrowed(match self {
 			Self::Rewrite | Self::RewriteDirectly => "Rewrite",
 			Self::Translate | Self::TranslateDirectly => "Translate",
-		}
+		})
 	}
 }

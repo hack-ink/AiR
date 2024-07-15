@@ -1,11 +1,12 @@
-mod language;
-use language::Language;
+// A fallback for users who use older settings.
+mod fallback;
 
 // std
 use std::{borrow::Cow, fs, path::PathBuf};
 // crates.io
 use app_dirs2::AppDataType;
 use async_openai::config::OPENAI_API_BASE;
+use language::Language;
 use serde::{Deserialize, Serialize};
 use tracing::Level;
 // self
@@ -131,7 +132,9 @@ impl Rewrite {
 #[serde(rename_all = "kebab-case")]
 pub struct Translation {
 	pub additional_prompt: String,
+	#[serde(deserialize_with = "fallback::translation_a")]
 	pub a: Language,
+	#[serde(deserialize_with = "fallback::translation_b")]
 	pub b: Language,
 }
 impl Translation {
@@ -223,13 +226,13 @@ impl ComboBoxItem for LogLevel {
 		[Self::Trace, Self::Debug, Self::Info, Self::Warn, Self::Error]
 	}
 
-	fn as_str(&self) -> &'static str {
-		match self {
+	fn as_str(&self) -> Cow<str> {
+		Cow::Borrowed(match self {
 			Self::Trace => "Trace",
 			Self::Debug => "Debug",
 			Self::Info => "Info",
 			Self::Warn => "Warn",
 			Self::Error => "Error",
-		}
+		})
 	}
 }

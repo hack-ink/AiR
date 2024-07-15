@@ -1,3 +1,5 @@
+// std
+use std::borrow::Cow;
 // crates.io
 use async_openai::{
 	config::OpenAIConfig,
@@ -82,10 +84,10 @@ impl ComboBoxItem for Model {
 		[Self::Gpt4o, Self::Gpt35Turbo]
 	}
 
-	fn as_str(&self) -> &'static str {
-		match self {
+	fn as_str(&self) -> Cow<str> {
+		Cow::Borrowed(match self {
 			Self::Gpt4o => "gpt-4o",
 			Self::Gpt35Turbo => "gpt-3.5-turbo",
-		}
+		})
 	}
 }
