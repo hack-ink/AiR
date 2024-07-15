@@ -7,7 +7,7 @@ license     = "GPL-3.0"
 name        = "air"
 readme      = "README.md"
 repository  = "https://github.com/hack-ink/air"
-version     = "0.4.1"
+version     = "0.4.2"
 
 [package.metadata.bundle]
 icon              = ["asset/icon.icns"]
@@ -15,7 +15,7 @@ identifier        = "ink.hack.AiR"
 long_description  = "AI with Rust."
 name              = "AiR"
 short_description = "AI with Rust."
-version           = "0.4.1"
+version           = "0.4.2"
 
 # https://github.com/emilk/egui/issues/4807.
 [profile.dev.package.egui]
