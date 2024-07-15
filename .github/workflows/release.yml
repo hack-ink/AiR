@@ -16,6 +16,7 @@ jobs:
       matrix:
         target: [
             { name: aarch64-apple-darwin, os: macos-latest },
+            { name: x86_64-apple-darwin, os: macos-latest },
             {
               name: x86_64-pc-windows-msvc,
               os: windows-latest,
