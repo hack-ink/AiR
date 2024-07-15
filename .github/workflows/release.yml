@@ -61,7 +61,7 @@ jobs:
       # TODO: notarize the app.
       - name: Pack (macOS)
         if: matrix.target.os == 'macos-latest'
-        run: .github/create-dmg
+        run: .github/create-dmg ${{ matrix.target.name }}
       - name: Pack (Windows)
         if: matrix.target.os == 'windows-latest'
         run: |

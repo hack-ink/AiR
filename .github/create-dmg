@@ -1,5 +1,7 @@
 #!/bin/sh
 
+TARGET=$1
+
 create-dmg \
   --volname "AiR Installer" \
   --window-size 640 320 \
@@ -7,5 +9,5 @@ create-dmg \
   --icon "AiR.app" 165 135 \
   --hide-extension "AiR.app" \
   --app-drop-link 470 135 \
-  "AiR-aarch64-apple-darwin.dmg" \
-  "target/aarch64-apple-darwin/ci-release/bundle/osx/AiR.app"
+  "AiR-${TARGET}.dmg" \
+  "target/${TARGET}/ci-release/bundle/osx/AiR.app"
