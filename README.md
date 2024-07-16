@@ -39,6 +39,8 @@ More awesome features are on the horizon!
   - [x] **macOS**
   - [x] **Windows**
   - [ ] **Unix**
+    - [x] Main features.
+    - [ ] Certain window features, such as `Hide on Lost Focus` and `Stick to Top`, are not available on Unix.
 - **Features**
   - [x] **Dark/Light Theme**
   - [x] **Rewrite**
@@ -123,11 +125,13 @@ You can configure the settings by navigating to the "Settings" panel.
 - General
   - Font Size
   - Hide on Lost Focus: Hide AiR when it loses focus.
+  - Stick to Top: Keep AiR on top of other windows.
   - Active Function: The active function when using non-directly functions.
 - AI
   - API Base: The base URL of the AI API. It's crucial to ensure you don't forget the `v1` part. (e.g., https://api.openai.com/v1).
   - API	Key
   - Model
+  - Model Name: Available only if the model is set to `Custom`.
   - Temperature: The unpredictability of AI.
 - Translation
   - Language A: The language you want to translate from/to B.
