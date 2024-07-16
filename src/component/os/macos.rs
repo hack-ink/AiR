@@ -1,7 +1,7 @@
 // crates.io
 use objc2::rc::Retained;
 use objc2_app_kit::{
-	NSApplication, NSFloatingWindowLevel, NSNormalWindowLevel, NSRunningApplication,
+	NSApplication, NSFloatingWindowLevel, NSNormalWindowLevel, NSRunningApplication, NSWindow,
 	NSWindowCollectionBehavior,
 };
 use objc2_foundation::MainThreadMarker;
@@ -33,10 +33,7 @@ impl Os {
 			// let window: *mut AnyObject = objc2::msg_send![app, mainWindow];
 			// let _: () = objc2::msg_send![window, setCollectionBehavior: 1_u64<<1];
 
-			self.window
-				.as_ref()
-				.expect(" window must be found")
-				.setCollectionBehavior(NSWindowCollectionBehavior::MoveToActiveSpace);
+			self.window().setCollectionBehavior(NSWindowCollectionBehavior::MoveToActiveSpace);
 		}
 	}
 
@@ -53,10 +50,14 @@ impl Os {
 	}
 
 	pub fn stick_to_top(&self) {
-		self.window.as_ref().expect("window must be found").setLevel(NSFloatingWindowLevel);
+		self.window().setLevel(NSFloatingWindowLevel);
 	}
 
 	pub fn unstick_to_top(&self) {
-		self.window.as_ref().expect("window must be found").setLevel(NSNormalWindowLevel);
+		self.window().setLevel(NSNormalWindowLevel);
+	}
+
+	fn window(&self) -> &Retained<NSWindow> {
+		self.window.as_ref().expect("window must be found")
 	}
 }

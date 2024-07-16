@@ -46,7 +46,16 @@ impl Hotkey {
 
 		// TODO: handle the error.
 		thread::spawn(move || {
-			let os = Os::new();
+			let os = if cfg!(target_os = "windows") {
+				// Only Windows needs to obtain the window handle.
+				let mut os = Os::new();
+
+				os.obtain_window();
+
+				os
+			} else {
+				Os::new()
+			};
 
 			while !abort_.load(Ordering::Relaxed) {
 				// Block the thread until a hotkey event is received.

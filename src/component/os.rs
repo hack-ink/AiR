@@ -2,7 +2,7 @@
 #[cfg(all(unix, not(target_os = "macos")))] mod unix;
 #[cfg(target_os = "windows")] mod windows;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Os {
 	#[cfg(target_os = "macos")]
 	app: objc2::rc::Retained<objc2_app_kit::NSRunningApplication>,

@@ -75,7 +75,7 @@ impl App for AiR {
 			}
 			// TODO: https://github.com/emilk/egui/issues/4468.
 			// Allow 1,000ms for initialization during the first boot.
-			if raw_input.time.unwrap_or_default() >= 1.
+			else if raw_input.time.unwrap_or_default() >= 1.
 				&& self.components.setting.general.hide_on_lost_focus
 			{
 				// TODO: https://github.com/emilk/egui/discussions/4635.

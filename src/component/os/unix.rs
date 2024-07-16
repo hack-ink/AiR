@@ -7,4 +7,6 @@ impl Os {
 	pub fn unhide(&self) {}
 
 	pub fn stick_to_top(&self) {}
+
+	pub fn unstick_to_top(&self) {}
 }
