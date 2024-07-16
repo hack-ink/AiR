@@ -3,7 +3,7 @@ use std::{ffi::OsStr, os::windows::ffi::OsStrExt, ptr};
 // crates.io
 use winapi::{
 	shared::windef::HWND__,
-	um::winuser::{self, SW_HIDE, SW_SHOW},
+	um::winuser::{self, SW_MINIMIZE, SW_RESTORE},
 };
 // self
 use super::*;
@@ -17,13 +17,13 @@ impl Os {
 
 	pub fn hide(&self) {
 		unsafe {
-			winuser::ShowWindowAsync(self.hwnd, SW_HIDE);
+			winuser::ShowWindowAsync(self.hwnd, SW_MINIMIZE);
 		}
 	}
 
 	pub fn unhide(&self) {
 		unsafe {
-			winuser::ShowWindowAsync(self.hwnd, SW_SHOW);
+			winuser::ShowWindowAsync(self.hwnd, SW_RESTORE);
 		}
 	}
 
