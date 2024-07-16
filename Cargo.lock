@@ -1285,10 +1285,10 @@ dependencies = [
 [[package]]
 name = "ecolor"
 version = "0.28.1"
-source = "git+https://github.com/AurevoirXavier/egui?branch=master_#aa25a934d7eb0f746c2c555c9efcc792fbe6cc5b"
+source = "git+https://github.com/emilk/egui?branch=master#b2d74eaef603324ff2e471f4706ba0f8765b5431"
 dependencies = [
  "bytemuck",
- "emath 0.28.1 (git+https://github.com/AurevoirXavier/egui?branch=master_)",
+ "emath 0.28.1 (git+https://github.com/emilk/egui?branch=master)",
  "serde",
 ]
 
@@ -1333,12 +1333,12 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.28.1"
-source = "git+https://github.com/AurevoirXavier/egui?branch=master_#aa25a934d7eb0f746c2c555c9efcc792fbe6cc5b"
+source = "git+https://github.com/emilk/egui?branch=master#b2d74eaef603324ff2e471f4706ba0f8765b5431"
 dependencies = [
  "accesskit",
  "ahash",
- "emath 0.28.1 (git+https://github.com/AurevoirXavier/egui?branch=master_)",
- "epaint 0.28.1 (git+https://github.com/AurevoirXavier/egui?branch=master_)",
+ "emath 0.28.1 (git+https://github.com/emilk/egui?branch=master)",
+ "epaint 0.28.1 (git+https://github.com/emilk/egui?branch=master)",
  "log",
  "nohash-hasher",
  "ron",
@@ -1433,7 +1433,7 @@ dependencies = [
 [[package]]
 name = "emath"
 version = "0.28.1"
-source = "git+https://github.com/AurevoirXavier/egui?branch=master_#aa25a934d7eb0f746c2c555c9efcc792fbe6cc5b"
+source = "git+https://github.com/emilk/egui?branch=master#b2d74eaef603324ff2e471f4706ba0f8765b5431"
 dependencies = [
  "bytemuck",
  "serde",
@@ -1536,13 +1536,13 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.28.1"
-source = "git+https://github.com/AurevoirXavier/egui?branch=master_#aa25a934d7eb0f746c2c555c9efcc792fbe6cc5b"
+source = "git+https://github.com/emilk/egui?branch=master#b2d74eaef603324ff2e471f4706ba0f8765b5431"
 dependencies = [
  "ab_glyph",
  "ahash",
  "bytemuck",
- "ecolor 0.28.1 (git+https://github.com/AurevoirXavier/egui?branch=master_)",
- "emath 0.28.1 (git+https://github.com/AurevoirXavier/egui?branch=master_)",
+ "ecolor 0.28.1 (git+https://github.com/emilk/egui?branch=master)",
+ "emath 0.28.1 (git+https://github.com/emilk/egui?branch=master)",
  "log",
  "nohash-hasher",
  "parking_lot",

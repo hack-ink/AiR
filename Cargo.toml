@@ -71,4 +71,4 @@ winapi = { version = "0.3" }
 # async-openai = { path = "tmp/async-openai/async-openai" }
 # egui = { path = "tmp/egui/crates/egui" }
 # TODO: https://github.com/emilk/egui/pull/4823.
-egui = { git = "https://github.com/AurevoirXavier/egui", branch = "master_" }
+egui = { git = "https://github.com/emilk/egui", branch = "master" }
