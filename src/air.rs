@@ -5,7 +5,7 @@ use eframe::{egui::*, glow::Context as GlowContext, Frame, *};
 use tracing_subscriber::{reload::Handle, EnvFilter, Registry};
 // self
 use crate::{
-	component::{os::Os, Components},
+	component::Components,
 	prelude::Result,
 	service::Services,
 	state::State,
@@ -66,11 +66,16 @@ impl App for AiR {
 				// initialized.
 				//
 				// If possible find a place to call this only once.
-				self.once.call_once(Os::set_move_to_active_space);
+				self.once.call_once(|| {
+					self.components.os.obtain_window();
+					// Windows natively supports moving a window to another desktop.
+					#[cfg(target_os = "macos")]
+					self.components.os.set_move_to_active_space()
+				});
 			}
 			// TODO: https://github.com/emilk/egui/issues/4468.
 			// Allow 1,000ms for initialization during the first boot.
-			else if raw_input.time.unwrap_or_default() >= 1.
+			if raw_input.time.unwrap_or_default() >= 1.
 				&& self.components.setting.general.hide_on_lost_focus
 			{
 				// TODO: https://github.com/emilk/egui/discussions/4635.

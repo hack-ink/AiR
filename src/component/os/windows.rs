@@ -1,33 +1,41 @@
 // std
 use std::{ffi::OsStr, os::windows::ffi::OsStrExt, ptr};
 // crates.io
-use winapi::{
-	shared::windef::HWND__,
-	um::winuser::{self, SW_MINIMIZE, SW_RESTORE},
-};
+use winapi::um::winuser::{self, SW_MINIMIZE, SW_RESTORE};
 // self
 use super::*;
 
 impl Os {
-	pub fn get_hwnd() -> *mut HWND__ {
-		let window_title = OsStr::new("AiR").encode_wide().chain(Some(0)).collect::<Vec<_>>();
+	pub fn obtain_window(&mut self) {
+		let hwnd = winuser::FindWindowW(
+			ptr::null_mut(),
+			OsStr::new("AiR").encode_wide().chain(Some(0)).collect::<Vec<_>>().as_ptr(),
+		);
 
-		unsafe { winuser::FindWindowW(ptr::null_mut(), window_title.as_ptr()) }
+		if hwnd.is_null() {
+			panic!("window must be found");
+		} else {
+			self.window = Some(window);
+		}
 	}
 
 	pub fn hide(&self) {
 		unsafe {
-			winuser::ShowWindowAsync(self.hwnd, SW_MINIMIZE);
+			winuser::ShowWindowAsync(
+				self.window.as_ref().expect("window must be found"),
+				SW_MINIMIZE,
+			);
 		}
 	}
 
 	pub fn unhide(&self) {
 		unsafe {
-			winuser::ShowWindowAsync(self.hwnd, SW_RESTORE);
+			winuser::ShowWindowAsync(
+				self.window.as_ref().expect("window must be found"),
+				SW_RESTORE,
+			);
 		}
 	}
 
-	pub fn set_move_to_active_space() {
-		// Windows natively supports moving a window to another desktop.
-	}
+	pub fn stick_to_top(&self) {}
 }

@@ -71,11 +71,18 @@ impl Setting {
 pub struct General {
 	pub font_size: f32,
 	pub hide_on_lost_focus: bool,
+	#[serde(default)]
+	pub stick_to_top: bool,
 	pub active_func: Function,
 }
 impl Default for General {
 	fn default() -> Self {
-		Self { font_size: 13., hide_on_lost_focus: true, active_func: Default::default() }
+		Self {
+			font_size: 13.,
+			hide_on_lost_focus: true,
+			stick_to_top: Default::default(),
+			active_func: Default::default(),
+		}
 	}
 }
 

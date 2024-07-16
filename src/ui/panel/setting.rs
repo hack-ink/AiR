@@ -47,6 +47,21 @@ impl Setting {
 					ui.add(widget::toggle(&mut ctx.components.setting.general.hide_on_lost_focus));
 
 					ui.end_row();
+					ui.label("Stick to Top");
+					if ui
+						.add(widget::toggle(&mut ctx.components.setting.general.stick_to_top))
+						.changed()
+					{
+						if ctx.components.setting.general.stick_to_top {
+							ctx.components.setting.general.hide_on_lost_focus = false;
+
+							ctx.components.os.stick_to_top();
+						} else {
+							ctx.components.os.unstick_to_top();
+						}
+					}
+
+					ui.end_row();
 					// TODO: move to a better place.
 					ui.add(widget::combo_box(
 						"Active Function",

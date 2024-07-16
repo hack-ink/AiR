@@ -6,5 +6,5 @@ impl Os {
 
 	pub fn unhide(&self) {}
 
-	pub fn set_move_to_active_space() {}
+	pub fn stick_to_top(&self) {}
 }

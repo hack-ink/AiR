@@ -30,8 +30,9 @@ impl Status {
 
 					ui.hyperlink_to(
 						RichText::new(format!(
-							"↑{itc} ↓{otc} ${:.6}",
-							util::price_rounded(itc as f32 * ip + otc as f32 * op)
+							"↑{itc} ↓{otc} ${:.6} on {}",
+							util::price_rounded(itc as f32 * ip + otc as f32 * op),
+							ctx.components.setting.ai.model.as_str(),
 						))
 						.size(ctx.components.setting.general.font_size - SMALL_FONT_OFFSET),
 						Model::PRICE_URI,
@@ -41,8 +42,6 @@ impl Status {
 					);
 
 					if is_chatting {
-						self.shortcut.copy.triggered = false;
-
 						ui.spinner();
 					}
 				});
@@ -61,6 +60,8 @@ impl Status {
 						ui.add(self.shortcut.copy.copied_icon(dark_mode));
 					}
 					if is_chatting {
+						self.shortcut.copy.triggered = false;
+
 						if ui.add(self.shortcut.interrupt.icon(dark_mode)).clicked() {
 							ctx.services.chat.interrupt();
 						}

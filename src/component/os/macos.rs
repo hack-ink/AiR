@@ -1,28 +1,29 @@
 // crates.io
 use objc2::rc::Retained;
-use objc2_app_kit::{NSApplication, NSRunningApplication, NSWindowCollectionBehavior};
+use objc2_app_kit::{
+	NSApplication, NSFloatingWindowLevel, NSNormalWindowLevel, NSRunningApplication,
+	NSWindowCollectionBehavior,
+};
 use objc2_foundation::MainThreadMarker;
 // self
 use super::*;
 
 impl Os {
-	pub fn get_ca() -> Retained<NSRunningApplication> {
+	pub fn get_app() -> Retained<NSRunningApplication> {
 		unsafe { NSRunningApplication::currentApplication() }
 	}
 
-	pub fn hide(&self) {
-		unsafe {
-			self.ca.hide();
-		}
+	pub fn obtain_window(&mut self) {
+		self.window = unsafe {
+			Some(
+				NSApplication::sharedApplication(MainThreadMarker::new_unchecked())
+					.mainWindow()
+					.expect("window must be found"),
+			)
+		};
 	}
 
-	pub fn unhide(&self) {
-		unsafe {
-			self.ca.unhide();
-		}
-	}
-
-	pub fn set_move_to_active_space() {
+	pub fn set_move_to_active_space(&self) {
 		unsafe {
 			// // crates.io
 			// use objc2::AnyObject;
@@ -32,10 +33,30 @@ impl Os {
 			// let window: *mut AnyObject = objc2::msg_send![app, mainWindow];
 			// let _: () = objc2::msg_send![window, setCollectionBehavior: 1_u64<<1];
 
-			NSApplication::sharedApplication(MainThreadMarker::new_unchecked())
-				.mainWindow()
-				.expect("main window must be found")
+			self.window
+				.as_ref()
+				.expect(" window must be found")
 				.setCollectionBehavior(NSWindowCollectionBehavior::MoveToActiveSpace);
 		}
+	}
+
+	pub fn hide(&self) {
+		unsafe {
+			self.app.hide();
+		}
+	}
+
+	pub fn unhide(&self) {
+		unsafe {
+			self.app.unhide();
+		}
+	}
+
+	pub fn stick_to_top(&self) {
+		self.window.as_ref().expect("window must be found").setLevel(NSFloatingWindowLevel);
+	}
+
+	pub fn unstick_to_top(&self) {
+		self.window.as_ref().expect("window must be found").setLevel(NSNormalWindowLevel);
 	}
 }

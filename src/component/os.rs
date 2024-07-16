@@ -5,17 +5,21 @@
 #[derive(Debug)]
 pub struct Os {
 	#[cfg(target_os = "macos")]
-	ca: objc2::rc::Retained<objc2_app_kit::NSRunningApplication>,
+	app: objc2::rc::Retained<objc2_app_kit::NSRunningApplication>,
+	#[cfg(target_os = "macos")]
+	window: Option<objc2::rc::Retained<objc2_app_kit::NSWindow>>,
 	#[cfg(target_os = "windows")]
-	hwnd: *mut winapi::shared::windef::HWND__,
+	window: Option<*mut winapi::shared::windef::HWND__>,
 }
 impl Os {
 	pub fn new() -> Self {
 		Self {
 			#[cfg(target_os = "macos")]
-			ca: Self::get_ca(),
+			app: Self::get_app(),
+			#[cfg(target_os = "macos")]
+			window: None,
 			#[cfg(target_os = "windows")]
-			hwnd: Self::get_hwnd(),
+			window: None,
 		}
 	}
 }
