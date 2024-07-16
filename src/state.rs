@@ -12,7 +12,6 @@ use crate::{component::setting::Setting, prelude::*};
 
 #[derive(Debug)]
 pub struct State {
-	pub general: General,
 	pub chat: Chat,
 	pub development: Development,
 }
@@ -22,19 +21,8 @@ impl State {
 
 		development.reload_log_filter(setting.development.log_level.clone().into())?;
 
-		Ok(Self {
-			general: General {
-				hide_on_lost_focus: Arc::new(AtomicBool::new(setting.general.hide_on_lost_focus)),
-			},
-			chat: Default::default(),
-			development,
-		})
+		Ok(Self { chat: Default::default(), development })
 	}
-}
-
-#[derive(Debug)]
-pub struct General {
-	pub hide_on_lost_focus: Arc<AtomicBool>,
 }
 
 #[derive(Debug, Default)]

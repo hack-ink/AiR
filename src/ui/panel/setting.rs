@@ -1,5 +1,3 @@
-// std
-use std::sync::atomic::Ordering;
 // crates.io
 use eframe::egui::*;
 // self
@@ -45,15 +43,7 @@ impl Setting {
 
 					ui.end_row();
 					ui.label("Hide on Lost Focus");
-					if ui
-						.add(widget::toggle(&mut ctx.components.setting.general.hide_on_lost_focus))
-						.changed()
-					{
-						ctx.state.general.hide_on_lost_focus.store(
-							ctx.components.setting.general.hide_on_lost_focus,
-							Ordering::Relaxed,
-						);
-					};
+					ui.add(widget::toggle(&mut ctx.components.setting.general.hide_on_lost_focus));
 
 					ui.end_row();
 					// TODO: move to a better place.

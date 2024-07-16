@@ -53,7 +53,6 @@ impl Services {
 			ctx,
 			keyboard.clone(),
 			&components.setting.hotkeys,
-			state.general.hide_on_lost_focus.clone(),
 			audio.clone(),
 			chat.tx.clone(),
 		)?;

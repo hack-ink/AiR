@@ -32,7 +32,6 @@ impl Hotkey {
 		ctx: &Context,
 		keyboard: Keyboard,
 		hotkeys: &Hotkeys,
-		hide_on_lost_focus: Arc<AtomicBool>,
 		audio: Audio,
 		tx: Sender<ChatArgs>,
 	) -> Result<Self> {
@@ -60,7 +59,8 @@ impl Hotkey {
 					let (func, keys) = manager_.read().match_func(e.id);
 					let to_focus = !func.is_directly();
 
-					if to_focus && hide_on_lost_focus.load(Ordering::Relaxed) {
+					if to_focus {
+						// TODO: check if the window is hidden.
 						os.unhide();
 					}
 
