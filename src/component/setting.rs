@@ -199,7 +199,7 @@ pub struct Development {
 	pub log_level: LogLevel,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum LogLevel {
 	Trace,

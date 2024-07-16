@@ -41,7 +41,7 @@ impl Debug for Audio {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 enum Effect {
 	Notification,
 	Abort,

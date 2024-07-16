@@ -20,7 +20,7 @@ impl State {
 	pub fn new(log_filter_handle: Handle<EnvFilter, Registry>, setting: &Setting) -> Result<Self> {
 		let development = Development { log_filter_handle };
 
-		development.reload_log_filter(setting.development.log_level.clone().into())?;
+		development.reload_log_filter(setting.development.log_level.into())?;
 
 		Ok(Self { chat: Default::default(), development, ui: Default::default() })
 	}

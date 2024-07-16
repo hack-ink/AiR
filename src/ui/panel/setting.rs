@@ -193,9 +193,7 @@ impl Setting {
 					{
 						ctx.state
 							.development
-							.reload_log_filter(
-								ctx.components.setting.development.log_level.clone().into(),
-							)
+							.reload_log_filter(ctx.components.setting.development.log_level.into())
 							.expect("reload must succeed");
 					}
 				});

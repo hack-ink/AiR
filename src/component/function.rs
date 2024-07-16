@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use super::setting::Chat;
 use crate::widget::ComboBoxItem;
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Function {
 	Rewrite,
