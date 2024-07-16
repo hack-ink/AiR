@@ -51,8 +51,9 @@ impl Services {
 		let audio = Audio::new()?;
 		let hotkey = Hotkey::new(
 			ctx,
-			keyboard.clone(),
 			&components.setting.hotkeys,
+			state.ui.focused_panel.clone(),
+			keyboard.clone(),
 			audio.clone(),
 			chat.tx.clone(),
 		)?;

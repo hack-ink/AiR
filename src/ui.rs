@@ -1,4 +1,4 @@
-mod panel;
+pub mod panel;
 use panel::*;
 
 // crates.io
@@ -22,9 +22,10 @@ impl Uis {
 		let bar_h = ctx.components.setting.general.font_size + 10.;
 
 		// Tabs.
-		TopBottomPanel::top("Top Panel").show(ctx.egui_ctx, |ui| self.tabs.draw(ui, bar_h));
+		TopBottomPanel::top("Top Panel")
+			.show(ctx.egui_ctx, |ui| self.tabs.draw(&mut ctx, ui, bar_h));
 		// Main body.
-		CentralPanel::default().show(ctx.egui_ctx, |ui| match self.tabs.focused_tab {
+		CentralPanel::default().show(ctx.egui_ctx, |ui| match self.tabs.focused_panel {
 			Panel::Chat => {
 				self.chat.draw(&mut ctx, ui, bar_h);
 

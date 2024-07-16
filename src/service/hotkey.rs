@@ -19,6 +19,7 @@ use super::{audio::Audio, chat::ChatArgs, keyboard::Keyboard};
 use crate::{
 	component::{function::Function, keyboard::Keys, os::Os, setting::Hotkeys},
 	prelude::*,
+	ui::panel::Panel,
 };
 
 pub struct Hotkey {
@@ -30,8 +31,9 @@ pub struct Hotkey {
 impl Hotkey {
 	pub fn new(
 		ctx: &Context,
-		keyboard: Keyboard,
 		hotkeys: &Hotkeys,
+		focused_panel: Arc<RwLock<Panel>>,
+		keyboard: Keyboard,
 		audio: Audio,
 		tx: Sender<ChatArgs>,
 	) -> Result<Self> {
@@ -69,6 +71,7 @@ impl Hotkey {
 					let to_focus = !func.is_directly();
 
 					if to_focus {
+						*focused_panel.write() = Panel::Chat;
 						// TODO: check if the window is hidden.
 						os.unhide();
 					}

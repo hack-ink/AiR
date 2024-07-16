@@ -8,12 +8,13 @@ use parking_lot::RwLock;
 use tracing::Level;
 use tracing_subscriber::{reload::Handle, EnvFilter, Registry};
 // self
-use crate::{component::setting::Setting, prelude::*};
+use crate::{component::setting::Setting, prelude::*, ui::panel::Panel};
 
 #[derive(Debug)]
 pub struct State {
 	pub chat: Chat,
 	pub development: Development,
+	pub ui: Ui,
 }
 impl State {
 	pub fn new(log_filter_handle: Handle<EnvFilter, Registry>, setting: &Setting) -> Result<Self> {
@@ -21,7 +22,7 @@ impl State {
 
 		development.reload_log_filter(setting.development.log_level.clone().into())?;
 
-		Ok(Self { chat: Default::default(), development })
+		Ok(Self { chat: Default::default(), development, ui: Default::default() })
 	}
 }
 
@@ -45,4 +46,9 @@ impl Development {
 
 		Ok(())
 	}
+}
+
+#[derive(Debug, Default)]
+pub struct Ui {
+	pub focused_panel: Arc<RwLock<Panel>>,
 }

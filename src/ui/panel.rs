@@ -10,7 +10,7 @@ pub use status::Status;
 mod tabs;
 pub use tabs::Tabs;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Panel {
 	Chat,
 	Setting,

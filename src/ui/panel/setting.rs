@@ -46,13 +46,11 @@ impl Setting {
 					ui.label("Hide on Lost Focus");
 					if ui
 						.add(widget::toggle(&mut ctx.components.setting.general.hide_on_lost_focus))
-						.changed()
+						.changed() && ctx.components.setting.general.hide_on_lost_focus
 					{
-						if ctx.components.setting.general.hide_on_lost_focus {
-							ctx.components.setting.general.stick_to_top = false;
+						ctx.components.setting.general.stick_to_top = false;
 
-							ctx.components.os.unstick_to_top();
-						}
+						ctx.components.os.unstick_to_top();
 					}
 
 					ui.end_row();
