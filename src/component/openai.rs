@@ -56,16 +56,29 @@ impl OpenAi {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Model {
+	Custom(String),
 	Gpt4o,
+	Gpt4Turbo,
 	Gpt35Turbo,
 }
 impl Model {
 	// pub const MODEL_URI: &'static str = "https://platform.openai.com/docs/models";
 	pub const PRICE_URI: &'static str = "https://openai.com/pricing";
 
+	pub fn as_str(&self) -> &str {
+		match self {
+			Self::Custom(s) => s,
+			Self::Gpt4o => "gpt-4o",
+			Self::Gpt4Turbo => "gpt-4-turbo",
+			Self::Gpt35Turbo => "gpt-3.5-turbo",
+		}
+	}
+
 	pub fn prices(&self) -> (f32, f32) {
 		match self {
+			Self::Custom(_) => (0., 0.),
 			Self::Gpt4o => (0.000005, 0.000015),
+			Self::Gpt4Turbo => (0.00001, 0.00003),
 			Self::Gpt35Turbo => (0.0000005, 0.0000015),
 		}
 	}
@@ -78,16 +91,18 @@ impl Default for Model {
 impl ComboBoxItem for Model {
 	type Array = [Self; Self::COUNT];
 
-	const COUNT: usize = 2;
+	const COUNT: usize = 4;
 
 	fn all() -> Self::Array {
-		[Self::Gpt4o, Self::Gpt35Turbo]
+		[Self::Custom("".into()), Self::Gpt4o, Self::Gpt4Turbo, Self::Gpt35Turbo]
 	}
 
-	fn as_str(&self) -> Cow<str> {
+	fn display(&self) -> Cow<str> {
 		Cow::Borrowed(match self {
-			Self::Gpt4o => "gpt-4o",
-			Self::Gpt35Turbo => "gpt-3.5-turbo",
+			Self::Custom(_) => "Custom",
+			Self::Gpt4o => "GPT-4o",
+			Self::Gpt4Turbo => "GPT-4 Turbo",
+			Self::Gpt35Turbo => "GPT-3.5 Turbo",
 		})
 	}
 }

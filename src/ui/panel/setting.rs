@@ -3,6 +3,7 @@ use eframe::egui::*;
 // self
 use crate::{
 	air::AiRContext,
+	component::openai::Model,
 	widget::{self, HotkeyListener},
 };
 
@@ -68,7 +69,7 @@ impl Setting {
 								size,
 								TextEdit::singleline(&mut ctx.components.setting.ai.api_base),
 							)
-							.changed();
+							.lost_focus();
 					});
 
 					ui.end_row();
@@ -80,7 +81,7 @@ impl Setting {
 								TextEdit::singleline(&mut ctx.components.setting.ai.api_key)
 									.password(self.api_key.visibility),
 							)
-							.changed();
+							.lost_focus();
 
 						if ui.button(&self.api_key.label).clicked() {
 							self.api_key.clicked();
@@ -91,6 +92,15 @@ impl Setting {
 					chat_need_reload |= ui
 						.add(widget::combo_box("Model", &mut ctx.components.setting.ai.model))
 						.changed();
+
+					if let Model::Custom(m) = &mut ctx.components.setting.ai.model {
+						ui.end_row();
+						ui.label("Model Name");
+						ui.horizontal(|ui| {
+							chat_need_reload |=
+								ui.add_sized(size, TextEdit::singleline(m)).lost_focus();
+						});
+					}
 
 					ui.end_row();
 					ui.label("Temperature");

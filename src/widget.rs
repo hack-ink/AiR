@@ -21,7 +21,7 @@ where
 	// `[Self; Self::COUNT]` is not allowed.
 	fn all() -> Self::Array;
 
-	fn as_str(&self) -> Cow<str>;
+	fn display(&self) -> Cow<str>;
 }
 
 #[derive(Debug, Default)]
@@ -172,7 +172,7 @@ impl ComboBoxItem for Language {
 		Language::all()
 	}
 
-	fn as_str(&self) -> Cow<str> {
+	fn display(&self) -> Cow<str> {
 		Cow::Owned(format!("{} {}", self.as_tag(), self.as_local()))
 	}
 }
@@ -185,9 +185,9 @@ where
 		ui.label(label);
 
 		let mut resp =
-			ComboBox::from_id_source(label).selected_text(current.as_str()).show_ui(ui, |ui| {
+			ComboBox::from_id_source(label).selected_text(current.display()).show_ui(ui, |ui| {
 				I::all().as_ref().iter().fold(false, |changed, i| {
-					changed | ui.selectable_value(current, i.to_owned(), i.as_str()).changed()
+					changed | ui.selectable_value(current, i.to_owned(), i.display()).changed()
 				})
 			});
 

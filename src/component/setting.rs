@@ -226,7 +226,7 @@ impl ComboBoxItem for LogLevel {
 		[Self::Trace, Self::Debug, Self::Info, Self::Warn, Self::Error]
 	}
 
-	fn as_str(&self) -> Cow<str> {
+	fn display(&self) -> Cow<str> {
 		Cow::Borrowed(match self {
 			Self::Trace => "Trace",
 			Self::Debug => "Debug",
