@@ -81,9 +81,9 @@ cargo bundle --release
 ```
 
 #### 下载预构建二进制文件
-- **macOS** 与 **Windows**
-  - 从 [GitHub Releases](https://github.com/hack-ink/air/releases/latest) 下载最新的预构建二进制文件。
-- **Unix**
+- **GitHub Releases**
+  - [这里](https://github.com/hack-ink/air/releases/latest)下载最新的预构建二进制文件。
+- **Homebrew**
   - 已计划
 
 ### 配置
