@@ -1,11 +1,7 @@
 // std
 use std::{
 	fmt::{Debug, Formatter, Result as FmtResult},
-	sync::{
-		atomic::{AtomicBool, Ordering},
-		mpsc::Sender,
-		Arc,
-	},
+	sync::{mpsc::Sender, Arc},
 	thread,
 	time::Duration,
 };
@@ -20,18 +16,20 @@ use crate::{
 	component::{function::Function, keyboard::Keys, os::Os, setting::Hotkeys},
 	prelude::*,
 	ui::panel::Panel,
+	util::ArtBool,
 };
 
 pub struct Hotkey {
 	// The manager need to be kept alive during the whole program life.
 	_manager: GlobalHotKeyManager,
 	manager: Arc<RwLock<Manager>>,
-	abort: Arc<AtomicBool>,
+	abort: ArtBool,
 }
 impl Hotkey {
 	pub fn new(
 		ctx: &Context,
 		hotkeys: &Hotkeys,
+		notification_sound: ArtBool,
 		focused_panel: Arc<RwLock<Panel>>,
 		keyboard: Keyboard,
 		audio: Audio,
@@ -41,7 +39,7 @@ impl Hotkey {
 		let ctx = ctx.to_owned();
 		let manager = Arc::new(RwLock::new(Manager::new(&_manager, hotkeys)?));
 		let manager_ = manager.clone();
-		let abort = Arc::new(AtomicBool::new(false));
+		let abort = ArtBool::new(false);
 		let abort_ = abort.clone();
 		let hk_rx = GlobalHotKeyEvent::receiver();
 		let mut clipboard = Clipboard::new()?;
@@ -59,13 +57,15 @@ impl Hotkey {
 				Os::new()
 			};
 
-			while !abort_.load(Ordering::Relaxed) {
+			while !abort_.load() {
 				// Block the thread until a hotkey event is received.
 				let e = hk_rx.recv().unwrap();
 
 				// We don't care about the release event.
 				if let HotKeyState::Pressed = e.state {
-					audio.play_notification();
+					if notification_sound.load() {
+						audio.play_notification();
+					}
 
 					let (func, keys) = manager_.read().match_func(e.id);
 					let to_focus = !func.is_directly();
@@ -116,7 +116,7 @@ impl Hotkey {
 	}
 
 	pub fn abort(&self) {
-		self.abort.store(true, Ordering::Release);
+		self.abort.store(true);
 	}
 }
 impl Debug for Hotkey {

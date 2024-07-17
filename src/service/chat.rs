@@ -1,7 +1,7 @@
 // std
 use std::{
 	sync::{
-		atomic::{AtomicBool, Ordering},
+		atomic::Ordering,
 		mpsc::{self, Sender},
 		Arc,
 	},
@@ -19,7 +19,7 @@ use crate::{
 		setting::{Ai, Chat as ChatSetting},
 	},
 	state::Chat as ChatState,
-	util,
+	util::{self, ArtBool},
 };
 
 pub type ChatArgs = (Function, String, bool);
@@ -27,7 +27,7 @@ pub type ChatArgs = (Function, String, bool);
 #[derive(Debug)]
 pub struct Chat {
 	pub tx: Sender<ChatArgs>,
-	to_interrupt: Arc<AtomicBool>,
+	to_interrupt: ArtBool,
 	// TODO?: get rid of the `Mutex`.
 	openai: Arc<Mutex<OpenAi>>,
 	chat_setting: Arc<Mutex<ChatSetting>>,
@@ -37,13 +37,13 @@ impl Chat {
 	pub fn new(
 		keyboard: Keyboard,
 		rt: &Runtime,
-		is_chatting: Arc<AtomicBool>,
+		is_chatting: ArtBool,
 		ai_setting: &Ai,
 		chat_setting: &ChatSetting,
 		state: &ChatState,
 	) -> Self {
 		let (tx, rx) = mpsc::channel();
-		let to_interrupt = Arc::new(AtomicBool::new(false));
+		let to_interrupt = ArtBool::new(false);
 		let to_interrupt_ = to_interrupt.clone();
 		let openai = Arc::new(Mutex::new(OpenAi::new(ai_setting.to_owned())));
 		let openai_ = openai.clone();
@@ -59,7 +59,7 @@ impl Chat {
 				'listen: loop {
 					let (func, content, type_in): ChatArgs = rx.recv().unwrap();
 
-					is_chatting.store(true, Ordering::Relaxed);
+					is_chatting.store(true);
 
 					tracing::info!("func: {func:?}");
 
@@ -74,16 +74,16 @@ impl Chat {
 							.await,
 						"failed to create the chat stream",
 					) else {
-						is_chatting.store(false, Ordering::Relaxed);
-						error.store(true, Ordering::Relaxed);
+						is_chatting.store(false);
+						error.store(true);
 
 						continue;
 					};
 
 					while let Some(r) = stream.next().await {
-						if to_interrupt_.load(Ordering::Relaxed) {
-							to_interrupt_.store(false, Ordering::Relaxed);
-							is_chatting.store(false, Ordering::Relaxed);
+						if to_interrupt_.load() {
+							to_interrupt_.store(false);
+							is_chatting.store(false);
 
 							continue 'listen;
 						}
@@ -92,8 +92,8 @@ impl Chat {
 							r,
 							"failed to retrieve the next item from the stream",
 						) else {
-							is_chatting.store(false, Ordering::Relaxed);
-							error.store(true, Ordering::Relaxed);
+							is_chatting.store(false);
+							error.store(true);
 
 							continue 'listen;
 						};
@@ -116,8 +116,8 @@ impl Chat {
 					// Allow the UI a moment to refresh the content.
 					time::sleep(Duration::from_millis(50)).await;
 
-					is_chatting.store(false, Ordering::Relaxed);
-					error.store(false, Ordering::Relaxed);
+					is_chatting.store(false);
+					error.store(false);
 				}
 			})
 			.abort_handle();
@@ -130,7 +130,7 @@ impl Chat {
 	}
 
 	pub fn interrupt(&self) {
-		self.to_interrupt.store(true, Ordering::Relaxed);
+		self.to_interrupt.store(true);
 	}
 
 	pub fn renew(&self, ai_setting: &Ai, chat_setting: &ChatSetting) {

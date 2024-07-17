@@ -1,7 +1,41 @@
 // std
-use std::fmt::Debug;
+use std::{
+	fmt::Debug,
+	sync::{
+		atomic::{AtomicBool, Ordering},
+		Arc,
+	},
+};
 // crates.io
 use eframe::egui::*;
+
+macro_rules! impl_arts {
+	($($n:ident, $t:ty, $i:ty,)+) => {
+		$(
+			#[derive(Clone, Debug, Default)]
+			pub struct $n(pub Arc<$t>);
+			impl $n {
+				#[inline]
+				pub fn new(value: $i) -> Self {
+					Self(Arc::new(<$t>::new(value)))
+				}
+
+				#[inline]
+				pub fn load(&self) -> $i {
+					self.0.load(Ordering::Relaxed)
+				}
+
+				#[inline]
+				pub fn store(&self, value: $i) {
+					self.0.store(value, Ordering::Relaxed)
+				}
+			}
+		)+
+	};
+}
+impl_arts! {
+	ArtBool, AtomicBool, bool,
+}
 
 pub fn unwrap_or_tracing<T, E>(result: Result<T, E>, tracing_prefix: &str) -> Option<T>
 where

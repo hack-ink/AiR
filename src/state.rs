@@ -1,29 +1,34 @@
 // std
-use std::sync::{
-	atomic::{AtomicBool, AtomicU32},
-	Arc,
-};
+use std::sync::{atomic::AtomicU32, Arc};
 // crates.io
 use parking_lot::RwLock;
 use tracing::Level;
 use tracing_subscriber::{reload::Handle, EnvFilter, Registry};
 // self
-use crate::{component::setting::Setting, prelude::*, ui::panel::Panel};
+use crate::{component::setting::Setting, prelude::*, ui::panel::Panel, util::ArtBool};
 
 #[derive(Debug)]
 pub struct State {
+	pub general: General,
 	pub chat: Chat,
 	pub development: Development,
 	pub ui: Ui,
 }
 impl State {
 	pub fn new(log_filter_handle: Handle<EnvFilter, Registry>, setting: &Setting) -> Result<Self> {
+		let general =
+			General { notification_sound: ArtBool::new(setting.general.notification_sound) };
 		let development = Development { log_filter_handle };
 
 		development.reload_log_filter(setting.development.log_level.into())?;
 
-		Ok(Self { chat: Default::default(), development, ui: Default::default() })
+		Ok(Self { general, chat: Default::default(), development, ui: Default::default() })
 	}
+}
+
+#[derive(Debug, Default)]
+pub struct General {
+	pub notification_sound: ArtBool,
 }
 
 #[derive(Debug, Default)]
@@ -32,7 +37,7 @@ pub struct Chat {
 	pub input: Arc<RwLock<String>>,
 	pub output: Arc<RwLock<String>>,
 	pub token_counts: Arc<(AtomicU32, AtomicU32)>,
-	pub error: Arc<AtomicBool>,
+	pub error: ArtBool,
 }
 
 #[derive(Debug)]

@@ -13,23 +13,18 @@ use keyboard::Keyboard;
 mod quoter;
 use quoter::Quoter;
 
-// std
-use std::sync::{
-	atomic::{AtomicBool, Ordering},
-	Arc,
-};
 // crates.io
 use eframe::egui::Context;
 use tokio::runtime::Runtime;
 // self
-use crate::{component::Components, prelude::*, state::State};
+use crate::{component::Components, prelude::*, state::State, util::ArtBool};
 
 #[derive(Debug)]
 pub struct Services {
 	pub keyboard: Keyboard,
 	pub rt: Option<Runtime>,
 	pub quoter: Quoter,
-	pub is_chatting: Arc<AtomicBool>,
+	pub is_chatting: ArtBool,
 	pub chat: Chat,
 	pub audio: Audio,
 	pub hotkey: Hotkey,
@@ -39,7 +34,7 @@ impl Services {
 		let keyboard = Keyboard::new();
 		let rt = Runtime::new()?;
 		let quoter = Quoter::new(&rt, state.chat.quote.clone(), state.chat.input.clone());
-		let is_chatting = Arc::new(AtomicBool::new(false));
+		let is_chatting = ArtBool::new(false);
 		let chat = Chat::new(
 			keyboard.clone(),
 			&rt,
@@ -52,6 +47,7 @@ impl Services {
 		let hotkey = Hotkey::new(
 			ctx,
 			&components.setting.hotkeys,
+			state.general.notification_sound.clone(),
 			state.ui.focused_panel.clone(),
 			keyboard.clone(),
 			audio.clone(),
@@ -62,7 +58,7 @@ impl Services {
 	}
 
 	pub fn is_chatting(&self) -> bool {
-		self.is_chatting.load(Ordering::Relaxed)
+		self.is_chatting.load()
 	}
 
 	pub fn abort(&mut self) {

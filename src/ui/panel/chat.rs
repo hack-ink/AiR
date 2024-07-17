@@ -1,5 +1,3 @@
-// std
-use std::sync::atomic::Ordering;
 // crates.io
 use eframe::egui::*;
 // self
@@ -69,7 +67,7 @@ impl Chat {
 		ui.separator();
 		// Information.
 		ui.horizontal(|ui| {
-			let tip = if ctx.state.chat.error.load(Ordering::Relaxed) {
+			let tip = if ctx.state.chat.error.load() {
 				RichText::new(format!(
 					"An error occurred while connecting with \"{}\". Press CTRL/META+ENTER to retry.",
 					ctx.components.setting.ai.api_base

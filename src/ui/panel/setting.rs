@@ -69,6 +69,18 @@ impl Setting {
 					}
 
 					ui.end_row();
+					ui.label("Notification Sound");
+					if ui
+						.add(widget::toggle(&mut ctx.components.setting.general.notification_sound))
+						.changed()
+					{
+						ctx.state
+							.general
+							.notification_sound
+							.store(ctx.components.setting.general.notification_sound);
+					}
+
+					ui.end_row();
 					// TODO: move to a better place.
 					ui.add(widget::combo_box(
 						"Active Function",

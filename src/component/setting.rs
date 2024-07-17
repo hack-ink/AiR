@@ -81,7 +81,7 @@ impl Default for General {
 			font_size: 13.,
 			hide_on_lost_focus: true,
 			stick_to_top: Default::default(),
-			notification_sound: Default::default(),
+			notification_sound: true,
 			active_func: Default::default(),
 		}
 	}
@@ -201,7 +201,7 @@ pub struct Development {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub enum LogLevel {
 	Trace,
 	Debug,
