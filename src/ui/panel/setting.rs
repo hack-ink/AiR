@@ -124,7 +124,10 @@ impl Setting {
 
 					ui.end_row();
 					chat_need_reload |= ui
-						.add(widget::combo_box_labeled("Model", &mut ctx.components.setting.ai.model))
+						.add(widget::combo_box_labeled(
+							"Model",
+							&mut ctx.components.setting.ai.model,
+						))
 						.changed();
 
 					if let Model::Custom(m) = &mut ctx.components.setting.ai.model {
