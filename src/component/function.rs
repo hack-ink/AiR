@@ -48,7 +48,7 @@ impl ComboBoxItem for Function {
 		[Self::Rewrite, Self::Translate]
 	}
 
-	fn display(&self) -> Cow<str> {
+	fn selectable_str(&self) -> Cow<str> {
 		Cow::Borrowed(match self {
 			Self::Rewrite | Self::RewriteDirectly => "Rewrite",
 			Self::Translate | Self::TranslateDirectly => "Translate",

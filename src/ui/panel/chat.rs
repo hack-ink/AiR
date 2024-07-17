@@ -56,7 +56,7 @@ impl Chat {
 
 					if to_send {
 						ctx.services.chat.send((
-							ctx.components.setting.general.active_func.basic(),
+							ctx.components.setting.chat.activated_function.basic(),
 							self.input.clone(),
 							false,
 						));

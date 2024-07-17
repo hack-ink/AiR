@@ -21,7 +21,11 @@ where
 	// `[Self; Self::COUNT]` is not allowed.
 	fn all() -> Self::Array;
 
-	fn display(&self) -> Cow<str>;
+	fn selectable_str(&self) -> Cow<str>;
+
+	fn selected_str(&self) -> Cow<str> {
+		self.selectable_str()
+	}
 }
 
 #[derive(Debug, Default)]
@@ -172,22 +176,26 @@ impl ComboBoxItem for Language {
 		Language::all()
 	}
 
-	fn display(&self) -> Cow<str> {
+	fn selected_str(&self) -> Cow<str> {
+		Cow::Borrowed(self.as_tag())
+	}
+
+	fn selectable_str(&self) -> Cow<str> {
 		Cow::Owned(format!("{} {}", self.as_tag(), self.as_local()))
 	}
 }
 
-pub fn combo_box<'a, I>(label: &'a str, current: &'a mut I) -> impl Widget + 'a
+pub fn combo_box<'a, I>(name: &'a str, current: &'a mut I) -> impl Widget + 'a
 where
 	I: Clone + PartialEq + ComboBoxItem,
 {
 	move |ui: &mut Ui| {
-		ui.label(label);
-
-		let mut resp =
-			ComboBox::from_id_source(label).selected_text(current.display()).show_ui(ui, |ui| {
+		let mut resp = ComboBox::from_id_source(name)
+			.selected_text(current.selected_str())
+			.show_ui(ui, |ui| {
 				I::all().as_ref().iter().fold(false, |changed, i| {
-					changed | ui.selectable_value(current, i.to_owned(), i.display()).changed()
+					changed
+						| ui.selectable_value(current, i.to_owned(), i.selectable_str()).changed()
 				})
 			});
 
@@ -198,6 +206,17 @@ where
 		}
 
 		resp.response
+	}
+}
+
+pub fn combo_box_labeled<'a, I>(label: &'a str, current: &'a mut I) -> impl Widget + 'a
+where
+	I: Clone + PartialEq + ComboBoxItem,
+{
+	move |ui: &mut Ui| {
+		ui.label(label);
+
+		ui.add(combo_box(label, current))
 	}
 }
 

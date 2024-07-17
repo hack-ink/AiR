@@ -82,9 +82,9 @@ impl Setting {
 
 					ui.end_row();
 					// TODO: move to a better place.
-					ui.add(widget::combo_box(
+					ui.add(widget::combo_box_labeled(
 						"Active Function",
-						&mut ctx.components.setting.general.active_func,
+						&mut ctx.components.setting.chat.activated_function,
 					));
 				});
 			});
@@ -124,7 +124,7 @@ impl Setting {
 
 					ui.end_row();
 					chat_need_reload |= ui
-						.add(widget::combo_box("Model", &mut ctx.components.setting.ai.model))
+						.add(widget::combo_box_labeled("Model", &mut ctx.components.setting.ai.model))
 						.changed();
 
 					if let Model::Custom(m) = &mut ctx.components.setting.ai.model {
@@ -146,19 +146,6 @@ impl Setting {
 								.step_by(0.1),
 						)
 						.changed();
-				});
-			});
-
-			ui.collapsing("Translation", |ui| {
-				Grid::new("Translation").num_columns(2).show(ui, |ui| {
-					// TODO: A and B should be mutually exclusive.
-					for (l, c) in [
-						("Language A", &mut ctx.components.setting.chat.translation.a),
-						("Language B", &mut ctx.components.setting.chat.translation.b),
-					] {
-						chat_need_reload |= ui.add(widget::combo_box(l, c)).changed();
-						ui.end_row();
-					}
 				});
 			});
 
@@ -197,7 +184,7 @@ impl Setting {
 			ui.collapsing("Development", |ui| {
 				Grid::new("Development").num_columns(2).show(ui, |ui| {
 					if ui
-						.add(widget::combo_box(
+						.add(widget::combo_box_labeled(
 							"Log Level",
 							&mut ctx.components.setting.development.log_level,
 						))

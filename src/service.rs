@@ -47,8 +47,7 @@ impl Services {
 		let hotkey = Hotkey::new(
 			ctx,
 			&components.setting.hotkeys,
-			state.general.notification_sound.clone(),
-			state.ui.focused_panel.clone(),
+			&state,
 			keyboard.clone(),
 			audio.clone(),
 			chat.tx.clone(),

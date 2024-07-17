@@ -97,7 +97,7 @@ impl ComboBoxItem for Model {
 		[Self::Custom("".into()), Self::Gpt4o, Self::Gpt4Turbo, Self::Gpt35Turbo]
 	}
 
-	fn display(&self) -> Cow<str> {
+	fn selectable_str(&self) -> Cow<str> {
 		Cow::Borrowed(match self {
 			Self::Custom(_) => "Custom",
 			Self::Gpt4o => "GPT-4o",

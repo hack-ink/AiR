@@ -70,7 +70,7 @@ impl Status {
 						// hotkey.
 						if ui.add(self.shortcut.send.icon(dark_mode)).clicked() {
 							ctx.services.chat.send((
-								ctx.components.setting.general.active_func.basic(),
+								ctx.components.setting.chat.activated_function.basic(),
 								chat.input.clone(),
 								false,
 							));

@@ -15,6 +15,7 @@ use super::{audio::Audio, chat::ChatArgs, keyboard::Keyboard};
 use crate::{
 	component::{function::Function, keyboard::Keys, os::Os, setting::Hotkeys},
 	prelude::*,
+	state::State,
 	ui::panel::Panel,
 	util::ArtBool,
 };
@@ -29,16 +30,18 @@ impl Hotkey {
 	pub fn new(
 		ctx: &Context,
 		hotkeys: &Hotkeys,
-		notification_sound: ArtBool,
-		focused_panel: Arc<RwLock<Panel>>,
+		state: &State,
 		keyboard: Keyboard,
 		audio: Audio,
 		tx: Sender<ChatArgs>,
 	) -> Result<Self> {
-		let _manager = GlobalHotKeyManager::new().map_err(GlobalHotKeyError::Main)?;
 		let ctx = ctx.to_owned();
+		let _manager = GlobalHotKeyManager::new().map_err(GlobalHotKeyError::Main)?;
 		let manager = Arc::new(RwLock::new(Manager::new(&_manager, hotkeys)?));
 		let manager_ = manager.clone();
+		let notification_sound = state.general.notification_sound.clone();
+		let active_func = state.chat.active_func.clone();
+		let activated_function = state.ui.activated_function.clone();
 		let abort = ArtBool::new(false);
 		let abort_ = abort.clone();
 		let hk_rx = GlobalHotKeyEvent::receiver();
@@ -71,7 +74,8 @@ impl Hotkey {
 					let to_focus = !func.is_directly();
 
 					if to_focus {
-						*focused_panel.write() = Panel::Chat;
+						*active_func.write() = func.basic();
+						*activated_function.write() = Panel::Chat;
 						// TODO: check if the window is hidden.
 						os.unhide();
 					}

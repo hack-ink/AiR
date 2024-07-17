@@ -73,7 +73,6 @@ pub struct General {
 	pub hide_on_lost_focus: bool,
 	pub stick_to_top: bool,
 	pub notification_sound: bool,
-	pub active_func: Function,
 }
 impl Default for General {
 	fn default() -> Self {
@@ -82,7 +81,6 @@ impl Default for General {
 			hide_on_lost_focus: true,
 			stick_to_top: Default::default(),
 			notification_sound: true,
-			active_func: Default::default(),
 		}
 	}
 }
@@ -110,6 +108,7 @@ impl Default for Ai {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct Chat {
+	pub activated_function: Function,
 	pub rewrite: Rewrite,
 	pub translation: Translation,
 }
@@ -234,7 +233,7 @@ impl ComboBoxItem for LogLevel {
 		[Self::Trace, Self::Debug, Self::Info, Self::Warn, Self::Error]
 	}
 
-	fn display(&self) -> Cow<str> {
+	fn selectable_str(&self) -> Cow<str> {
 		Cow::Borrowed(match self {
 			Self::Trace => "Trace",
 			Self::Debug => "Debug",
