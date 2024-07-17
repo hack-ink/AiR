@@ -14,7 +14,7 @@ use super::{function::Function, openai::Model};
 use crate::{prelude::*, widget::ComboBoxItem, APP_INFO};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct Setting {
 	pub general: General,
 	pub ai: Ai,
@@ -67,12 +67,12 @@ impl Setting {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct General {
 	pub font_size: f32,
 	pub hide_on_lost_focus: bool,
-	#[serde(default)]
 	pub stick_to_top: bool,
+	pub notification_sound: bool,
 	pub active_func: Function,
 }
 impl Default for General {
@@ -81,13 +81,14 @@ impl Default for General {
 			font_size: 13.,
 			hide_on_lost_focus: true,
 			stick_to_top: Default::default(),
+			notification_sound: Default::default(),
 			active_func: Default::default(),
 		}
 	}
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct Ai {
 	pub api_base: String,
 	pub api_key: String,
@@ -107,13 +108,13 @@ impl Default for Ai {
 
 // TODO?: implement a `Prompt` trait.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct Chat {
 	pub rewrite: Rewrite,
 	pub translation: Translation,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct Rewrite {
 	pub additional_prompt: String,
 }
@@ -136,7 +137,7 @@ impl Rewrite {
 	}
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct Translation {
 	pub additional_prompt: String,
 	#[serde(deserialize_with = "fallback::translation_a")]
@@ -175,7 +176,7 @@ impl Default for Translation {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct Hotkeys {
 	pub rewrite: String,
 	pub rewrite_directly: String,
@@ -194,13 +195,13 @@ impl Default for Hotkeys {
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct Development {
 	pub log_level: LogLevel,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub enum LogLevel {
 	Trace,
 	Debug,
