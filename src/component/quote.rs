@@ -4,7 +4,6 @@ use serde::Deserialize;
 use super::net::{Http, Response, HTTP_CLIENT};
 use crate::prelude::*;
 
-// TODO?: actually, we could request this from AI.
 #[derive(Debug)]
 pub struct Quoter;
 impl Quoter {
