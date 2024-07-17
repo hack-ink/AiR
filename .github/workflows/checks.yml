@@ -6,8 +6,6 @@ env:
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
 
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   RUST_BACKTRACE: full
 
 on:

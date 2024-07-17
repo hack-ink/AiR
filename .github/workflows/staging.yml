@@ -1,7 +1,10 @@
 name: Staging
 
 env:
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
+
+  RUST_BACKTRACE: full
 
 on:
   workflow_dispatch:
