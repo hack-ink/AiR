@@ -14,5 +14,5 @@ updates:
       interval: "daily"
       time: "00:00"
     labels:
-      - "Bot"
-      - "GA"
+      - "T4-Bot"
+      - "T4-GitHub Actions"
