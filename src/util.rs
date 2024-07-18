@@ -8,6 +8,7 @@ use std::{
 };
 // crates.io
 use eframe::egui::*;
+use parking_lot::RwLock;
 
 macro_rules! impl_arts {
 	($($n:ident, $t:ty, $i:ty,)+) => {
@@ -35,6 +36,38 @@ macro_rules! impl_arts {
 }
 impl_arts! {
 	ArtBool, AtomicBool, bool,
+}
+
+// TODO: next version.
+#[allow(unused)]
+pub struct Stated<T>(pub RwLock<T>)
+where
+	T: Clone;
+#[allow(unused)]
+impl<T> Stated<T>
+where
+	T: Clone,
+{
+	#[inline]
+	pub fn try_write_setting(&self, setting: &mut T) {
+		if let Some(v) = self.0.try_read() {
+			v.clone_into(setting);
+		}
+	}
+
+	#[inline]
+	pub fn write_on_change(&self, response: Response, setting_value: T) {
+		if response.changed() {
+			*self.0.write() = setting_value;
+		}
+	}
+
+	#[inline]
+	pub fn write_on_lost_focus(&self, response: Response, setting_value: T) {
+		if response.lost_focus() {
+			*self.0.write() = setting_value;
+		}
+	}
 }
 
 pub fn unwrap_or_tracing<T, E>(result: Result<T, E>, tracing_prefix: &str) -> Option<T>

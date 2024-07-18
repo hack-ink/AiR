@@ -40,8 +40,8 @@ impl Hotkey {
 		let manager = Arc::new(RwLock::new(Manager::new(&_manager, hotkeys)?));
 		let manager_ = manager.clone();
 		let notification_sound = state.general.notification_sound.clone();
-		let active_func = state.chat.active_func.clone();
-		let activated_function = state.ui.activated_function.clone();
+		let activated_function = state.chat.activated_function.clone();
+		let focused_panel = state.ui.focused_panel.clone();
 		let abort = ArtBool::new(false);
 		let abort_ = abort.clone();
 		let hk_rx = GlobalHotKeyEvent::receiver();
@@ -49,16 +49,17 @@ impl Hotkey {
 
 		// TODO: handle the error.
 		thread::spawn(move || {
-			let os = if cfg!(target_os = "windows") {
-				// Only Windows needs to obtain the window handle.
+			// Only Windows needs to obtain the window handle.
+			#[cfg(target_os = "windows")]
+			let os = {
 				let mut os = Os::new();
 
 				os.obtain_window();
 
 				os
-			} else {
-				Os::new()
 			};
+			#[cfg(not(target_os = "windows"))]
+			let os = Os::new();
 
 			while !abort_.load() {
 				// Block the thread until a hotkey event is received.
@@ -74,8 +75,8 @@ impl Hotkey {
 					let to_focus = !func.is_directly();
 
 					if to_focus {
-						*active_func.write() = func.basic();
-						*activated_function.write() = Panel::Chat;
+						*activated_function.write() = func.basic();
+						*focused_panel.write() = Panel::Chat;
 						// TODO: check if the window is hidden.
 						os.unhide();
 					}

@@ -25,7 +25,7 @@ impl Uis {
 		TopBottomPanel::top("Top Panel")
 			.show(ctx.egui_ctx, |ui| self.tabs.draw(&mut ctx, ui, bar_h));
 		// Main body.
-		CentralPanel::default().show(ctx.egui_ctx, |ui| match self.tabs.activated_function {
+		CentralPanel::default().show(ctx.egui_ctx, |ui| match self.tabs.focused_panel {
 			Panel::Chat => {
 				self.chat.draw(&mut ctx, ui, bar_h);
 

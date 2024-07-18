@@ -6,49 +6,54 @@ use crate::{air::AiRContext, component::function::Function, widget};
 
 #[derive(Debug, Default)]
 pub struct Tabs {
-	pub activated_function: Panel,
+	pub focused_panel: Panel,
 }
 impl Tabs {
 	pub fn draw(&mut self, ctx: &mut AiRContext, ui: &mut Ui, y: f32) {
 		ui.horizontal(|ui| {
-			let activated_function = &mut self.activated_function;
+			let focused_panel = &mut self.focused_panel;
 
 			ui.set_height(y);
 			ui.vertical(|ui| {
 				ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-					if let Some(fp) = ctx.state.ui.activated_function.try_read() {
-						*activated_function = *fp;
+					// TODO: fn try_update.
+					if let Some(fp) = ctx.state.ui.focused_panel.try_read() {
+						*focused_panel = *fp;
 					}
 
-					if ui
-						.selectable_value(activated_function, Panel::Chat, Panel::Chat.name())
-						.changed()
+					// TODO: fn set.
+					if ui.selectable_value(focused_panel, Panel::Chat, Panel::Chat.name()).changed()
 					{
-						*ctx.state.ui.activated_function.write() = *activated_function;
+						*ctx.state.ui.focused_panel.write() = *focused_panel;
 					}
 
 					ui.separator();
 					if ui
-						.selectable_value(activated_function, Panel::Setting, Panel::Setting.name())
+						.selectable_value(focused_panel, Panel::Setting, Panel::Setting.name())
 						.changed()
 					{
-						*ctx.state.ui.activated_function.write() = *activated_function;
+						*ctx.state.ui.focused_panel.write() = *focused_panel;
 					}
 				});
 			});
 
-			if matches!(activated_function, Panel::Chat) {
+			if matches!(focused_panel, Panel::Chat) {
 				ui.vertical(|ui| {
 					ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-						let active_func = &mut ctx.components.setting.chat.activated_function;
+						let activated_function =
+							&mut ctx.components.setting.chat.activated_function;
 
-						if let Some(af) = ctx.state.chat.active_func.try_read() {
-							*active_func = *af;
+						if let Some(af) = ctx.state.chat.activated_function.try_read() {
+							*activated_function = *af;
 						}
 
-						if ui.add(widget::combo_box("Activated Function", active_func)).changed() {
-							*ctx.state.chat.active_func.write() = *active_func;
+						if ui
+							.add(widget::combo_box("Activated Function", activated_function))
+							.changed()
+						{
+							*ctx.state.chat.activated_function.write() = *activated_function;
 						}
+						// TODO: fn is_translate.
 						if matches!(
 							ctx.components.setting.chat.activated_function,
 							Function::Translate

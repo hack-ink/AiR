@@ -30,7 +30,7 @@ impl Status {
 
 					ui.hyperlink_to(
 						RichText::new(format!(
-							"↑{itc} ↓{otc} ${:.6} on {}",
+							"↑{itc} ↓{otc} ${} on {}",
 							util::price_rounded(itc as f32 * ip + otc as f32 * op),
 							ctx.components.setting.ai.model.as_str(),
 						))
