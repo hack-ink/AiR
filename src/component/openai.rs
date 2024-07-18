@@ -58,6 +58,7 @@ impl OpenAi {
 pub enum Model {
 	Custom(String),
 	Gpt4o,
+	Gpt4oMini,
 	Gpt4Turbo,
 	Gpt35Turbo,
 }
@@ -69,6 +70,7 @@ impl Model {
 		match self {
 			Self::Custom(s) => s,
 			Self::Gpt4o => "gpt-4o",
+			Self::Gpt4oMini => "gpt-4o-mini",
 			Self::Gpt4Turbo => "gpt-4-turbo",
 			Self::Gpt35Turbo => "gpt-3.5-turbo",
 		}
@@ -78,6 +80,7 @@ impl Model {
 		match self {
 			Self::Custom(_) => (0., 0.),
 			Self::Gpt4o => (0.000005, 0.000015),
+			Self::Gpt4oMini => (0.00000015, 0.0000006),
 			Self::Gpt4Turbo => (0.00001, 0.00003),
 			Self::Gpt35Turbo => (0.0000005, 0.0000015),
 		}
@@ -85,22 +88,23 @@ impl Model {
 }
 impl Default for Model {
 	fn default() -> Self {
-		Self::Gpt4o
+		Self::Gpt4oMini
 	}
 }
 impl ComboBoxItem for Model {
 	type Array = [Self; Self::COUNT];
 
-	const COUNT: usize = 4;
+	const COUNT: usize = 5;
 
 	fn all() -> Self::Array {
-		[Self::Custom("".into()), Self::Gpt4o, Self::Gpt4Turbo, Self::Gpt35Turbo]
+		[Self::Custom("".into()), Self::Gpt4o, Self::Gpt4oMini, Self::Gpt4Turbo, Self::Gpt35Turbo]
 	}
 
 	fn selectable_str(&self) -> Cow<str> {
 		Cow::Borrowed(match self {
 			Self::Custom(_) => "Custom",
 			Self::Gpt4o => "GPT-4o",
+			Self::Gpt4oMini => "GPT-4o Mini",
 			Self::Gpt4Turbo => "GPT-4 Turbo",
 			Self::Gpt35Turbo => "GPT-3.5 Turbo",
 		})
