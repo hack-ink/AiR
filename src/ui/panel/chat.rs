@@ -45,11 +45,10 @@ impl Chat {
 
 				if input.has_focus() {
 					let to_send = input.ctx.input(|i| {
-						let modifier = if cfg!(target_os = "macos") {
-							i.modifiers.mac_cmd
-						} else {
-							i.modifiers.ctrl
-						};
+						#[cfg(target_os = "macos")]
+						let modifier = i.modifiers.mac_cmd;
+						#[cfg(not(target_os = "macos"))]
+						let modifier = i.modifiers.ctrl;
 
 						modifier && i.key_pressed(Key::Enter)
 					});

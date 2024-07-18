@@ -13,7 +13,10 @@ impl Keyboard {
 	}
 
 	pub fn copy(&mut self) -> Result<()> {
-		let modifier = if cfg!(target_os = "macos") { Key::Meta } else { Key::Control };
+		#[cfg(target_os = "macos")]
+		let modifier = Key::Meta;
+		#[cfg(not(target_os = "macos"))]
+		let modifier = Key::Control;
 
 		self.0.key(modifier, Direction::Press).map_err(EnigoError::Input)?;
 		self.0.key(key_of('C')?, Direction::Click).map_err(EnigoError::Input)?;
