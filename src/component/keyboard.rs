@@ -63,6 +63,23 @@ impl FromStr for Keys {
 	}
 }
 
+impl ToString for Keys {
+	fn to_string(&self) -> String {
+		let mut s: Vec<String> = Vec::new();
+
+		for k in &self.0 {
+			match k {
+				Key::Control => s.push("CTRL".to_string()),
+				Key::Shift => s.push("SHIFT".to_string()),
+				Key::Alt => s.push("ALT".to_string()),
+				Key::Meta => s.push("META".to_string()),
+				_ => s.push(key_to_string(k).unwrap_or_else(|_| "not set".to_string()).to_uppercase()),
+			}
+		}
+		s.join("+")
+	}
+}
+
 // We can't use [`enigo::Key::Unicode`], it will cause panic.
 // Don't know why, maybe that can only be used in main thread.
 fn key_of(key: char) -> Result<Key> {
@@ -179,4 +196,117 @@ fn key_of(key: char) -> Result<Key> {
 	let k = Key::Unicode(key);
 
 	Ok(k)
+}
+
+pub fn key_to_string(key: &Key) -> Result<String> {
+	match key {
+		#[cfg(all(unix, not(target_os = "macos")))]
+		Key::Unicode(c) => Ok(c.to_string()),
+
+		#[cfg(target_os = "windows")]
+		Key::Other(v) => match v {
+			0x30 => Ok('0'.to_string()),
+			0x31 => Ok('1'.to_string()),
+			0x32 => Ok('2'.to_string()),
+			0x33 => Ok('3'.to_string()),
+			0x34 => Ok('4'.to_string()),
+			0x35 => Ok('5'.to_string()),
+			0x36 => Ok('6'.to_string()),
+			0x37 => Ok('7'.to_string()),
+			0x38 => Ok('8'.to_string()),
+			0x39 => Ok('9'.to_string()),
+			0x41 => Ok('A'.to_string()),
+			0x42 => Ok('B'.to_string()),
+			0x43 => Ok('C'.to_string()),
+			0x44 => Ok('D'.to_string()),
+			0x45 => Ok('E'.to_string()),
+			0x46 => Ok('F'.to_string()),
+			0x47 => Ok('G'.to_string()),
+			0x48 => Ok('H'.to_string()),
+			0x49 => Ok('I'.to_string()),
+			0x4A => Ok('J'.to_string()),
+			0x4B => Ok('K'.to_string()),
+			0x4C => Ok('L'.to_string()),
+			0x4D => Ok('M'.to_string()),
+			0x4E => Ok('N'.to_string()),
+			0x4F => Ok('O'.to_string()),
+			0x50 => Ok('P'.to_string()),
+			0x51 => Ok('Q'.to_string()),
+			0x52 => Ok('R'.to_string()),
+			0x53 => Ok('S'.to_string()),
+			0x54 => Ok('T'.to_string()),
+			0x55 => Ok('U'.to_string()),
+			0x56 => Ok('V'.to_string()),
+			0x57 => Ok('W'.to_string()),
+			0x58 => Ok('X'.to_string()),
+			0x59 => Ok('Y'.to_string()),
+			0x5A => Ok('Z'.to_string()),
+			0xBB => Ok('='.to_string()),
+			0xBD => Ok('-'.to_string()),
+			0xBA => Ok(';'.to_string()),
+			0xBC => Ok(','.to_string()),
+			0xBE => Ok('.'.to_string()),
+			0xBF => Ok('/'.to_string()),
+			0xC0 => Ok('`'.to_string()),
+			0xDB => Ok('['.to_string()),
+			0xDD => Ok(']'.to_string()),
+			0xDC => Ok('\\'.to_string()),
+			0xDE => Ok('\''.to_string()),
+			_ => Err(Error::UnsupportedKey(format!("{:x}", v))),
+		},
+
+		#[cfg(target_os = "macos")]
+		Key::Other(v) => match v {
+			0 => Ok('A'.to_string()),
+			1 => Ok('S'.to_string()),
+			2 => Ok('D'.to_string()),
+			3 => Ok('F'.to_string()),
+			4 => Ok('H'.to_string()),
+			5 => Ok('G'.to_string()),
+			6 => Ok('Z'.to_string()),
+			7 => Ok('X'.to_string()),
+			8 => Ok('C'.to_string()),
+			9 => Ok('V'.to_string()),
+			11 => Ok('B'.to_string()),
+			12 => Ok('Q'.to_string()),
+			13 => Ok('W'.to_string()),
+			14 => Ok('E'.to_string()),
+			15 => Ok('R'.to_string()),
+			16 => Ok('Y'.to_string()),
+			17 => Ok('T'.to_string()),
+			18 => Ok('1'.to_string()),
+			19 => Ok('2'.to_string()),
+			20 => Ok('3'.to_string()),
+			21 => Ok('4'.to_string()),
+			22 => Ok('6'.to_string()),
+			23 => Ok('5'.to_string()),
+			24 => Ok('='.to_string()),
+			25 => Ok('9'.to_string()),
+			26 => Ok('7'.to_string()),
+			27 => Ok('-'.to_string()),
+			28 => Ok('8'.to_string()),
+			29 => Ok('0'.to_string()),
+			30 => Ok(']'.to_string()),
+			31 => Ok('O'.to_string()),
+			32 => Ok('U'.to_string()),
+			33 => Ok('['.to_string()),
+			34 => Ok('I'.to_string()),
+			35 => Ok('P'.to_string()),
+			37 => Ok('L'.to_string()),
+			38 => Ok('J'.to_string()),
+			39 => Ok('\''.to_string()),
+			40 => Ok('K'.to_string()),
+			41 => Ok(';'.to_string()),
+			42 => Ok('\\'.to_string()),
+			43 => Ok(','.to_string()),
+			44 => Ok('/'.to_string()),
+			45 => Ok('N'.to_string()),
+			46 => Ok('M'.to_string()),
+			47 => Ok('.').to_string(),
+			50 => Ok('`'.to_string()),
+			_ => Err(Error::UnsupportedKey(format!("{:x}", v))),
+		},
+
+		_ => Err(Error::UnsupportedKey(format!("{:?}", key))),
+	}
 }
