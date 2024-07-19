@@ -1,5 +1,6 @@
 // std
 use std::{
+	collections::HashMap,
 	fmt::{Debug, Formatter, Result as FmtResult},
 	sync::{mpsc::Sender, Arc},
 	thread,
@@ -22,7 +23,7 @@ use crate::{
 
 pub struct Hotkey {
 	// The manager need to be kept alive during the whole program life.
-	_manager: GlobalHotKeyManager,
+	ghk_manager: GlobalHotKeyManager,
 	manager: Arc<RwLock<Manager>>,
 	abort: ArtBool,
 }
@@ -107,17 +108,22 @@ impl Hotkey {
 			}
 		});
 
-		Ok(Self { _manager, manager, abort })
+		Ok(Self { ghk_manager: _manager, manager, abort })
 	}
 
-	pub fn renew(&self, hotkeys: &Hotkeys) {
+	pub fn renew(&self, hotkeys: &mut Hotkeys) {
 		tracing::info!("renewing hotkey manager");
 
 		let mut manager = self.manager.write();
 
-		self._manager.unregister_all(&manager.hotkeys).expect("unregister must succeed");
+		for (hotkey, _keys) in manager.new_hotkeys.values() {
+			self.ghk_manager.unregister(*hotkey).expect("unregister must succeed");
+		}
 
-		*manager = Manager::new(&self._manager, hotkeys).expect("renew must succeed");
+		*manager = Manager::new(&self.ghk_manager, hotkeys).expect("renew must succeed");
+
+		// Write hotkey texts back into the settings.
+		manager.read_hotkeys_into_settings(hotkeys);
 	}
 
 	pub fn abort(&self) {
@@ -131,46 +137,68 @@ impl Debug for Hotkey {
 }
 
 struct Manager {
-	hotkeys: [HotKey; 4],
-	hotkeys_keys: [Keys; 4],
+	/// Only the actually registered hotkeys
+	new_hotkeys: HashMap<Function, (HotKey, Keys)>,
 }
 impl Manager {
-	fn new(_manager: &GlobalHotKeyManager, hotkeys: &Hotkeys) -> Result<Self> {
-		let hotkeys_raw = [
-			&hotkeys.rewrite,
-			&hotkeys.rewrite_directly,
-			&hotkeys.translate,
-			&hotkeys.translate_directly,
+	// Creates new manager. Assumes that hotkeys are valid.
+	fn new(ghk_manager: &GlobalHotKeyManager, settings_hotkeys: &Hotkeys) -> Result<Self> {
+		let hotkey_str_and_function = [
+			(&settings_hotkeys.rewrite, Function::Rewrite),
+			(&settings_hotkeys.rewrite_directly, Function::RewriteDirectly),
+			(&settings_hotkeys.translate, Function::Translate),
+			(&settings_hotkeys.translate_directly, Function::TranslateDirectly),
 		];
-		let hotkeys: [HotKey; 4] = hotkeys_raw
-			.iter()
-			.map(|h| h.parse())
-			.collect::<Result<Vec<_>, _>>()
-			.map_err(GlobalHotKeyError::Parse)?
-			.try_into()
-			.expect("array must fit");
 
-		_manager.register_all(&hotkeys).map_err(GlobalHotKeyError::Main)?;
+		let mut new_hotkeys: HashMap<Function, (HotKey, Keys)> = HashMap::new();
 
-		let hotkeys_keys = hotkeys_raw
-			.iter()
-			.map(|h| h.parse())
-			.collect::<Result<Vec<_>, _>>()?
-			.try_into()
-			.expect("array must fit");
+		for (hotkey_str, funk) in hotkey_str_and_function.into_iter() {
+			//Parse error possible when str value is "Not set"
+			let hotkey: HotKey = match hotkey_str.parse() {
+				Ok(v) => v,
+				Err(_) => continue,
+			};
+			// Same goes for Keys
+			let hotkey_keys: Keys = match hotkey_str.parse() {
+				Ok(v) => v,
+				Err(_) => continue,
+			};
+			// If manager.register fails, ignore the key, and it becomes "Not set".
+			let e = ghk_manager.register(hotkey);
+			if e.is_err() {
+				continue;
+			}
 
-		Ok(Self { hotkeys, hotkeys_keys })
+			// If key has been registered, add it to new_hotkeys
+			new_hotkeys.insert(funk, (hotkey, hotkey_keys));
+		}
+
+		Ok(Self { new_hotkeys })
 	}
 
 	fn match_func(&self, id: u32) -> (Function, Keys) {
-		match id {
-			i if i == self.hotkeys[0].id => (Function::Rewrite, self.hotkeys_keys[0].clone()),
-			i if i == self.hotkeys[1].id =>
-				(Function::RewriteDirectly, self.hotkeys_keys[1].clone()),
-			i if i == self.hotkeys[2].id => (Function::Translate, self.hotkeys_keys[2].clone()),
-			i if i == self.hotkeys[3].id =>
-				(Function::TranslateDirectly, self.hotkeys_keys[3].clone()),
-			_ => unreachable!(),
+		for (k, v) in self.new_hotkeys.iter() {
+			if id == v.0.id {
+				return (*k, v.1.clone());
+			}
+		}
+		unreachable!();
+	}
+
+	// Copies text representation of actually registered hotkeys back to settings.
+	// Replaces text for unset hotkeys with "Not set"
+	fn read_hotkeys_into_settings(&self, settings_hotkeys: &mut Hotkeys) {
+		let hotkey_str_and_function = [
+			(&mut settings_hotkeys.rewrite, Function::Rewrite),
+			(&mut settings_hotkeys.rewrite_directly, Function::RewriteDirectly),
+			(&mut settings_hotkeys.translate, Function::Translate),
+			(&mut settings_hotkeys.translate_directly, Function::TranslateDirectly),
+		];
+		for (k, v) in hotkey_str_and_function.into_iter() {
+			*k = match self.new_hotkeys.get(&v) {
+				Some(v) => v.1.to_string().to_uppercase(),
+				None => "Not set".into(),
+			};
 		}
 	}
 }
