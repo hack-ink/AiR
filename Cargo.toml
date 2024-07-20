@@ -1,5 +1,6 @@
 [package]
 authors     = ["Xavier Lau <xavier@inv.cafe>"]
+build       = "build.rs"
 description = "AI with Rust."
 edition     = "2021"
 homepage    = "https://hack.ink/air"
@@ -17,6 +18,11 @@ name              = "AiR"
 short_description = "AI with Rust."
 version           = "0.4.6"
 
+[package.metadata.winresource]
+LegalCopyright   = "Copyright (C) Hack Ink"
+OriginalFilename = "air.exe"
+ProductName      = "AiR"
+
 # https://github.com/emilk/egui/issues/4807.
 [profile.dev.package.egui]
 debug-assertions = false
@@ -32,6 +38,9 @@ lto      = true
 [features]
 default = []
 dev     = []
+
+[target.'cfg(target_os = "windows")'.build-dependencies]
+winresource = { version = "0.1" }
 
 [dependencies]
 # crates.io
