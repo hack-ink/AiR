@@ -15,14 +15,12 @@ jobs:
     runs-on: ${{ matrix.target.os }}
     strategy:
       matrix:
-        target: [
+        target:
+          [
             { name: aarch64-apple-darwin, os: macos-latest },
-            {
-              name: x86_64-pc-windows-msvc,
-              os: windows-latest,
-              extension: .exe,
-            },
-            # { name: x86_64-unknown-linux-gnu, os: ubuntu-latest },
+            { name: x86_64-apple-darwin, os: macos-latest },
+            { name: x86_64-pc-windows-msvc, os: windows-latest },
+            { name: x86_64-unknown-linux-gnu, os: ubuntu-latest },
           ]
     steps:
       - name: Fetch latest code
@@ -67,13 +65,13 @@ jobs:
       - name: Pack (Windows)
         if: matrix.target.os == 'windows-latest'
         run: |
-          mv target/${{ matrix.target.name }}/ci-release/air${{ matrix.target.extension }} .
-          Compress-Archive -Path air${{ matrix.target.extension }} -DestinationPath AiR-${{ matrix.target.name }}.zip
+          mv target/${{ matrix.target.name }}/ci-release/air.exe AiR.exe
+          Compress-Archive -Path AiR.exe -DestinationPath AiR-${{ matrix.target.name }}.zip
       - name: Pack (Linux)
         if: matrix.target.os == 'ubuntu-latest'
         run: |
-          mv target/${{ matrix.target.name }}/ci-release/air${{ matrix.target.extension }} .
-          tar -czvf AiR-${{ matrix.target.name }}.tar.gz air${{ matrix.target.extension }}
+          mv target/${{ matrix.target.name }}/ci-release/air AiR
+          tar -czvf AiR-${{ matrix.target.name }}.tar.gz AiR
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
