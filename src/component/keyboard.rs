@@ -63,6 +63,23 @@ impl FromStr for Keys {
 	}
 }
 
+impl ToString for Keys {
+	fn to_string(&self) -> String {
+		let mut s: Vec<String> = Vec::new();
+
+		for k in &self.0 {
+			match k {
+				Key::Control => s.push("CTRL".to_string()),
+				Key::Shift => s.push("SHIFT".to_string()),
+				Key::Alt => s.push("ALT".to_string()),
+				Key::Meta => s.push("META".to_string()),
+				_ => s.push(key_to_str(k).unwrap_or_else(|_| "not set").to_uppercase()),
+			}
+		}
+		s.join("+")
+	}
+}
+
 // We can't use [`enigo::Key::Unicode`], it will cause panic.
 // Don't know why, maybe that can only be used in main thread.
 fn key_of(key: char) -> Result<Key> {
@@ -179,4 +196,117 @@ fn key_of(key: char) -> Result<Key> {
 	let k = Key::Unicode(key);
 
 	Ok(k)
+}
+
+pub fn key_to_str(key: &Key) -> Result<&'static str> {
+	match key {
+		#[cfg(all(unix, not(target_os = "macos")))]
+		Key::Unicode(c) => Ok(c),
+
+		#[cfg(target_os = "windows")]
+		Key::Other(v) => Ok(match v {
+			0x30 => "0",
+			0x31 => "1",
+			0x32 => "2",
+			0x33 => "3",
+			0x34 => "4",
+			0x35 => "5",
+			0x36 => "6",
+			0x37 => "7",
+			0x38 => "8",
+			0x39 => "9",
+			0x41 => "A",
+			0x42 => "B",
+			0x43 => "C",
+			0x44 => "D",
+			0x45 => "E",
+			0x46 => "F",
+			0x47 => "G",
+			0x48 => "H",
+			0x49 => "I",
+			0x4A => "J",
+			0x4B => "K",
+			0x4C => "L",
+			0x4D => "M",
+			0x4E => "N",
+			0x4F => "O",
+			0x50 => "P",
+			0x51 => "Q",
+			0x52 => "R",
+			0x53 => "S",
+			0x54 => "T",
+			0x55 => "U",
+			0x56 => "V",
+			0x57 => "W",
+			0x58 => "X",
+			0x59 => "Y",
+			0x5A => "Z",
+			0xBB => "=",
+			0xBD => "-",
+			0xBA => ";",
+			0xBC => ",",
+			0xBE => ".",
+			0xBF => "/",
+			0xC0 => "`",
+			0xDB => "[",
+			0xDD => "]",
+			0xDC => "\\",
+			0xDE => "'",
+			_ => return Err(Error::UnsupportedKey(format!("{:x}", v))),
+		}),
+
+		#[cfg(target_os = "macos")]
+		Key::Other(v) => Ok(match v {
+			0 => "A",
+			1 => "S",
+			2 => "D",
+			3 => "F",
+			4 => "H",
+			5 => "G",
+			6 => "Z",
+			7 => "X",
+			8 => "C",
+			9 => "V",
+			11 => "B",
+			12 => "Q",
+			13 => "W",
+			14 => "E",
+			15 => "R",
+			16 => "Y",
+			17 => "T",
+			18 => "1",
+			19 => "2",
+			20 => "3",
+			21 => "4",
+			22 => "6",
+			23 => "5",
+			24 => "=",
+			25 => "9",
+			26 => "7",
+			27 => "-",
+			28 => "8",
+			29 => "0",
+			30 => "]",
+			31 => "O",
+			32 => "U",
+			33 => "[",
+			34 => "I",
+			35 => "P",
+			37 => "L",
+			38 => "J",
+			39 => "'",
+			40 => "K",
+			41 => ";",
+			42 => "\\",
+			43 => ",",
+			44 => "/",
+			45 => "N",
+			46 => "M",
+			47 => ".",
+			50 => "`",
+			_ => return Err(Error::UnsupportedKey(format!("{:x}", v))),
+		}),
+
+		_ => Err(Error::UnsupportedKey(format!("{:?}", key))),
+	}
 }

@@ -179,7 +179,7 @@ impl Setting {
 
 							changed
 						}) {
-						ctx.services.hotkey.renew(&ctx.components.setting.hotkeys);
+						ctx.services.hotkey.renew(&mut ctx.components.setting.hotkeys);
 					}
 				});
 			});
