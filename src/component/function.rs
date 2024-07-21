@@ -16,6 +16,10 @@ pub enum Function {
 	// TODO: refactor code.
 }
 impl Function {
+	pub fn all() -> [Self; 4] {
+		[Self::Rewrite, Self::RewriteDirectly, Self::Translate, Self::TranslateDirectly]
+	}
+
 	pub fn basic(&self) -> Self {
 		match self {
 			Self::Rewrite | Self::RewriteDirectly => Self::Rewrite,

@@ -21,9 +21,9 @@ use crate::{
 };
 
 pub struct Hotkey {
-	// The manager need to be kept alive during the whole program life.
-	_manager: GlobalHotKeyManager,
-	manager: Arc<RwLock<Manager>>,
+	// The global hokey manager need to be kept alive during the whole program life.
+	ghk: GlobalHotKeyManager,
+	inner: Arc<RwLock<Manager>>,
 	abort: ArtBool,
 }
 impl Hotkey {
@@ -36,9 +36,9 @@ impl Hotkey {
 		tx: Sender<ChatArgs>,
 	) -> Result<Self> {
 		let ctx = ctx.to_owned();
-		let _manager = GlobalHotKeyManager::new().map_err(GlobalHotKeyError::Main)?;
-		let manager = Arc::new(RwLock::new(Manager::new(&_manager, hotkeys)?));
-		let manager_ = manager.clone();
+		let ghk = GlobalHotKeyManager::new().map_err(GlobalHotKeyError::Main)?;
+		let inner = Arc::new(RwLock::new(Manager::new(&ghk, hotkeys)?));
+		let inner_ = inner.clone();
 		let notification_sound = state.general.notification_sound.clone();
 		let activated_function = state.chat.activated_function.clone();
 		let focused_panel = state.ui.focused_panel.clone();
@@ -71,7 +71,7 @@ impl Hotkey {
 						audio.play_notification();
 					}
 
-					let (func, keys) = manager_.read().match_func(e.id);
+					let (func, keys) = inner_.read().match_function(e.id);
 					let to_focus = !func.is_directly();
 
 					if to_focus {
@@ -107,17 +107,19 @@ impl Hotkey {
 			}
 		});
 
-		Ok(Self { _manager, manager, abort })
+		Ok(Self { ghk, inner, abort })
 	}
 
-	pub fn renew(&self, hotkeys: &Hotkeys) {
+	pub fn renew(&self, hotkeys: &Hotkeys) -> Result<()> {
 		tracing::info!("renewing hotkey manager");
 
-		let mut manager = self.manager.write();
+		for (hk, _) in self.inner.read().0.iter().filter_map(|maybe_hk| maybe_hk.as_ref()) {
+			self.ghk.unregister(*hk).map_err(GlobalHotKeyError::Main)?;
+		}
 
-		self._manager.unregister_all(&manager.hotkeys).expect("unregister must succeed");
+		*self.inner.write() = Manager::new(&self.ghk, hotkeys)?;
 
-		*manager = Manager::new(&self._manager, hotkeys).expect("renew must succeed");
+		Ok(())
 	}
 
 	pub fn abort(&self) {
@@ -126,51 +128,53 @@ impl Hotkey {
 }
 impl Debug for Hotkey {
 	fn fmt(&self, f: &mut Formatter) -> FmtResult {
-		f.debug_struct("Hotkey").field("manager", &"..").field("abort", &self.abort).finish()
+		f.debug_struct("Hotkey")
+			.field("ghk", &"..")
+			.field("inner", &self.inner)
+			.field("abort", &self.abort)
+			.finish()
 	}
 }
 
-struct Manager {
-	hotkeys: [HotKey; 4],
-	hotkeys_keys: [Keys; 4],
-}
+// The order of `[(HotKey, Keys); 4]` must
+// match that of the corresponding function in `[Function::all()]`.
+#[derive(Debug)]
+struct Manager([Option<(HotKey, Keys)>; 4]);
 impl Manager {
-	fn new(_manager: &GlobalHotKeyManager, hotkeys: &Hotkeys) -> Result<Self> {
+	fn new(ghk: &GlobalHotKeyManager, hotkeys: &Hotkeys) -> Result<Self> {
 		let hotkeys_raw = [
 			&hotkeys.rewrite,
 			&hotkeys.rewrite_directly,
 			&hotkeys.translate,
 			&hotkeys.translate_directly,
 		];
-		let hotkeys: [HotKey; 4] = hotkeys_raw
+		let hotkeys = hotkeys_raw
 			.iter()
-			.map(|h| h.parse())
-			.collect::<Result<Vec<_>, _>>()
-			.map_err(GlobalHotKeyError::Parse)?
+			.map(|maybe_hk| {
+				let hk = maybe_hk.validate()?;
+
+				if let Some((hk, _)) = &hk {
+					ghk.register(*hk).map_err(GlobalHotKeyError::Main)?;
+				}
+
+				Ok(hk)
+			})
+			.collect::<Result<Vec<_>>>()?
 			.try_into()
 			.expect("array must fit");
 
-		_manager.register_all(&hotkeys).map_err(GlobalHotKeyError::Main)?;
-
-		let hotkeys_keys = hotkeys_raw
-			.iter()
-			.map(|h| h.parse())
-			.collect::<Result<Vec<_>, _>>()?
-			.try_into()
-			.expect("array must fit");
-
-		Ok(Self { hotkeys, hotkeys_keys })
+		Ok(Self(hotkeys))
 	}
 
-	fn match_func(&self, id: u32) -> (Function, Keys) {
-		match id {
-			i if i == self.hotkeys[0].id => (Function::Rewrite, self.hotkeys_keys[0].clone()),
-			i if i == self.hotkeys[1].id =>
-				(Function::RewriteDirectly, self.hotkeys_keys[1].clone()),
-			i if i == self.hotkeys[2].id => (Function::Translate, self.hotkeys_keys[2].clone()),
-			i if i == self.hotkeys[3].id =>
-				(Function::TranslateDirectly, self.hotkeys_keys[3].clone()),
-			_ => unreachable!(),
+	fn match_function(&self, id: u32) -> (Function, Keys) {
+		for f in Function::all() {
+			if let Some((hk, ks)) = &self.0[f as usize] {
+				if hk.id() == id {
+					return (f, ks.clone());
+				}
+			}
 		}
+
+		unreachable!()
 	}
 }

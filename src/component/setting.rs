@@ -6,12 +6,13 @@ use std::{borrow::Cow, fs, path::PathBuf};
 // crates.io
 use app_dirs2::AppDataType;
 use async_openai::config::OPENAI_API_BASE;
+use global_hotkey::hotkey::HotKey;
 use language::Language;
 use serde::{Deserialize, Serialize};
 use tracing::Level;
 // self
 use super::{function::Function, openai::Model};
-use crate::{prelude::*, widget::ComboBoxItem, APP_INFO};
+use crate::{component::keyboard::Keys, prelude::*, widget::ComboBoxItem, APP_INFO};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(default, rename_all = "kebab-case")]
@@ -62,7 +63,7 @@ impl Setting {
 
 		tracing::info!("saving to {}", p.display());
 
-		Ok(fs::write(p, toml::to_string_pretty(self).unwrap())?)
+		Ok(fs::write(p, toml::to_string_pretty(self).expect("write to file must succeed"))?)
 	}
 }
 
@@ -174,21 +175,70 @@ impl Default for Translation {
 	}
 }
 
+// We do not derive `serde(default)` for `Hotkeys`.
+//
+// If a user intends to leave a hotkey empty, then the hotkey should be set to `None`.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(default, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct Hotkeys {
-	pub rewrite: String,
-	pub rewrite_directly: String,
-	pub translate: String,
-	pub translate_directly: String,
+	pub rewrite: MaybeHotkey,
+	pub rewrite_directly: MaybeHotkey,
+	pub translate: MaybeHotkey,
+	pub translate_directly: MaybeHotkey,
 }
 impl Default for Hotkeys {
 	fn default() -> Self {
-		Self {
-			rewrite: "CTRL+T".into(),
-			rewrite_directly: "CTRL+Y".into(),
-			translate: "CTRL+U".into(),
-			translate_directly: "CTRL+I".into(),
+		#[cfg(target_os = "macos")]
+		let hks = Self {
+			rewrite: MaybeHotkey::from_str_raw("CTRL+T"),
+			rewrite_directly: MaybeHotkey::from_str_raw("CTRL+Y"),
+			translate: MaybeHotkey::from_str_raw("CTRL+U"),
+			translate_directly: MaybeHotkey::from_str_raw("CTRL+I"),
+		};
+		#[cfg(not(target_os = "macos"))]
+		let hks = Self {
+			rewrite: MaybeHotkey::from_str_raw("ALT+T"),
+			rewrite_directly: MaybeHotkey::from_str_raw("ALT+Y"),
+			translate: MaybeHotkey::from_str_raw("ALT+U"),
+			translate_directly: MaybeHotkey::from_str_raw("ALT+I"),
+		};
+
+		hks
+	}
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct MaybeHotkey(#[serde(skip_serializing_if = "Option::is_none")] pub Option<String>);
+impl MaybeHotkey {
+	pub fn from_str_raw(s: &str) -> Self {
+		Self(Some(s.to_owned()))
+	}
+
+	pub fn from_string_infallible(s: String) -> Self {
+		let hk = Self::from_str_raw(&s);
+
+		match hk.validate() {
+			Ok(_) => hk,
+			Err(e) => {
+				tracing::warn!("failed to validate hotkey due to: {e}");
+
+				Self(None)
+			},
+		}
+	}
+
+	pub fn as_str(&self) -> &str {
+		self.0.as_deref().unwrap_or("None")
+	}
+
+	pub fn validate(&self) -> Result<Option<(HotKey, Keys)>> {
+		if let Some(hk_raw) = &self.0 {
+			let hk = hk_raw.parse().map_err(GlobalHotKeyError::Parse)?;
+			let ks = hk_raw.parse()?;
+
+			Ok(Some((hk, ks)))
+		} else {
+			Ok(None)
 		}
 	}
 }

@@ -4,6 +4,7 @@ use eframe::egui::*;
 use crate::{
 	air::AiRContext,
 	component::openai::Model,
+	util,
 	widget::{self, HotkeyListener},
 };
 
@@ -179,7 +180,10 @@ impl Setting {
 
 							changed
 						}) {
-						ctx.services.hotkey.renew(&ctx.components.setting.hotkeys);
+						util::unwrap_or_tracing(
+							ctx.services.hotkey.renew(&ctx.components.setting.hotkeys),
+							"failed to renew hotkey",
+						);
 					}
 				});
 			});
