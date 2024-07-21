@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use super::setting::Chat;
 use crate::widget::ComboBoxItem;
 
-#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize, Hash, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Function {
 	Rewrite,
@@ -16,6 +16,10 @@ pub enum Function {
 	// TODO: refactor code.
 }
 impl Function {
+	pub fn all() -> [Self; 4] {
+		[Self::Rewrite, Self::RewriteDirectly, Self::Translate, Self::TranslateDirectly]
+	}
+
 	pub fn basic(&self) -> Self {
 		match self {
 			Self::Rewrite | Self::RewriteDirectly => Self::Rewrite,

@@ -21,9 +21,9 @@ use crate::{
 };
 
 pub struct Hotkey {
-	// The manager need to be kept alive during the whole program life.
-	ghk_manager: GlobalHotKeyManager,
-	manager: Arc<RwLock<Manager>>,
+	// The global hokey manager need to be kept alive during the whole program life.
+	ghk: GlobalHotKeyManager,
+	inner: Arc<RwLock<Manager>>,
 	abort: ArtBool,
 }
 impl Hotkey {
@@ -36,9 +36,9 @@ impl Hotkey {
 		tx: Sender<ChatArgs>,
 	) -> Result<Self> {
 		let ctx = ctx.to_owned();
-		let _manager = GlobalHotKeyManager::new().map_err(GlobalHotKeyError::Main)?;
-		let manager = Arc::new(RwLock::new(Manager::new(&_manager, hotkeys)));
-		let manager_ = manager.clone();
+		let ghk = GlobalHotKeyManager::new().map_err(GlobalHotKeyError::Main)?;
+		let inner = Arc::new(RwLock::new(Manager::new(&ghk, hotkeys)?));
+		let inner_ = inner.clone();
 		let notification_sound = state.general.notification_sound.clone();
 		let activated_function = state.chat.activated_function.clone();
 		let focused_panel = state.ui.focused_panel.clone();
@@ -71,7 +71,7 @@ impl Hotkey {
 						audio.play_notification();
 					}
 
-					let (func, keys) = manager_.read().match_func(e.id);
+					let (func, keys) = inner_.read().match_function(e.id);
 					let to_focus = !func.is_directly();
 
 					if to_focus {
@@ -107,20 +107,19 @@ impl Hotkey {
 			}
 		});
 
-		Ok(Self { ghk_manager: _manager, manager, abort })
+		Ok(Self { ghk, inner, abort })
 	}
 
-	pub fn renew(&self, hotkeys: &mut Hotkeys) {
+	pub fn renew(&self, hotkeys: &Hotkeys) -> Result<()> {
 		tracing::info!("renewing hotkey manager");
 
-		let mut manager = self.manager.write();
+		for (hk, _) in self.inner.read().0.iter().filter_map(|maybe_hk| maybe_hk.as_ref()) {
+			self.ghk.unregister(*hk).map_err(GlobalHotKeyError::Main)?;
+		}
 
-		manager.unregister_hotkeys(&self.ghk_manager);
+		*self.inner.write() = Manager::new(&self.ghk, hotkeys)?;
 
-		*manager = Manager::new(&self.ghk_manager, hotkeys);
-
-		// Write hotkey texts back into the settings.
-		manager.read_hotkeys_into_settings(hotkeys);
+		Ok(())
 	}
 
 	pub fn abort(&self) {
@@ -129,107 +128,53 @@ impl Hotkey {
 }
 impl Debug for Hotkey {
 	fn fmt(&self, f: &mut Formatter) -> FmtResult {
-		f.debug_struct("Hotkey").field("manager", &"..").field("abort", &self.abort).finish()
+		f.debug_struct("Hotkey")
+			.field("ghk", &"..")
+			.field("inner", &self.inner)
+			.field("abort", &self.abort)
+			.finish()
 	}
 }
 
+// The order of `[(HotKey, Keys); 4]` must
+// match that of the corresponding function in `[Function::all()]`.
 #[derive(Debug)]
-struct HotKeyPair {
-	hotkey: HotKey,
-	keys: Keys,
-}
-struct Manager {
-	/// Hotkeys. The order follows the order in settings
-	hotkeys_list: [Option<HotKeyPair>; 4],
-}
+struct Manager([Option<(HotKey, Keys)>; 4]);
 impl Manager {
-	/// Creates new manager. Registers hotkeys with global manager.
-	/// If any hotkey did not gersister, stores None instead of it.
-	fn new(ghk_manager: &GlobalHotKeyManager, settings_hotkeys: &Hotkeys) -> Self {
-		let hotkey_str_list = [
-			&settings_hotkeys.rewrite,
-			&settings_hotkeys.rewrite_directly,
-			&settings_hotkeys.translate,
-			&settings_hotkeys.translate_directly,
+	fn new(ghk: &GlobalHotKeyManager, hotkeys: &Hotkeys) -> Result<Self> {
+		let hotkeys_raw = [
+			&hotkeys.rewrite,
+			&hotkeys.rewrite_directly,
+			&hotkeys.translate,
+			&hotkeys.translate_directly,
 		];
+		let hotkeys = hotkeys_raw
+			.iter()
+			.map(|maybe_hk| {
+				let hk = maybe_hk.validate()?;
 
-		let mut hotkeys_list: Vec<Option<HotKeyPair>> = Vec::with_capacity(4);
+				if let Some((hk, _)) = &hk {
+					ghk.register(*hk).map_err(GlobalHotKeyError::Main)?;
+				}
 
-		for hotkey_str in hotkey_str_list.into_iter() {
-			//Parse error possible when str value is "Not set"
-			let hotkey: HotKey = match hotkey_str.parse() {
-				Ok(v) => v,
-				Err(_) => {
-					hotkeys_list.push(None);
-					continue;
-				},
-			};
-			// Same goes for Keys
-			let keys: Keys = match hotkey_str.parse() {
-				Ok(v) => v,
-				Err(_) => {
-					hotkeys_list.push(None);
-					continue;
-				},
-			};
-			// If manager.register fails, ignore the key, and it becomes "Not set".
-			let e = ghk_manager.register(hotkey);
-			if e.is_err() {
-				hotkeys_list.push(None);
-				continue;
-			}
+				Ok(hk)
+			})
+			.collect::<Result<Vec<_>>>()?
+			.try_into()
+			.expect("array must fit");
 
-			// If key has been registered, add it to new_hotkeys
-			hotkeys_list.push(Some(HotKeyPair { hotkey, keys }));
-		}
-
-		Self { hotkeys_list: hotkeys_list.try_into().expect("hotkeys_list must have 4 elements") }
+		Ok(Self(hotkeys))
 	}
 
-	fn match_func(&self, id: u32) -> (Function, Keys) {
-		// Must follow the same order of functions as in settings
-		const FUNCTION_LIST: [Function; 4] = [
-			Function::Rewrite,
-			Function::RewriteDirectly,
-			Function::Translate,
-			Function::TranslateDirectly,
-		];
-
-		for (i, pair) in self.hotkeys_list.iter().enumerate() {
-			if let Some(pair) = pair {
-				if pair.hotkey.id == id {
-					return (FUNCTION_LIST[i], pair.keys.clone());
+	fn match_function(&self, id: u32) -> (Function, Keys) {
+		for f in Function::all() {
+			if let Some((hk, ks)) = &self.0[f as usize] {
+				if hk.id() == id {
+					return (f, ks.clone());
 				}
 			}
 		}
-		unreachable!();
-	}
 
-	// Copies text representation of actually registered hotkeys back to settings.
-	// Replaces text for unset hotkeys with "Not set"
-	fn read_hotkeys_into_settings(&self, settings_hotkeys: &mut Hotkeys) {
-		let hotkey_str_list = [
-			&mut settings_hotkeys.rewrite,
-			&mut settings_hotkeys.rewrite_directly,
-			&mut settings_hotkeys.translate,
-			&mut settings_hotkeys.translate_directly,
-		];
-
-		for (i, k) in hotkey_str_list.into_iter().enumerate() {
-			*k = match &self.hotkeys_list[i] {
-				Some(p) => p.keys.to_string(),
-				None => "Not set".to_string(),
-			};
-		}
-	}
-
-	/// Unregisters all hotkeys with given global hotkey manager.
-	fn unregister_hotkeys(&mut self, ghk_manager: &GlobalHotKeyManager) {
-		for list_entry in self.hotkeys_list.iter_mut() {
-			if let Some(pair) = list_entry {
-				ghk_manager.unregister(pair.hotkey).expect("unregister must succeed");
-			}
-			*list_entry = None;
-		}
+		unreachable!()
 	}
 }

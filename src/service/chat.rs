@@ -98,14 +98,14 @@ impl Chat {
 							continue 'listen;
 						};
 
-						for s in resp.choices.into_iter().filter_map(|c| c.delta.content) {
+						resp.choices.into_iter().filter_map(|c| c.delta.content).for_each(|s| {
 							output.write().push_str(&s);
 
 							// TODO?: move to outside of the loop.
 							if type_in {
 								keyboard.text(s);
 							}
-						}
+						});
 
 						if let Some(u) = resp.usage {
 							tcs.0.store(u.prompt_tokens, Ordering::Relaxed);

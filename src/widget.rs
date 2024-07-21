@@ -4,7 +4,7 @@ use std::borrow::Cow;
 use eframe::egui::{self, *};
 use language::Language;
 // self
-use crate::util;
+use crate::{component::setting::MaybeHotkey, util};
 
 pub const ICON_PIXELS: f32 = 16.;
 pub const SMALL_FONT_OFFSET: f32 = 3.;
@@ -123,7 +123,7 @@ pub struct HotkeyListener {
 	listening: bool,
 }
 impl HotkeyListener {
-	pub fn listen(&mut self, ui: &mut Ui, label: &str, hotkey: &mut String) -> bool {
+	pub fn listen(&mut self, ui: &mut Ui, label: &str, hotkey: &mut MaybeHotkey) -> bool {
 		ui.label(label);
 
 		let text = if self.listening { "Press Desired Key Combination" } else { hotkey.as_str() };
@@ -135,30 +135,29 @@ impl HotkeyListener {
 		}
 		if self.listening {
 			ui.input(|i| {
-				let mut abort = false;
-
 				for e in &i.events {
-					if let Event::Key { key, pressed, modifiers, .. } = e {
-						if *pressed {
-							// TODO?: do we allow a single key here.
-							*hotkey = format!("{}{key:?}", util::modifiers_to_string(modifiers));
+					match e {
+						Event::Key { key, pressed, modifiers, .. } if *pressed => {
+							self.listening = false;
 							changed = true;
-							abort = true;
+
+							*hotkey = MaybeHotkey::from_string_infallible(format!(
+								"{}{key:?}",
+								util::modifiers_to_string(modifiers)
+							));
+						},
+						Event::PointerButton { pressed, .. } if *pressed => {
+							self.listening = false;
 
 							break;
-						}
-					}
-					if let Event::PointerButton { pressed, .. } = e {
-						abort = *pressed;
-					}
+						},
+						Event::WindowFocused(..) => {
+							self.listening = false;
 
-					if matches!(e, Event::WindowFocused(..)) {
-						abort = true;
+							break;
+						},
+						_ => continue,
 					}
-				}
-
-				if abort {
-					self.listening = false;
 				}
 			});
 		}
