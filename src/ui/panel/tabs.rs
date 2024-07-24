@@ -45,7 +45,7 @@ impl Tabs {
 							reload_chat |= ui
 								.add(widget::combo_box(
 									"Language A",
-									&mut ctx.components.setting.chat.translation.a,
+									&mut ctx.components.setting.chat.translate.a,
 								))
 								.changed();
 
@@ -54,7 +54,7 @@ impl Tabs {
 							reload_chat |= ui
 								.add(widget::combo_box(
 									"Language B",
-									&mut ctx.components.setting.chat.translation.b,
+									&mut ctx.components.setting.chat.translate.b,
 								))
 								.changed();
 						}

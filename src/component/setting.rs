@@ -49,7 +49,6 @@ impl Setting {
 			},
 		};
 
-		// TODO: https://github.com/hack-ink/AiR/issues/62.
 		Ok(toml::from_str(&s)?)
 	}
 
@@ -111,7 +110,7 @@ impl Default for Ai {
 pub struct Chat {
 	pub activated_function: Function,
 	pub rewrite: Rewrite,
-	pub translation: Translation,
+	pub translate: Translate,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default, rename_all = "kebab-case")]
@@ -120,16 +119,21 @@ pub struct Rewrite {
 }
 impl Rewrite {
 	pub fn prompt(&self) -> Cow<str> {
-		const DEFAULT: &str = "Rewrite the content enclosed within the <AiR></AiR> tags.";
+		const DEFAULT: &str = "Rewrite the text and must obey the following rules:\n\
+			1. All characters inside the <AiR></AiR> tags are $TARGET_TEXT.\n\
+			2. The text could be in any style (including code comments).\n\
+			3. Return only the rewritten text without any additional information, commentary or the <AiR></AiR> tags.\n\
+			4. ";
 
 		if self.additional_prompt.is_empty() {
 			DEFAULT.into()
 		} else {
 			format!(
-				"{DEFAULT} \
-				{} \
-				The text could be in any format (including code comments). \
-				Return only the rewritten version without any additional information, commentary or the tag.",
+				"{DEFAULT}{}\n\
+				Input format:\n\
+				<AiR>\n\
+				$TARGET_TEXT\n\
+				</AiR>",
 				self.additional_prompt
 			)
 			.into()
@@ -143,19 +147,22 @@ impl Default for Rewrite {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default, rename_all = "kebab-case")]
-pub struct Translation {
+pub struct Translate {
 	pub additional_prompt: String,
-	#[serde(deserialize_with = "fallback::translation_a")]
+	#[serde(deserialize_with = "fallback::translate_a")]
 	pub a: Language,
-	#[serde(deserialize_with = "fallback::translation_b")]
+	#[serde(deserialize_with = "fallback::translate_b")]
 	pub b: Language,
 }
-impl Translation {
-	// TODO: https://github.com/hack-ink/AiR/issues/41.
+impl Translate {
 	pub fn prompt(&self) -> Cow<str> {
 		let default = format!(
-			"Translate the content enclosed within the <AiR></AiR> tags between Language {} and Language {}, \
-			based on the language it is currently written in.",
+			"Translate the text and must obey the following rules:\n\
+			1. Translate between Language {} and Language {}, based on the language it is currently written in. \n\
+			2. All characters inside the <AiR></AiR> tags are $TARGET_TEXT.\n\
+			3. The text could be in any style (including code comments).\n\
+			4. Return only the translated text without any additional information, commentary or the <AiR></AiR> tags.\n\
+			5. ",
 			self.a.as_str(),
 			self.b.as_str(),
 		);
@@ -164,20 +171,23 @@ impl Translation {
 			default.into()
 		} else {
 			format!(
-				"{default} \
-				{} \
-				The text could be in any format (including code comments). \
-				Return only the translated version without any additional information, commentary or the tag.",
+				"{default}{}\n\
+				Input format:\n\
+				<AiR>\n\
+				$TARGET_TEXT\n\
+				</AiR>",
 				self.additional_prompt
 			)
 			.into()
 		}
 	}
 }
-impl Default for Translation {
+impl Default for Translate {
 	fn default() -> Self {
 		Self {
-			additional_prompt: "Make it sound more native.".into(),
+			additional_prompt:
+				"Keep the original text format as much as possible and make it sound more native."
+					.into(),
 			a: Language::ZhCn,
 			b: Language::EnGb,
 		}

@@ -132,6 +132,8 @@ You can configure the settings by navigating to the "Settings" panel.
   - Model
   - Model Name: Available only if the model is set to `Custom`.
   - Temperature: The unpredictability of AI.
+  - Rewrite Prompt: The extra prompt to be attached to the default.
+  - Translate Prompt: The extra prompt to be attached to the default.
 - Hotkey
   - Rewrite
   - Rewrite Directly

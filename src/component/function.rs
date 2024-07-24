@@ -34,7 +34,7 @@ impl Function {
 	pub fn prompt<'a>(&'a self, setting: &'a Chat) -> Cow<str> {
 		match self {
 			Self::Rewrite | Self::RewriteDirectly => setting.rewrite.prompt(),
-			Self::Translate | Self::TranslateDirectly => setting.translation.prompt(),
+			Self::Translate | Self::TranslateDirectly => setting.translate.prompt(),
 		}
 	}
 }

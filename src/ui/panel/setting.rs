@@ -153,8 +153,8 @@ impl Setting {
 							&mut ctx.components.setting.chat.rewrite.additional_prompt,
 						),
 						(
-							"Translation Prompt",
-							&mut ctx.components.setting.chat.translation.additional_prompt,
+							"Translate Prompt",
+							&mut ctx.components.setting.chat.translate.additional_prompt,
 						),
 					]
 					.iter_mut()
