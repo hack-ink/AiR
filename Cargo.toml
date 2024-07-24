@@ -59,7 +59,7 @@ reqwew             = { version = "0.2" }
 rodio              = { version = "0.19" }
 serde              = { version = "1.0", features = ["derive"] }
 thiserror          = { version = "1.0" }
-tokio              = { version = "1.38", features = ["rt-multi-thread"] }
+tokio              = { version = "1.39", features = ["rt-multi-thread"] }
 toml               = { version = "0.8" }
 tracing            = { version = "0.1" }
 tracing-appender   = { version = "0.2" }
