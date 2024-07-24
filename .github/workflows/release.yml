@@ -27,8 +27,13 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v4
+      - name: Patch for https://github.com/Homebrew/homebrew-core/pull/177840
+        if: matrix.target.os == 'macos-latest'
+        run: brew update
       - name: Setup Rust toolchain
-        run: rustup target add ${{ matrix.target.name }}
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
+          rustup target add ${{ matrix.target.name }}
       - name: Setup build environment (macOS)
         if: matrix.target.os == 'macos-latest'
         env:
