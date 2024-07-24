@@ -113,27 +113,32 @@ pub struct Chat {
 	pub rewrite: Rewrite,
 	pub translation: Translation,
 }
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct Rewrite {
 	pub additional_prompt: String,
 }
 impl Rewrite {
 	pub fn prompt(&self) -> Cow<str> {
-		const DEFAULT: &str =
-			"As a professional writer and language master, assist me in refining text! \
-			Amend any grammatical errors and enhance the language to sound more like a native speaker! \
-			Text is always provided in format `<AiR>$TEXT</AiR>`! \
-			$TEXT can be provided in any style! \
-			Discard the `<AiR></AiR>` tag! \
-			But keep the indentation and line breaks format! \
-			Extract the $TEXT and return the refined $TEXT only!";
+		const DEFAULT: &str = "Rewrite the content enclosed within the <AiR></AiR> tags.";
 
 		if self.additional_prompt.is_empty() {
 			DEFAULT.into()
 		} else {
-			format!("{DEFAULT} {}", self.additional_prompt).into()
+			format!(
+				"{DEFAULT} \
+				{} \
+				The text could be in any format (including code comments). \
+				Return only the rewritten version without any additional information, commentary or the tag.",
+				self.additional_prompt
+			)
+			.into()
 		}
+	}
+}
+impl Default for Rewrite {
+	fn default() -> Self {
+		Self { additional_prompt: "Keep the original text format as much as possible.".into() }
 	}
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -149,15 +154,8 @@ impl Translation {
 	// TODO: https://github.com/hack-ink/AiR/issues/41.
 	pub fn prompt(&self) -> Cow<str> {
 		let default = format!(
-			"As a professional translator and language master, assist me in translating text! \
-			I provide two languages, {} and {}! \
-			Determine which language the text I give is in, and then translate accordingly. \
-			Amend any grammatical errors and enhance the language to sound more like a native speaker! \
-			Text is always provided in format `<AiR>$TEXT</AiR>`! \
-			$TEXT can be provided in any style! \
-			Discard the `<AiR></AiR>` tag! \
-			But keep the indentation and line breaks format! \
-			Extract the $TEXT and return the translated $TEXT only!",
+			"Translate the content enclosed within the <AiR></AiR> tags between Language {} and Language {}, \
+			based on the language it is currently written in.",
 			self.a.as_str(),
 			self.b.as_str(),
 		);
@@ -165,13 +163,24 @@ impl Translation {
 		if self.additional_prompt.is_empty() {
 			default.into()
 		} else {
-			format!("{default} {}", self.additional_prompt).into()
+			format!(
+				"{default} \
+				{} \
+				The text could be in any format (including code comments). \
+				Return only the translated version without any additional information, commentary or the tag.",
+				self.additional_prompt
+			)
+			.into()
 		}
 	}
 }
 impl Default for Translation {
 	fn default() -> Self {
-		Self { additional_prompt: Default::default(), a: Language::ZhCn, b: Language::EnGb }
+		Self {
+			additional_prompt: "Make it sound more native.".into(),
+			a: Language::ZhCn,
+			b: Language::EnGb,
+		}
 	}
 }
 
@@ -284,12 +293,13 @@ impl ComboBoxItem for LogLevel {
 	}
 
 	fn selectable_str(&self) -> Cow<str> {
-		Cow::Borrowed(match self {
+		match self {
 			Self::Trace => "Trace",
 			Self::Debug => "Debug",
 			Self::Info => "Info",
 			Self::Warn => "Warn",
 			Self::Error => "Error",
-		})
+		}
+		.into()
 	}
 }

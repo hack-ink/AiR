@@ -11,56 +11,38 @@ pub struct Tabs {
 impl Tabs {
 	pub fn draw(&mut self, ctx: &mut AiRContext, ui: &mut Ui, y: f32) {
 		ui.horizontal(|ui| {
-			let focused_panel = &mut self.focused_panel;
+			let focused_p = &mut self.focused_panel;
 
 			ui.set_height(y);
 			ui.vertical(|ui| {
 				ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-					// TODO: fn try_update.
-					if let Some(fp) = ctx.state.ui.focused_panel.try_read() {
-						*focused_panel = *fp;
-					}
+					ctx.state.ui.focused_panel.try_sync_to(focused_p);
 
-					// TODO: fn set.
-					if ui.selectable_value(focused_panel, Panel::Chat, Panel::Chat.name()).changed()
-					{
-						*ctx.state.ui.focused_panel.write() = *focused_panel;
-					}
+					let chat_p = ui.selectable_value(focused_p, Panel::Chat, Panel::Chat.name());
 
 					ui.separator();
-					if ui
-						.selectable_value(focused_panel, Panel::Setting, Panel::Setting.name())
-						.changed()
-					{
-						*ctx.state.ui.focused_panel.write() = *focused_panel;
-					}
+
+					let setting_p =
+						ui.selectable_value(focused_p, Panel::Setting, Panel::Setting.name());
+
+					ctx.state.ui.focused_panel.sync_on_change(chat_p, *focused_p);
+					ctx.state.ui.focused_panel.sync_on_change(setting_p, *focused_p);
 				});
 			});
 
-			if matches!(focused_panel, Panel::Chat) {
+			if matches!(focused_p, Panel::Chat) {
 				ui.vertical(|ui| {
 					ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-						let activated_function =
-							&mut ctx.components.setting.chat.activated_function;
+						let acted_fn = &mut ctx.components.setting.chat.activated_function;
 
-						if let Some(af) = ctx.state.chat.activated_function.try_read() {
-							*activated_function = *af;
-						}
+						ctx.state.chat.activated_function.try_sync_to(acted_fn);
 
-						if ui
-							.add(widget::combo_box("Activated Function", activated_function))
-							.changed()
-						{
-							*ctx.state.chat.activated_function.write() = *activated_function;
-						}
+						let mut reload_chat = false;
+						let acted_fn_cb = ui.add(widget::combo_box("Activated Function", acted_fn));
+
 						// TODO: fn is_translate.
-						if matches!(
-							ctx.components.setting.chat.activated_function,
-							Function::Translate
-						) {
-							let mut chat_need_reload = false;
-
-							chat_need_reload |= ui
+						if matches!(acted_fn, Function::Translate) {
+							reload_chat |= ui
 								.add(widget::combo_box(
 									"Language A",
 									&mut ctx.components.setting.chat.translation.a,
@@ -69,19 +51,20 @@ impl Tabs {
 
 							ui.label("←→");
 
-							chat_need_reload |= ui
+							reload_chat |= ui
 								.add(widget::combo_box(
 									"Language B",
 									&mut ctx.components.setting.chat.translation.b,
 								))
 								.changed();
+						}
 
-							if chat_need_reload {
-								ctx.services.chat.renew(
-									&ctx.components.setting.ai,
-									&ctx.components.setting.chat,
-								);
-							}
+						ctx.state.chat.activated_function.sync_on_change(acted_fn_cb, *acted_fn);
+
+						if reload_chat {
+							ctx.services
+								.chat
+								.renew(&ctx.components.setting.ai, &ctx.components.setting.chat);
 						}
 					});
 				});

@@ -11,6 +11,13 @@ pub struct Chat {
 }
 impl Chat {
 	pub fn draw(&mut self, ctx: &mut AiRContext, ui: &mut Ui, bar_y: f32) {
+		let is_chatting = ctx.services.is_chatting();
+
+		if is_chatting {
+			ctx.state.chat.input.try_sync_to(&mut self.input);
+			ctx.state.chat.output.try_sync_to(&mut self.output);
+		}
+
 		let size = ui.min_rect().size();
 		let h = size.y - bar_y * 2.;
 		let separator_y = ui.spacing().item_spacing.y * 2.;
@@ -22,7 +29,6 @@ impl Chat {
 		// dbg!(size.y, h, shortcut_y, scroll_y);
 
 		let dark_mode = ui.visuals().dark_mode;
-		let is_chatting = ctx.services.is_chatting();
 
 		// Input.
 		ui.vertical(|ui| {
@@ -31,16 +37,7 @@ impl Chat {
 			ScrollArea::vertical().id_source("Input").show(ui, |ui| {
 				let input = ui.add_sized(
 					(size.x, scroll_y),
-					TextEdit::multiline({
-						if is_chatting {
-							if let Some(i) = ctx.state.chat.input.try_read() {
-								i.clone_into(&mut self.input);
-							}
-						}
-
-						&mut self.input
-					})
-					.hint_text(&*ctx.state.chat.quote.read()),
+					TextEdit::multiline(&mut self.input).hint_text(&*ctx.state.chat.quote.read()),
 				);
 
 				if input.has_focus() {
@@ -91,18 +88,9 @@ impl Chat {
 		ui.vertical(|ui| {
 			ui.set_height(scroll_y);
 
-			ScrollArea::vertical().id_source("Output").show(ui, |ui| {
-				if is_chatting {
-					if let Some(o) = ctx.state.chat.output.try_read() {
-						o.clone_into(&mut self.output);
-					}
-				}
-
+			ScrollArea::vertical().id_source("Output").show(ui, |ui|
 				// Read-only trick.
-				let mut output = self.output.as_str();
-
-				ui.add_sized((size.x, scroll_y), TextEdit::multiline(&mut output));
-			});
+				ui.add_sized((size.x, scroll_y), TextEdit::multiline(&mut self.output.as_str())));
 		});
 	}
 }

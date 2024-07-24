@@ -9,7 +9,7 @@ use crate::{
 	component::{function::Function, setting::Setting},
 	prelude::*,
 	ui::panel::Panel,
-	util::ArtBool,
+	util::{ArtBool, Stated},
 };
 
 #[derive(Debug)]
@@ -40,9 +40,9 @@ pub struct General {
 #[derive(Debug)]
 pub struct Chat {
 	pub quote: Arc<RwLock<String>>,
-	pub activated_function: Arc<RwLock<Function>>,
-	pub input: Arc<RwLock<String>>,
-	pub output: Arc<RwLock<String>>,
+	pub activated_function: Stated<Function>,
+	pub input: Stated<String>,
+	pub output: Stated<String>,
 	pub token_counts: Arc<(AtomicU32, AtomicU32)>,
 	pub error: ArtBool,
 }
@@ -50,7 +50,7 @@ impl Chat {
 	pub fn new(activated_function: Function) -> Self {
 		Self {
 			quote: Default::default(),
-			activated_function: Arc::new(RwLock::new(activated_function)),
+			activated_function: Stated::new(activated_function),
 			input: Default::default(),
 			output: Default::default(),
 			token_counts: Default::default(),
@@ -74,5 +74,5 @@ impl Development {
 
 #[derive(Debug, Default)]
 pub struct Ui {
-	pub focused_panel: Arc<RwLock<Panel>>,
+	pub focused_panel: Stated<Panel>,
 }

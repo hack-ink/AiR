@@ -63,7 +63,7 @@ impl Chat {
 
 					tracing::info!("func: {func:?}");
 
-					input.write().clone_from(&content);
+					input.sync_from(&content);
 					output.write().clear();
 
 					let Some(mut stream) = util::unwrap_or_tracing(

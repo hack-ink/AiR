@@ -33,7 +33,7 @@ impl OpenAi {
 		let msg = [
 			ChatCompletionRequestSystemMessageArgs::default().content(prompt).build()?.into(),
 			ChatCompletionRequestUserMessageArgs::default()
-				.content(format!("<AiR>\n{content}\n</AiR>"))
+				.content(format!("<AiR>{content}</AiR>"))
 				.build()?
 				.into(),
 		];
@@ -101,12 +101,13 @@ impl ComboBoxItem for Model {
 	}
 
 	fn selectable_str(&self) -> Cow<str> {
-		Cow::Borrowed(match self {
+		match self {
 			Self::Custom(_) => "Custom",
 			Self::Gpt4o => "GPT-4o",
 			Self::Gpt4oMini => "GPT-4o Mini",
 			Self::Gpt4Turbo => "GPT-4 Turbo",
 			Self::Gpt35Turbo => "GPT-3.5 Turbo",
-		})
+		}
+		.into()
 	}
 }

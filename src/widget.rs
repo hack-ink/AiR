@@ -176,11 +176,11 @@ impl ComboBoxItem for Language {
 	}
 
 	fn selected_str(&self) -> Cow<str> {
-		Cow::Borrowed(self.as_tag())
+		self.as_tag().into()
 	}
 
 	fn selectable_str(&self) -> Cow<str> {
-		Cow::Owned(format!("{} {}", self.as_tag(), self.as_local()))
+		format!("{} {}", self.as_tag(), self.as_local()).into()
 	}
 }
 

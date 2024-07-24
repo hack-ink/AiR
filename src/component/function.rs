@@ -53,9 +53,10 @@ impl ComboBoxItem for Function {
 	}
 
 	fn selectable_str(&self) -> Cow<str> {
-		Cow::Borrowed(match self {
+		match self {
 			Self::Rewrite | Self::RewriteDirectly => "Rewrite",
 			Self::Translate | Self::TranslateDirectly => "Translate",
-		})
+		}
+		.into()
 	}
 }

@@ -92,11 +92,16 @@ impl Setting {
 
 			ui.collapsing("AI", |ui| {
 				Grid::new("AI").num_columns(2).show(ui, |ui| {
+					const PROMPT_HINT: &'static str =
+						"The extra prompt to be attached to the default.";
+
 					ui.label("API Base");
+
 					// The available size only works after there is an existing element.
 					let mut size = ui.available_size();
 
 					size.x -= x_offset;
+					ui.spacing_mut().slider_width = size.x;
 
 					ui.horizontal(|ui| {
 						chat_need_reload |= ui
@@ -142,7 +147,6 @@ impl Setting {
 
 					ui.end_row();
 					ui.label("Temperature");
-					ui.spacing_mut().slider_width = size.x;
 					chat_need_reload |= ui
 						.add(
 							Slider::new(&mut ctx.components.setting.ai.temperature, 0_f32..=2.)
@@ -150,6 +154,27 @@ impl Setting {
 								.step_by(0.1),
 						)
 						.changed();
+
+					[
+						(
+							"Rewrite Prompt",
+							&mut ctx.components.setting.chat.rewrite.additional_prompt,
+						),
+						(
+							"Translation Prompt",
+							&mut ctx.components.setting.chat.translation.additional_prompt,
+						),
+					]
+					.iter_mut()
+					.for_each(|(l, p)| {
+						ui.end_row();
+						ui.label(*l);
+
+						chat_need_reload |= ui
+							.add_sized(size, TextEdit::singleline(*p).hint_text(PROMPT_HINT))
+							.on_hover_text(PROMPT_HINT)
+							.lost_focus();
+					});
 				});
 			});
 

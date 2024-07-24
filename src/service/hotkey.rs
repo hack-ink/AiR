@@ -75,8 +75,9 @@ impl Hotkey {
 					let to_focus = !func.is_directly();
 
 					if to_focus {
-						*activated_function.write() = func.basic();
-						*focused_panel.write() = Panel::Chat;
+						activated_function.set(func.basic());
+						focused_panel.set(Panel::Chat);
+
 						// TODO: check if the window is hidden.
 						os.unhide();
 					}
