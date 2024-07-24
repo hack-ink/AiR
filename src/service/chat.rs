@@ -28,8 +28,9 @@ pub type ChatArgs = (Function, String, bool);
 pub struct Chat {
 	pub tx: Sender<ChatArgs>,
 	to_interrupt: ArtBool,
-	// TODO?: get rid of the `Mutex`.
+	// TODO: https://github.com/hack-ink/AiR/issues/117.
 	openai: Arc<Mutex<OpenAi>>,
+	// TODO: https://github.com/hack-ink/AiR/issues/117.
 	chat_setting: Arc<Mutex<ChatSetting>>,
 	abort_handle: AbortHandle,
 }

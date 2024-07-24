@@ -23,6 +23,7 @@ use crate::{
 pub struct Hotkey {
 	// The global hokey manager need to be kept alive during the whole program life.
 	ghk: GlobalHotKeyManager,
+	// TODO: https://github.com/hack-ink/AiR/issues/117.
 	inner: Arc<RwLock<Manager>>,
 	abort: ArtBool,
 }
