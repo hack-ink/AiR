@@ -80,20 +80,12 @@ impl Setting {
 							.notification_sound
 							.store(ctx.components.setting.general.notification_sound);
 					}
-
-					ui.end_row();
-					// TODO: move to a better place.
-					ui.add(widget::combo_box_labeled(
-						"Active Function",
-						&mut ctx.components.setting.chat.activated_function,
-					));
 				});
 			});
 
 			ui.collapsing("AI", |ui| {
 				Grid::new("AI").num_columns(2).show(ui, |ui| {
-					const PROMPT_HINT: &'static str =
-						"The extra prompt to be attached to the default.";
+					const PROMPT_HINT: &str = "The extra prompt to be attached to the default.";
 
 					ui.label("API Base");
 
