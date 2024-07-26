@@ -119,21 +119,22 @@ pub struct Rewrite {
 }
 impl Rewrite {
 	pub fn prompt(&self) -> Cow<str> {
-		const DEFAULT: &str = "Rewrite the text and must obey the following rules:\n\
-			1. All characters inside the <AiR></AiR> tags are $TARGET_TEXT.\n\
-			2. The text could be in any style (including code comments).\n\
-			3. Return only the rewritten text without any additional information, commentary or the <AiR></AiR> tags.\n\
-			4. ";
+		const DEFAULT: &str = "Rewrite the text and obey the following rules:\n\
+			1. The text could be in any format (including code comments).\n\
+			2. The content will be given within <AiR></AiR> tags; \
+			these tags are not a part of the text but serve as delimiters to simplify text extraction for you.\n\
+			3. Only return the processed text.";
 
 		if self.additional_prompt.is_empty() {
 			DEFAULT.into()
 		} else {
 			format!(
-				"{DEFAULT}{}\n\
+				"{DEFAULT}\n\
+				4. {}\n\
 				Input format:\n\
-				<AiR>\n\
-				$TARGET_TEXT\n\
-				</AiR>",
+				<AiR>text</AiR>\n\
+				Output format:\n\
+				processed text",
 				self.additional_prompt
 			)
 			.into()
@@ -157,12 +158,12 @@ pub struct Translate {
 impl Translate {
 	pub fn prompt(&self) -> Cow<str> {
 		let default = format!(
-			"Translate the text and must obey the following rules:\n\
-			1. Translate between Language {} and Language {}, based on the language it is currently written in. \n\
-			2. All characters inside the <AiR></AiR> tags are $TARGET_TEXT.\n\
-			3. The text could be in any style (including code comments).\n\
-			4. Return only the translated text without any additional information, commentary or the <AiR></AiR> tags.\n\
-			5. ",
+			"Translate the text and obey the following rules:\n\
+			1. Translate between Language {} and Language {}, based on the language it is currently written in.\n\
+			2. The text could be in any format (including code comments).\n\
+			3. The content will be given within <AiR></AiR> tags; \
+			these tags are not a part of the text but serve as delimiters to simplify text extraction for you.\n\
+			4. Only return the processed text.",
 			self.a.as_str(),
 			self.b.as_str(),
 		);
@@ -171,11 +172,12 @@ impl Translate {
 			default.into()
 		} else {
 			format!(
-				"{default}{}\n\
+				"{default}\n\
+				5. {}\n\
 				Input format:\n\
-				<AiR>\n\
-				$TARGET_TEXT\n\
-				</AiR>",
+				<AiR>text</AiR>\n\
+				Output format:\n\
+				processed text",
 				self.additional_prompt
 			)
 			.into()
