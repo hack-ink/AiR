@@ -46,7 +46,7 @@ winresource = { version = "0.1" }
 # crates.io
 app_dirs2          = { version = "2.5" }
 arboard            = { version = "3.4" }
-async-openai       = { version = "0.23" }
+async-openai       = { version = "0.24" }
 color-eyre         = { version = "0.6" }
 eframe             = { version = "0.28", features = ["persistence"] }
 egui_extras        = { version = "0.28", features = ["svg"] }
