@@ -79,5 +79,3 @@ winapi = { version = "0.3" }
 [patch.crates-io]
 # async-openai = { path = "tmp/async-openai/async-openai" }
 # egui = { path = "tmp/egui/crates/egui" }
-# TODO: https://github.com/emilk/egui/milestone/5.
-egui = { git = "https://github.com/emilk/egui", branch = "master" }
