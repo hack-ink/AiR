@@ -58,7 +58,7 @@ parking_lot        = { version = "0.12" }
 reqwew             = { version = "0.2" }
 rodio              = { version = "0.20" }
 serde              = { version = "1.0", features = ["derive"] }
-thiserror          = { version = "1.0" }
+thiserror          = { version = "2.0" }
 tokio              = { version = "1.41", features = ["rt-multi-thread"] }
 toml               = { version = "0.8" }
 tracing            = { version = "0.1" }
