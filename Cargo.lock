@@ -3616,9 +3616,9 @@ dependencies = [
 
 [[package]]
 name = "rodio"
-version = "0.20.0"
+version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29b4839fa8524afa1829ee630ee1ef27b7bbe5bf0cde773456941c69060a4f74"
+checksum = "e7ceb6607dd738c99bc8cb28eff249b7cd5c8ec88b9db96c0608c1480d140fb1"
 dependencies = [
  "claxon",
  "cpal",
