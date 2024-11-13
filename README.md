@@ -213,7 +213,7 @@ Your support is greatly appreciated and motivates me to keep improving this proj
 
 - **Fiat**
   - [Ko-fi](https://ko-fi.com/aurevoirxavier)
-  - [爱发电](https://afdian.net/a/AurevoirXavier)
+  - [爱发电](https://afdian.com/a/AurevoirXavier)
 - **Crypto**
   - **Bitcoin**
     - `bc1pedlrf67ss52md29qqkzr2avma6ghyrt4jx9ecp9457qsl75x247sqcp43c`
