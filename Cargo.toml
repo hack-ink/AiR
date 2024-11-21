@@ -55,7 +55,7 @@ futures            = { version = "0.3" }
 global-hotkey      = { version = "0.6" }
 language           = { version = "0.1", features = ["serde"] }
 parking_lot        = { version = "0.12" }
-reqwew             = { version = "0.2" }
+reqwew             = { version = "0.3" }
 rodio              = { version = "0.20" }
 serde              = { version = "1.0", features = ["derive"] }
 thiserror          = { version = "2.0" }
